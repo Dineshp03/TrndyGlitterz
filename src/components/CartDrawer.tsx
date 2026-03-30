@@ -1,0 +1,153 @@
+"use client";
+
+import { useCartStore } from "@/store/useCartStore";
+import { X, Minus, Plus, Trash2 } from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
+import { useEffect, useState } from "react";
+import CartCheckoutModal from "./CartCheckoutModal";
+
+export default function CartDrawer() {
+  const { items, isCartOpen, closeCart, updateQuantity, removeItem, getCartTotal, getCartCount } = useCartStore();
+  const [mounted, setMounted] = useState(false);
+  const [showCheckout, setShowCheckout] = useState(false);
+
+  useEffect(() => {
+    requestAnimationFrame(() => setMounted(true));
+  }, []);
+
+  if (!mounted) return null;
+
+  return (
+    <>
+      {/* Backdrop */}
+      {isCartOpen && (
+        <div 
+          className="fixed inset-0 bg-obsidian/30 z-[100] transition-opacity backdrop-blur-md"
+          onClick={closeCart}
+        />
+      )}
+
+      {/* Drawer */}
+      <div 
+        className={`fixed top-0 right-0 h-full w-full sm:w-[450px] bg-alabaster z-[110] transform transition-transform duration-700 ease-[cubic-bezier(0.77,0,0.175,1)] flex flex-col ${
+          isCartOpen ? "translate-x-0" : "translate-x-full"
+        }`}
+      >
+        <div className="absolute inset-0 noise-bg opacity-[0.03] pointer-events-none"></div>
+
+        {/* Header */}
+        <div className="flex items-center justify-between p-4 sm:p-8 border-b border-obsidian/10 relative z-10">
+          <h2 className="text-2xl font-serif text-obsidian tracking-wide">
+            Cart <span className="text-obsidian/40 italic">({getCartCount()})</span>
+          </h2>
+          <button 
+            onClick={closeCart}
+            className="text-obsidian hover:rotate-90 transition-transform duration-500"
+          >
+            <X className="w-6 h-6" strokeWidth={1} />
+          </button>
+        </div>
+
+        {/* Cart Items */}
+        <div className="flex-1 overflow-y-auto p-4 sm:p-8 space-y-8 sm:space-y-10 relative z-10">
+          {items.length === 0 ? (
+            <div className="flex flex-col items-center justify-center h-full text-center text-obsidian/40 space-y-6">
+              <p className="font-serif text-2xl italic">Your cart is empty.</p>
+              <button 
+                onClick={closeCart}
+                className="text-[10px] font-sans uppercase tracking-[0.2em] border-b border-obsidian pb-1 hover:text-burgundy hover:border-burgundy transition-colors"
+              >
+                Continue Exploring
+              </button>
+            </div>
+          ) : (
+            items.map((item) => (
+              <div key={item.id} className="flex gap-6 group">
+                <Link 
+                  href={`/product/${item.id}`} 
+                  onClick={closeCart}
+                  className="relative w-28 h-36 bg-sand/30 overflow-hidden flex-shrink-0"
+                >
+                  <Image 
+                    src={item.image} 
+                    alt={item.name} 
+                    fill 
+                    className="object-cover group-hover:scale-105 transition-transform duration-1000"
+                  />
+                </Link>
+                
+                <div className="flex flex-col flex-1 justify-between py-2">
+                  <div>
+                    <div className="flex justify-between items-start mb-1">
+                      <Link 
+                        href={`/product/${item.id}`}
+                        onClick={closeCart}
+                        className="hover:text-burgundy transition-colors"
+                      >
+                        <h3 className="font-serif text-lg text-obsidian leading-tight pr-4">{item.name}</h3>
+                      </Link>
+                      <button 
+                        onClick={() => removeItem(item.id)}
+                        className="text-obsidian/40 hover:text-burgundy transition-colors"
+                        aria-label="Remove item"
+                      >
+                        <Trash2 className="w-4 h-4" strokeWidth={1} />
+                      </button>
+                    </div>
+                    <div className="text-[10px] uppercase font-sans tracking-[0.2em] text-dustyrose">
+                      {item.category}
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-end justify-between mt-4">
+                    <div className="flex items-center gap-4 border-b border-obsidian/20 pb-1">
+                      <button 
+                        onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                        className="text-obsidian/50 hover:text-obsidian disabled:opacity-30 transition-colors"
+                        disabled={item.quantity <= 1}
+                      >
+                        <Minus className="w-3 h-3" strokeWidth={1.5} />
+                      </button>
+                      <span className="text-[11px] font-sans w-4 text-center text-obsidian tabular-nums">
+                        {item.quantity}
+                      </span>
+                      <button 
+                        onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                        className="text-obsidian/50 hover:text-obsidian transition-colors"
+                      >
+                        <Plus className="w-3 h-3" strokeWidth={1.5} />
+                      </button>
+                    </div>
+                    <p className="text-sm font-sans font-medium text-obsidian tabular-nums tracking-wide">
+                      ₹{(item.price * item.quantity).toFixed(2)}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+
+        {/* Footer */}
+        {items.length > 0 && (
+          <div className="p-4 sm:p-8 border-t border-obsidian/10 bg-alabaster relative z-10 space-y-6 sm:space-y-8">
+            <div className="flex justify-between items-end">
+              <span className="text-[11px] font-sans uppercase tracking-[0.2em] text-obsidian/60">Estimated Total</span>
+              <span className="text-3xl font-serif font-medium text-obsidian tracking-tighter tabular-nums">₹{getCartTotal().toFixed(2)}</span>
+            </div>
+            <button 
+              onClick={() => setShowCheckout(true)}
+              className="w-full relative overflow-hidden group bg-dustyrose text-alabaster py-5 text-[11px] font-sans uppercase tracking-[0.2em] transition-colors"
+            >
+              <span className="relative z-10 transition-colors duration-500 group-hover:text-obsidian">Secure Payment</span>
+              <div className="absolute inset-0 bg-sand transform scale-x-0 origin-left transition-transform duration-500 ease-[cubic-bezier(0.77,0,0.175,1)] group-hover:scale-x-100 z-0"></div>
+            </button>
+          </div>
+        )}
+      </div>
+
+      {showCheckout && <CartCheckoutModal onClose={() => setShowCheckout(false)} />}
+    </>
+  );
+}

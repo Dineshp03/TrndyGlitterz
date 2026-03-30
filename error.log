@@ -1,0 +1,45 @@
+
+> trendy_glitterzz@0.1.0 build
+> next build
+
+Gû¦ Next.js 16.1.6 (Turbopack)
+
+  Creating an optimized production build ...
+G£ô Compiled successfully in 2.7s
+  Running TypeScript ...
+node.exe : Failed to compile.
+At line:1 char:1
++ & "C:\Program Files\nodejs/node.exe" 
+"C:\Program Files\nodejs/node_mo ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: 
+    (Failed to compile.:String) [], Remote  
+  Exception
+    + FullyQualifiedErrorId : NativeCommand 
+   Error
+ 
+
+./src/components/MobileProductSlider.tsx:11:
+25
+Type error: Cannot find module '@/types' or 
+its corresponding type declarations.
+
+[0m [90m  9 |[39m
+ [90m 10 |[39m [36mimport[39m 
+[33mProductCard[39m [36mfrom[39m 
+[32m'./ProductCard'[39m[33m;[39m
+[31m[1m>[22m[39m[90m 11 |[39m 
+[36mimport[39m { [33mProduct[39m } 
+[36mfrom[39m 
+[32m'@/types'[39m[33m;[39m
+ [90m    |[39m                         
+[31m[1m^[22m[39m
+ [90m 12 |[39m
+ [90m 13 |[39m [36minterface[39m 
+[33mMobileProductSliderProps[39m {
+ [90m 14 |[39m   products[33m:[39m 
+[33mProduct[39m[][33m;[39m[0m
+Next.js build worker exited with code: 1 
+and signal: null
+

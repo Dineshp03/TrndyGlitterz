@@ -1,0 +1,452 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import Image from "next/image";
+import Link from "next/link";
+import { CheckCircle, X, ChevronRight, Loader2 } from "lucide-react";
+import { useCartStore } from "@/store/useCartStore";
+import { useOrderStore } from "@/store/useOrderStore";
+import { useSettingsStore } from "@/store/useSettingsStore";
+import { useNotificationStore } from "@/store/useNotificationStore";
+
+type Step = "details" | "payment" | "success";
+
+interface UserDetails {
+  fullName: string;
+  email: string;
+  phone: string;
+  address: string;
+  city: string;
+  state: string;
+  pincode: string;
+}
+
+interface PaymentDetails {
+  method: "cod" | "upi" | "razorpay";
+  upiId: string;
+}
+
+const emptyDetails: UserDetails = {
+  fullName: "",
+  email: "",
+  phone: "",
+  address: "",
+  city: "",
+  state: "",
+  pincode: "",
+};
+
+export default function CartCheckoutModal({ onClose }: { onClose: () => void }) {
+  const { items, getCartTotal, clearCart } = useCartStore();
+  const { addOrder } = useOrderStore();
+  const { codEnabled, upiEnabled } = useSettingsStore();
+  
+  const [step, setStep] = useState<Step>("details");
+  const [details, setDetails] = useState<UserDetails>(emptyDetails);
+  
+  const defaultMethod = codEnabled ? "cod" : upiEnabled ? "upi" : "razorpay";
+  
+  const [payment, setPayment] = useState<PaymentDetails>({
+    method: defaultMethod,
+    upiId: "",
+  });
+  const [errors, setErrors] = useState<Partial<UserDetails & { upiId: string }>>({});
+  const [processing, setProcessing] = useState(false);
+
+  const total = getCartTotal();
+
+  // Prevent body scroll
+  useEffect(() => {
+    // Save original overflow
+    const originalStyle = window.getComputedStyle(document.body).overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = originalStyle;
+    };
+  }, []);
+
+  /* ---------- validation ---------- */
+  const validateDetails = () => {
+    const e: Partial<UserDetails> = {};
+    if (!details.fullName.trim()) e.fullName = "Full name is required";
+    if (!details.email.trim() || !/^\S+@\S+\.\S+$/.test(details.email))
+      e.email = "Valid email is required";
+    if (!details.phone.trim() || !/^\d{10}$/.test(details.phone))
+      e.phone = "Enter a valid 10-digit phone number";
+    if (!details.address.trim()) e.address = "Address is required";
+    if (!details.city.trim()) e.city = "City is required";
+    if (!details.state.trim()) e.state = "State is required";
+    if (!details.pincode.trim() || !/^\d{6}$/.test(details.pincode))
+      e.pincode = "Enter a valid 6-digit pincode";
+    setErrors(e);
+    return Object.keys(e).length === 0;
+  };
+
+  const validatePayment = () => {
+    if (payment.method === "upi") {
+      if (!payment.upiId.trim() || !/^[\w.\-_]{1,99}@[a-zA-Z]{3,}$/.test(payment.upiId)) {
+        setErrors({ upiId: "Enter a valid UPI ID (e.g. name@upi)" });
+        return false;
+      }
+    }
+    setErrors({});
+    return true;
+  };
+
+  /* ---------- handlers ---------- */
+  const handleDetailsNext = () => {
+    if (validateDetails()) setStep("payment");
+  };
+
+  const handlePayNow = () => {
+    if (!validatePayment()) return;
+    setProcessing(true);
+    setTimeout(() => {
+      // Add each item as an order
+      const dateStr = new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+      items.forEach(item => {
+        addOrder({
+          id: `#ORD-${Math.floor(1000 + Math.random() * 9000)}`,
+          customer: details.fullName,
+          product: item.name,
+          amount: `₹${(item.price * item.quantity).toFixed(2)}`,
+          status: "pending",
+          date: dateStr,
+          qty: item.quantity
+        });
+      });
+
+      // Notification
+      const { newOrdersNotif } = useSettingsStore.getState();
+      if (newOrdersNotif) {
+        useNotificationStore.getState().addNotification({
+          title: "New Order Received",
+          message: `${details.fullName} placed an order for ${items.length} item(s)`,
+          type: "order"
+        });
+      }
+
+      setProcessing(false);
+      setStep("success");
+      clearCart();
+    }, 2000);
+  };
+
+  const field = (
+    id: keyof UserDetails,
+    label: string,
+    type = "text",
+    placeholder = ""
+  ) => (
+    <div className="flex flex-col gap-1">
+      <label
+        htmlFor={id}
+        className="text-[10px] font-sans uppercase tracking-[0.15em] text-obsidian/60"
+      >
+        {label}
+      </label>
+      <input
+        id={id}
+        type={type}
+        placeholder={placeholder}
+        value={details[id]}
+        onChange={(e) => {
+          setDetails((d) => ({ ...d, [id]: e.target.value }));
+          setErrors((er) => ({ ...er, [id]: undefined }));
+        }}
+        className={`border-b py-2 bg-transparent text-sm font-sans text-obsidian outline-none transition-colors duration-200 placeholder:text-obsidian/30 ${
+          errors[id]
+            ? "border-red-400"
+            : "border-obsidian/20 focus:border-obsidian"
+        }`}
+      />
+      {errors[id] && (
+        <p className="text-[10px] text-red-500 mt-0.5">{errors[id]}</p>
+      )}
+    </div>
+  );
+
+  return (
+    <div
+      className="fixed inset-0 z-[200] flex items-center justify-center p-4"
+      onClick={(e) => {
+        if (e.target === e.currentTarget && step !== "success") onClose();
+      }}
+    >
+      {/* Backdrop */}
+      <div className="absolute inset-0 bg-obsidian/60 backdrop-blur-sm" />
+
+      {/* Panel */}
+      <div className="relative z-10 w-full max-w-lg bg-alabaster shadow-2xl max-h-[90vh] flex flex-col overflow-hidden">
+        {/* Header */}
+        <div className="flex items-center justify-between px-4 sm:px-8 py-4 sm:py-6 border-b border-obsidian/10">
+          <div>
+            <p className="text-[10px] font-sans uppercase tracking-[0.2em] text-dustyrose">
+              {step === "details"
+                ? "Step 1 of 2 — Delivery Details"
+                : step === "payment"
+                ? "Step 2 of 2 — Payment"
+                : "Order Confirmed"}
+            </p>
+            <p className="font-serif text-obsidian text-lg mt-0.5">Checkout</p>
+          </div>
+          {step !== "success" && (
+            <button
+              onClick={onClose}
+              className="w-8 h-8 rounded-full flex items-center justify-center text-obsidian/40 hover:text-obsidian hover:bg-obsidian/10 transition-colors"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          )}
+        </div>
+
+        {/* Progress bar */}
+        {step !== "success" && (
+          <div className="h-0.5 bg-obsidian/10">
+            <div
+              className="h-full bg-burgundy transition-all duration-500"
+              style={{ width: step === "details" ? "50%" : "100%" }}
+            />
+          </div>
+        )}
+
+        {/* Body */}
+        <div className="overflow-y-auto flex-1 px-4 sm:px-8 py-6 sm:py-8">
+          {/* ---- Step 1: User Details ---- */}
+          {step === "details" && (
+            <div className="flex flex-col gap-5">
+              {/* Cart summary preview */}
+              <div className="p-4 bg-sand/30 border border-obsidian/10 mb-2 max-h-40 overflow-y-auto">
+                <p className="text-[10px] uppercase font-sans tracking-[0.2em] text-obsidian/60 mb-3 border-b border-obsidian/10 pb-2">
+                  Order Summary ({items.reduce((acc, i) => acc + i.quantity, 0)} items)
+                </p>
+                <div className="flex flex-col gap-3">
+                  {items.map((item) => (
+                    <div key={item.id} className="flex gap-4 items-center">
+                      <Link 
+                        href={`/product/${item.id}`}
+                        onClick={onClose}
+                        className="relative w-10 aspect-[3/4] flex-shrink-0 overflow-hidden hover:opacity-80 transition-opacity"
+                      >
+                        <Image
+                          src={item.image}
+                          alt={item.name}
+                          fill
+                          className="object-cover"
+                        />
+                      </Link>
+                      <div className="flex-1">
+                        <Link 
+                          href={`/product/${item.id}`}
+                          onClick={onClose}
+                          className="hover:text-burgundy transition-colors"
+                        >
+                          <p className="text-sm font-serif text-obsidian line-clamp-1">{item.name}</p>
+                        </Link>
+                        <div className="flex justify-between items-center text-xs font-sans text-obsidian/60 mt-1">
+                          <span>Qty: {item.quantity}</span>
+                          <span className="tabular-nums font-medium text-obsidian">₹{item.price.toFixed(2)}</span>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {field("fullName", "Full Name", "text", "Jane Austen")}
+              {field("email", "Email Address", "email", "jane@example.com")}
+              {field("phone", "Phone Number", "tel", "9876543210")}
+              {field("address", "Street Address", "text", "123, Rose Lane")}
+
+              <div className="grid grid-cols-2 gap-4">
+                {field("city", "City")}
+                {field("state", "State")}
+              </div>
+              {field("pincode", "Pincode", "text", "400001")}
+            </div>
+          )}
+
+          {/* ---- Step 2: Payment ---- */}
+          {step === "payment" && (
+            <div className="flex flex-col gap-6">
+              <p className="text-[10px] font-sans uppercase tracking-[0.15em] text-obsidian/60 mb-2">
+                Choose Payment Method
+              </p>
+
+              {/* COD */}
+              {codEnabled && (
+                <label
+                  className={`flex items-start gap-4 p-5 border cursor-pointer transition-colors duration-200 ${
+                    payment.method === "cod"
+                      ? "border-burgundy bg-burgundy/5"
+                      : "border-obsidian/15 hover:border-obsidian/40"
+                  }`}
+                >
+                  <input
+                    type="radio"
+                    name="paymentMethod"
+                    value="cod"
+                    checked={payment.method === "cod"}
+                    onChange={() => {
+                      setPayment({ method: "cod", upiId: "" });
+                      setErrors({});
+                    }}
+                    className="mt-1 accent-burgundy"
+                  />
+                  <div>
+                    <p className="text-sm font-serif text-obsidian">Cash on Delivery</p>
+                    <p className="text-[11px] font-sans text-obsidian/50 mt-1 leading-relaxed">
+                      Pay in cash when your order arrives at your doorstep. No
+                      online transaction required.
+                    </p>
+                  </div>
+                </label>
+              )}
+
+              {/* UPI */}
+              {upiEnabled && (
+              <label
+                className={`flex items-start gap-4 p-5 border cursor-pointer transition-colors duration-200 ${
+                  payment.method === "upi"
+                    ? "border-burgundy bg-burgundy/5"
+                    : "border-obsidian/15 hover:border-obsidian/40"
+                }`}
+              >
+                <input
+                  type="radio"
+                  name="paymentMethod"
+                  value="upi"
+                  checked={payment.method === "upi"}
+                  onChange={() => setPayment((p) => ({ ...p, method: "upi" }))}
+                  className="mt-1 accent-burgundy"
+                />
+                <div className="w-full">
+                  <p className="text-sm font-serif text-obsidian">UPI Payment</p>
+                  <p className="text-[11px] font-sans text-obsidian/50 mt-1 leading-relaxed">
+                    Pay instantly using any UPI app like GPay, PhonePe, or Paytm.
+                  </p>
+                  {payment.method === "upi" && (
+                    <div className="mt-4 flex flex-col gap-1">
+                      <label className="text-[10px] font-sans uppercase tracking-[0.15em] text-obsidian/60">
+                        UPI ID
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="yourname@upi"
+                        value={payment.upiId}
+                        onChange={(e) => {
+                          setPayment((p) => ({ ...p, upiId: e.target.value }));
+                          setErrors((er) => ({ ...er, upiId: undefined }));
+                        }}
+                        className={`border-b py-2 bg-transparent text-sm font-sans text-obsidian outline-none placeholder:text-obsidian/30 transition-colors ${
+                          errors.upiId ? "border-red-400" : "border-obsidian/30 focus:border-obsidian"
+                        }`}
+                      />
+                      {errors.upiId && (
+                        <p className="text-[10px] text-red-500">{errors.upiId}</p>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </label>
+              )}
+
+              {/* Order summary */}
+              <div className="mt-2 border-t border-obsidian/10 pt-4 flex flex-col gap-2 text-xs font-sans text-obsidian/70">
+                <div className="flex justify-between">
+                  <span>Subtotal</span>
+                  <span className="font-medium text-obsidian">₹{total.toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Shipping</span>
+                  <span className="text-green-600">Free</span>
+                </div>
+                <div className="flex justify-between font-medium text-obsidian text-sm mt-2 pt-2 border-t border-obsidian/10">
+                  <span>Total</span>
+                  <span>₹{total.toFixed(2)}</span>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ---- Step 3: Success ---- */}
+          {step === "success" && (
+            <div className="flex flex-col items-center text-center py-8 gap-6">
+              <div className="w-20 h-20 rounded-full bg-green-50 flex items-center justify-center animate-bounce-once">
+                <CheckCircle className="w-10 h-10 text-green-500" strokeWidth={1.5} />
+              </div>
+              <div>
+                <h3 className="font-serif text-3xl text-obsidian mb-3">
+                  Order Placed!
+                </h3>
+                <p className="text-sm font-sans font-light text-obsidian/60 leading-relaxed max-w-xs">
+                  Thank you, <span className="font-medium text-obsidian">{details.fullName}</span>. Your order has been confirmed and will be delivered to{" "}
+                  <span className="font-medium text-obsidian">{details.city}</span>.
+                </p>
+              </div>
+              <div className="w-full border border-obsidian/10 p-4 text-left flex flex-col gap-2 text-xs font-sans text-obsidian/60">
+                <div className="flex justify-between">
+                  <span>Payment Method</span>
+                  <span className="uppercase font-medium text-obsidian">
+                    {payment.method === "cod" ? "Cash on Delivery" : `UPI — ${payment.upiId}`}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Delivery to</span>
+                  <span className="font-medium text-obsidian">{details.pincode}, {details.state}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Amount</span>
+                  <span className="font-medium text-obsidian">₹{total.toFixed(2)}</span>
+                </div>
+              </div>
+
+              <button
+                onClick={onClose}
+                className="w-full bg-dustyrose text-alabaster text-[11px] font-sans uppercase tracking-[0.15em] py-4 hover:bg-burgundy transition-colors duration-300 mt-2"
+              >
+                Continue Shopping
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* Footer CTA */}
+        {step !== "success" && (
+          <div className="px-4 sm:px-8 py-4 sm:py-6 border-t border-obsidian/10 bg-alabaster">
+            <button
+              onClick={step === "details" ? handleDetailsNext : handlePayNow}
+              disabled={processing}
+              className="w-full flex items-center justify-center gap-3 bg-dustyrose text-alabaster text-[11px] font-sans uppercase tracking-[0.15em] py-4 hover:bg-burgundy disabled:opacity-60 transition-colors duration-300"
+            >
+              {processing ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Processing…
+                </>
+              ) : step === "details" ? (
+                <>
+                  Continue to Payment
+                  <ChevronRight className="w-4 h-4" />
+                </>
+              ) : (
+                <>
+                  {payment.method === "cod" ? "Place Order" : "Pay Now"}
+                  <ChevronRight className="w-4 h-4" />
+                </>
+              )}
+            </button>
+            {step === "payment" && (
+              <button
+                onClick={() => setStep("details")}
+                className="w-full mt-3 text-[10px] font-sans uppercase tracking-[0.15em] text-obsidian/40 hover:text-obsidian transition-colors"
+              >
+                ← Back to Details
+              </button>
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
