@@ -1,0 +1,80 @@
+﻿
+> trendy_glitterzz@0.1.0 build
+> next build
+
+Γû▓ Next.js 16.1.6 (Turbopack)
+- Environments: .env.local
+
+node.exe : ΓÜá The "middleware" file 
+convention is deprecated. Please use "proxy" 
+instead. Learn more: https://nextjs.org/docs/
+messages/middleware-to-proxy
+At line:1 char:1
++ & "C:\Program Files\nodejs/node.exe" 
+"C:\Program Files\nodejs/node_mo ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified:  
+   (ΓÜá The "middle...leware-to-proxy:Strin  
+  g) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandE 
+   rror
+ 
+  Creating an optimized production build ...
+Turbopack build encountered 1 warnings:
+./src/app/api/upload/route.ts:48:14
+Next.js can't recognize the exported 
+`config` field in route. Page config in 
+`config` is deprecated and ignored, use 
+individual exports instead.
+[0m [90m 46 |[39m }
+ [90m 47 |[39m
+[31m[1m>[22m[39m[90m 48 |[39m 
+[36mexport[39m [36mconst[39m config 
+[33m=[39m {
+ [90m    |[39m              [31m[1m^[22m
+[39m[31m[1m^[22m[39m[31m[1m^[22m[39m
+[31m[1m^[22m[39m[31m[1m^[22m[39m[31m
+[1m^[22m[39m
+ [90m 49 |[39m   api[33m:[39m {
+ [90m 50 |[39m     bodyParser[33m:[39m 
+[36mfalse[39m[33m,[39m
+ [90m 51 |[39m   }[33m,[39m[0m
+
+The exported configuration object in a 
+source file needs to have a very specific 
+format from which some properties can be 
+statically parsed at compiled-time.
+
+https://nextjs.org/docs/app/api-reference/fil
+e-conventions/route-segment-config
+
+
+Γ£ô Compiled successfully in 6.8s
+  Running TypeScript ...
+Failed to compile.
+
+./src/app/(admin)/admin/orders/page.tsx:28:9
+Type error: 'order.customer' is possibly 
+'undefined'.
+
+[0m [90m 26 |[39m     [36mreturn[39m 
+orders[33m.[39mfilter((order) [33m=>[39m 
+{
+ [90m 27 |[39m       [36mconst[39m 
+matchesSearch [33m=[39m 
+[31m[1m>[22m[39m[90m 28 |[39m         o
+rder[33m.[39mcustomer[33m.[39mtoLowerCase
+()[33m.[39mincludes(search[33m.[39mtoLowe
+rCase()) [33m||[39m 
+ [90m    |[39m         [31m[1m^[22m[39m
+ [90m 29 |[39m         order[33m.[39mid[
+33m.[39mtoLowerCase()[33m.[39mincludes(sea
+rch[33m.[39mtoLowerCase()) [33m||[39m
+ [90m 30 |[39m         order[33m.[39mprod
+uct[33m.[39mtoLowerCase()[33m.[39minclude
+s(search[33m.[39mtoLowerCase())[33m;[39m
+ [90m 31 |[39m       [0m
+Next.js build worker exited with code: 1 and 
+signal: null
+

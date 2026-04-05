@@ -1,0 +1,53 @@
+﻿
+> trendy_glitterzz@0.1.0 lint
+> eslint
+
+
+F:\trendy_glitterzz\src\app\(admin)\admin\layout.tsx
+  15:3  warning  'Circle' is defined but never used  @typescript-eslint/no-unused-vars
+
+F:\trendy_glitterzz\src\app\(admin)\admin\orders\page.tsx
+  4:74  warning  'Filter' is defined but never used  @typescript-eslint/no-unused-vars
+
+F:\trendy_glitterzz\src\app\(admin)\admin\products\page.tsx
+  7:24  warning  'Filter' is defined but never used  @typescript-eslint/no-unused-vars
+
+F:\trendy_glitterzz\src\app\(admin)\admin\settings\page.tsx
+  25:9  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+F:\trendy_glitterzz\src\app\page.tsx
+   3:8    warning  'Image' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    @typescript-eslint/no-unused-vars
+   7:8    warning  'ProductCard' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              @typescript-eslint/no-unused-vars
+  43:5    error    Error: Calling setState synchronously within an effect can trigger cascading renders
+
+Effects are intended to synchronize state between React and external systems such as manually updating the DOM, state management libraries, or other platform APIs. In general, the body of an effect should do one or both of the following:
+* Update external systems with the latest state from React.
+* Subscribe for updates from some external system, calling setState in a callback function when external state changes.
+
+Calling setState synchronously within an effect body causes cascading renders that can hurt performance, and is not recommended. (https://react.dev/learn/you-might-not-need-an-effect).
+
+F:\trendy_glitterzz\src\app\page.tsx:43:5
+  41 |
+  42 |   useEffect(() => {
+> 43 |     setMounted(true);
+     |     ^^^^^^^^^^ Avoid calling setState() directly within an effect
+  44 |   }, []);
+  45 |   
+  46 |   if (!mounted) return null;  react-hooks/set-state-in-effect
+  82:17   error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      react/no-unescaped-entities
+  82:107  error    `"` can be escaped with `&quot;`, `&ldquo;`, `&#34;`, `&rdquo;`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      react/no-unescaped-entities
+  87:84   error    `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      react/no-unescaped-entities
+
+F:\trendy_glitterzz\src\app\product\[id]\page.tsx
+  55:35  warning  'razorpayEnabled' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  63:30  error    Unexpected any. Specify a different type              @typescript-eslint/no-explicit-any
+
+F:\trendy_glitterzz\src\components\CartCheckoutModal.tsx
+  42:35  warning  'razorpayEnabled' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  50:30  error    Unexpected any. Specify a different type              @typescript-eslint/no-explicit-any
+
+F:\trendy_glitterzz\src\store\useProductStore.ts
+  17:11  warning  'get' is defined but never used  @typescript-eslint/no-unused-vars
+
+Γ£û 15 problems (7 errors, 8 warnings)
+

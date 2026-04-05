@@ -1,0 +1,44 @@
+﻿
+> trendy_glitterzz@0.1.0 build
+> next build
+
+Γû▓ Next.js 16.1.6 (Turbopack)
+- Environments: .env.local
+
+  Creating an optimized production build ...
+Γ£ô Compiled successfully in 6.4s
+  Running TypeScript ...
+node.exe : Failed to compile.
+At line:1 char:1
++ & "C:\Program Files\nodejs/node.exe" 
+"C:\Program Files\nodejs/node_mo ...
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified:  
+   (Failed to compile.:String) [], RemoteEx  
+  ception
+    + FullyQualifiedErrorId : NativeCommandE 
+   rror
+ 
+
+./src/app/(admin)/admin/page.tsx:119:11
+Type error: Expected 1 arguments, but got 0.
+
+[0m [90m 117 |[39m
+ [90m 118 |[39m   [36mconst[39m 
+handleConfirmReset [33m=[39m 
+[36masync[39m () [33m=>[39m {
+[31m[1m>[22m[39m[90m 119 |[39m     
+[36mawait[39m 
+deleteAllProducts()[33m;[39m
+ [90m     |[39m           
+[31m[1m^[22m[39m
+ [90m 120 |[39m     [36mawait[39m 
+deleteAllOrders()[33m;[39m
+ [90m 121 |[39m     
+setIsReset([36mtrue[39m)[33m;[39m
+ [90m 122 |[39m     setShowConfirmReset([3
+6mfalse[39m)[33m;[39m[0m
+Next.js build worker exited with code: 1 and 
+signal: null
+

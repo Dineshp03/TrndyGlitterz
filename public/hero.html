@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TRENDY GLITTERZ — Brand of Functional Accessories</title>
+  <meta name="description" content="TRENDY GLITTERZ — Premium functional accessories for an active lifestyle. Shop earrings, necklaces, bracelets and more." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400&family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --gold: #D4AF37;
+      --gold-light: #F0D060;
+      --gold-dark: #A08020;
+      --rose-gold: #B76E79;
+      --rose-gold-light: #D4909A;
+      --black: #0a0a0a;
+      --charcoal: #111111;
+      --charcoal-2: #1a1a1a;
+      --off-white: #f5f0e8;
+      --text-muted: rgba(245,240,232,0.5);
+    }
+
+    html, body {
+      width: 100%; height: 100%;
+      background: var(--black);
+      color: var(--off-white);
+      font-family: 'Montserrat', sans-serif;
+      overflow-x: hidden;
+    }
+
+    /* ───── GRAIN TEXTURE ───── */
+    body::before {
+      content: '';
+      position: fixed; inset: 0; z-index: 0;
+      opacity: 0.04;
+      pointer-events: none;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+      background-size: 256px 256px;
+    }
+
+    /* ───── ANNOUNCEMENT BAR ───── */
+    .announcement {
+      position: relative; z-index: 10;
+      background: var(--charcoal-2);
+      border-bottom: 1px solid rgba(212,175,55,0.2);
+      text-align: center;
+      padding: 10px 20px;
+      font-family: 'Montserrat', sans-serif;
+      font-size: 11px; letter-spacing: 0.2em;
+      font-weight: 500; color: var(--gold);
+      text-transform: uppercase;
+      opacity: 0; transform: translateY(-10px);
+      animation: fadeDown 0.6s ease forwards 0.1s;
+    }
+    .announcement span { color: var(--gold-light); font-weight: 700; }
+
+    /* ───── NAVIGATION ───── */
+    nav {
+      position: relative; z-index: 10;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 22px 60px;
+      border-bottom: 1px solid rgba(212,175,55,0.1);
+      opacity: 0; animation: fadeDown 0.7s ease forwards 0.25s;
+    }
+    .nav-logo {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 18px; font-weight: 700;
+      letter-spacing: 0.25em; color: var(--off-white);
+      text-decoration: none;
+    }
+    .nav-logo span { color: var(--gold); }
+    .nav-links { display: flex; gap: 48px; list-style: none; }
+    .nav-links a {
+      font-size: 10px; letter-spacing: 0.22em;
+      font-weight: 500; color: var(--text-muted);
+      text-decoration: none; text-transform: uppercase;
+      transition: color 0.3s ease;
+      position: relative;
+    }
+    .nav-links a::after {
+      content: ''; position: absolute; bottom: -4px; left: 0;
+      width: 0; height: 1px; background: var(--gold);
+      transition: width 0.3s ease;
+    }
+    .nav-links a:hover { color: var(--gold); }
+    .nav-links a:hover::after { width: 100%; }
+    .nav-icons { display: flex; gap: 20px; align-items: center; }
+    .nav-icon {
+      font-size: 16px; color: var(--text-muted);
+      cursor: pointer; transition: color 0.3s;
+      text-decoration: none;
+    }
+    .nav-icon:hover { color: var(--gold); }
+
+    /* ───── HERO WRAPPER ───── */
+    .hero {
+      position: relative; z-index: 5;
+      display: grid; grid-template-columns: 1fr 1fr;
+      min-height: calc(100vh - 97px);
+      overflow: hidden;
+    }
+
+    /* Background gradient */
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0; z-index: 0;
+      background:
+        radial-gradient(ellipse 55% 70% at 80% 50%, rgba(212,175,55,0.06) 0%, transparent 70%),
+        radial-gradient(ellipse 40% 50% at 20% 80%, rgba(183,110,121,0.04) 0%, transparent 60%),
+        linear-gradient(135deg, #0a0a0a 0%, #0f0f0f 50%, #0d0b08 100%);
+    }
+
+    /* ───── LEFT CONTENT ───── */
+    .hero-left {
+      position: relative; z-index: 2;
+      display: flex; flex-direction: column;
+      justify-content: center;
+      padding: 80px 60px 80px 80px;
+    }
+
+    .hero-eyebrow {
+      display: flex; align-items: center; gap: 16px;
+      margin-bottom: 28px;
+      opacity: 0; animation: fadeUp 0.8s ease forwards 0.5s;
+    }
+    .hero-eyebrow-line {
+      width: 40px; height: 1px; background: var(--gold);
+    }
+    .hero-eyebrow-text {
+      font-size: 10px; letter-spacing: 0.35em;
+      font-weight: 500; color: var(--gold);
+      text-transform: uppercase;
+    }
+
+    .hero-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(52px, 7vw, 96px);
+      font-weight: 700; line-height: 0.92;
+      letter-spacing: -0.01em;
+      text-transform: uppercase;
+      margin-bottom: 32px;
+      opacity: 0; animation: fadeUp 0.9s ease forwards 0.7s;
+    }
+    .hero-title .line1 { display: block; color: var(--off-white); }
+    .hero-title .line2 {
+      display: block;
+      background: linear-gradient(135deg, var(--gold) 0%, var(--gold-light) 50%, var(--rose-gold) 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .gold-rule {
+      width: 80px; height: 1px;
+      background: linear-gradient(90deg, var(--gold), transparent);
+      margin-bottom: 28px;
+      opacity: 0; animation: fadeUp 0.8s ease forwards 0.85s;
+    }
+
+    .hero-tagline {
+      font-size: 13px; letter-spacing: 0.12em;
+      font-weight: 300; color: var(--text-muted);
+      text-transform: uppercase; line-height: 2;
+      max-width: 380px; margin-bottom: 52px;
+      opacity: 0; animation: fadeUp 0.8s ease forwards 1s;
+    }
+
+    .hero-ctas {
+      display: flex; align-items: center; gap: 28px;
+      opacity: 0; animation: fadeUp 0.8s ease forwards 1.2s;
+    }
+
+    .btn-primary {
+      display: inline-flex; align-items: center; gap: 12px;
+      font-family: 'Montserrat', sans-serif;
+      font-size: 10px; font-weight: 600;
+      letter-spacing: 0.3em; text-transform: uppercase;
+      color: var(--gold);
+      padding: 18px 42px;
+      border: 1px solid var(--gold);
+      border-radius: 100px;
+      background: transparent;
+      cursor: pointer; text-decoration: none;
+      transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+      position: relative; overflow: hidden;
+    }
+    .btn-primary::before {
+      content: '';
+      position: absolute; inset: 0; border-radius: 100px;
+      background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+      opacity: 0; transform: scale(0.8);
+      transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+    }
+    .btn-primary span { position: relative; z-index: 1; }
+    .btn-primary:hover {
+      color: var(--black);
+      box-shadow: 0 0 40px rgba(212,175,55,0.4);
+    }
+    .btn-primary:hover::before { opacity: 1; transform: scale(1); }
+    .btn-arrow {
+      font-size: 16px; position: relative; z-index: 1;
+      transform: translateX(0); transition: transform 0.3s ease;
+    }
+    .btn-primary:hover .btn-arrow { transform: translateX(4px); }
+
+    .btn-secondary {
+      font-size: 10px; letter-spacing: 0.25em;
+      font-weight: 500; text-transform: uppercase;
+      color: var(--text-muted); text-decoration: none;
+      border-bottom: 1px solid transparent;
+      padding-bottom: 2px;
+      transition: all 0.3s ease;
+    }
+    .btn-secondary:hover { color: var(--off-white); border-color: var(--off-white); }
+
+    .hero-stats {
+      display: flex; gap: 40px; margin-top: 70px;
+      padding-top: 40px; border-top: 1px solid rgba(212,175,55,0.12);
+      opacity: 0; animation: fadeUp 0.8s ease forwards 1.4s;
+    }
+    .stat { display: flex; flex-direction: column; gap: 4px; }
+    .stat-num {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 32px; font-weight: 600; color: var(--gold);
+      line-height: 1;
+    }
+    .stat-label {
+      font-size: 9px; letter-spacing: 0.2em;
+      text-transform: uppercase; color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    /* ───── RIGHT PANEL ───── */
+    .hero-right {
+      position: relative; z-index: 2;
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    /* Radial glow halo */
+    .earring-halo {
+      position: absolute;
+      width: 520px; height: 520px;
+      border-radius: 50%;
+      background: radial-gradient(circle at center,
+        rgba(212,175,55,0.12) 0%,
+        rgba(212,175,55,0.05) 35%,
+        rgba(183,110,121,0.04) 60%,
+        transparent 75%
+      );
+      filter: blur(30px);
+      animation: haloBreath 5s ease-in-out infinite;
+    }
+    @keyframes haloBreath {
+      0%, 100% { transform: scale(1); opacity: 0.8; }
+      50% { transform: scale(1.1); opacity: 1; }
+    }
+
+    /* Ring accent */
+    .earring-ring {
+      position: absolute;
+      width: 420px; height: 420px; border-radius: 50%;
+      border: 1px solid rgba(212,175,55,0.08);
+      animation: ringRotate 20s linear infinite;
+    }
+    .earring-ring::before {
+      content: '';
+      position: absolute; top: -3px; left: calc(50% - 3px);
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--gold);
+      box-shadow: 0 0 8px var(--gold);
+    }
+    @keyframes ringRotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+    .earring-ring-2 {
+      position: absolute;
+      width: 320px; height: 320px; border-radius: 50%;
+      border: 1px dashed rgba(183,110,121,0.12);
+      animation: ringRotate 15s linear infinite reverse;
+    }
+
+    /* 3D Earring Scene */
+    .earring-scene {
+      position: relative;
+      width: 260px; height: 380px;
+      perspective: 800px;
+      cursor: none;
+    }
+    .earring-3d {
+      width: 100%; height: 100%;
+      transform-style: preserve-3d;
+      animation:
+        floatY 4s ease-in-out infinite,
+        rotateY3D 10s ease-in-out infinite;
+      transition: transform 0.1s ease;
+    }
+    .earring-img {
+      width: 100%; height: 100%;
+      object-fit: contain;
+      filter: drop-shadow(0 0 30px rgba(212,175,55,0.5))
+              drop-shadow(0 20px 60px rgba(183,110,121,0.3))
+              drop-shadow(0 0 80px rgba(212,175,55,0.2));
+    }
+
+    /* SVG Fallback earring (in case image fails) */
+    .earring-svg { width: 100%; height: 100%; }
+
+    @keyframes floatY {
+      0%, 100% { transform: translateY(0px) rotateX(0deg); }
+      50% { transform: translateY(-20px) rotateX(3deg); }
+    }
+    @keyframes rotateY3D {
+      0% { transform: rotateY(-15deg) translateY(0px); }
+      25% { transform: rotateY(5deg) translateY(-10px); }
+      50% { transform: rotateY(20deg) translateY(-20px); }
+      75% { transform: rotateY(5deg) translateY(-10px); }
+      100% { transform: rotateY(-15deg) translateY(0px); }
+    }
+
+    /* ───── PARTICLES ───── */
+    .particles { position: absolute; inset: 0; pointer-events: none; }
+
+    .particle {
+      position: absolute;
+      border-radius: 50%;
+      animation: particleFly var(--dur) ease-in-out infinite var(--delay);
+    }
+    .particle.gold {
+      background: radial-gradient(circle, var(--gold-light), var(--gold));
+      box-shadow: 0 0 6px var(--gold);
+    }
+    .particle.rose {
+      background: radial-gradient(circle, var(--rose-gold-light), var(--rose-gold));
+      box-shadow: 0 0 6px var(--rose-gold);
+    }
+
+    @keyframes particleFly {
+      0% { transform: translate(0, 0) scale(0); opacity: 0; }
+      20% { opacity: 1; transform: translate(var(--tx1), var(--ty1)) scale(1); }
+      80% { opacity: 0.6; transform: translate(var(--tx2), var(--ty2)) scale(0.7); }
+      100% { transform: translate(var(--tx3), var(--ty3)) scale(0); opacity: 0; }
+    }
+
+    /* Star sparkles */
+    .sparkle {
+      position: absolute;
+      width: 20px; height: 20px;
+      animation: sparklePop var(--dur) ease-in-out infinite var(--delay);
+    }
+    .sparkle::before, .sparkle::after {
+      content: '';
+      position: absolute;
+      background: var(--gold-light);
+      border-radius: 2px;
+      box-shadow: 0 0 8px var(--gold);
+    }
+    .sparkle::before { width: 2px; height: 100%; top: 0; left: calc(50% - 1px); }
+    .sparkle::after { width: 100%; height: 2px; top: calc(50% - 1px); left: 0; }
+
+    @keyframes sparklePop {
+      0%, 100% { transform: scale(0) rotate(0deg); opacity: 0; }
+      30%, 70% { transform: scale(1) rotate(45deg); opacity: 1; }
+    }
+
+    /* ───── SCROLL INDICATOR ───── */
+    .scroll-indicator {
+      position: absolute; bottom: 40px; left: 50%;
+      transform: translateX(-50%);
+      display: flex; flex-direction: column; align-items: center; gap: 10px;
+      opacity: 0; animation: fadeIn 1s ease forwards 2s;
+      cursor: pointer;
+    }
+    .scroll-text {
+      font-size: 8px; letter-spacing: 0.3em;
+      text-transform: uppercase; color: var(--text-muted);
+    }
+    .scroll-line {
+      width: 1px; height: 50px;
+      background: linear-gradient(to bottom, var(--gold), transparent);
+      animation: scrollPulse 2s ease-in-out infinite;
+    }
+    @keyframes scrollPulse {
+      0%, 100% { transform: scaleY(1); opacity: 0.5; }
+      50% { transform: scaleY(1.3); opacity: 1; }
+    }
+
+    /* ───── KEYFRAMES ───── */
+    @keyframes fadeDown {
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeIn {
+      to { opacity: 0.6; }
+    }
+
+    /* ───── COLLECTIONS STRIP ───── */
+    .collections-strip {
+      position: relative; z-index: 5;
+      border-top: 1px solid rgba(212,175,55,0.1);
+      background: var(--charcoal-2);
+      display: flex; overflow: hidden;
+    }
+    .collections-inner {
+      display: flex; white-space: nowrap;
+      animation: marquee 20s linear infinite;
+    }
+    .collections-inner span {
+      display: inline-flex; align-items: center; gap: 24px;
+      padding: 16px 40px;
+      font-size: 9px; letter-spacing: 0.3em;
+      text-transform: uppercase; color: var(--text-muted);
+      font-weight: 500;
+    }
+    .collections-inner span .dot {
+      width: 3px; height: 3px; border-radius: 50%;
+      background: var(--gold); flex-shrink: 0;
+    }
+    @keyframes marquee {
+      from { transform: translateX(0); }
+      to { transform: translateX(-50%); }
+    }
+
+    /* ───── RESPONSIVE ───── */
+    @media (max-width: 900px) {
+      nav { padding: 18px 28px; }
+      .nav-links { display: none; }
+      .hero { grid-template-columns: 1fr; min-height: auto; }
+      .hero-left { padding: 60px 32px; }
+      .hero-right { height: 440px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ANNOUNCEMENT BAR -->
+  <div class="announcement">
+    ✦ &nbsp; <span>SPECIAL OFFER:</span>&nbsp; FREE SHIPPING OVER ₹1999 &nbsp; ✦ &nbsp; USE CODE <span>GLITTERZ10</span> FOR 10% OFF YOUR FIRST ORDER &nbsp; ✦
+  </div>
+
+  <!-- NAVIGATION -->
+  <nav>
+    <a href="#" class="nav-logo">TRENDY <span>G</span>LITTERZ</a>
+    <ul class="nav-links">
+      <li><a href="#">Collections</a></li>
+      <li><a href="#">Editorial</a></li>
+      <li><a href="#">Journal</a></li>
+      <li><a href="#">About</a></li>
+    </ul>
+    <div class="nav-icons">
+      <a class="nav-icon" href="#" title="Search">⌕</a>
+      <a class="nav-icon" href="#" title="Wishlist">♡</a>
+      <a class="nav-icon" href="#" title="Cart">⊕</a>
+    </div>
+  </nav>
+
+  <!-- HERO SECTION -->
+  <section class="hero">
+
+    <!-- LEFT TEXT CONTENT -->
+    <div class="hero-left">
+
+      <div class="hero-eyebrow">
+        <div class="hero-eyebrow-line"></div>
+        <span class="hero-eyebrow-text">New Arrivals — Spring / Summer 2025</span>
+      </div>
+
+      <h1 class="hero-title">
+        <span class="line1">Trendy</span>
+        <span class="line2">Glitterz</span>
+      </h1>
+
+      <div class="gold-rule"></div>
+
+      <p class="hero-tagline">Brand of functional accessories<br>for an active lifestyle</p>
+
+      <div class="hero-ctas">
+        <a href="#" class="btn-primary">
+          <span>Start Shopping</span>
+          <span class="btn-arrow">→</span>
+        </a>
+        <a href="#" class="btn-secondary">Explore Collections</a>
+      </div>
+
+      <div class="hero-stats">
+        <div class="stat">
+          <span class="stat-num">500+</span>
+          <span class="stat-label">Pieces crafted</span>
+        </div>
+        <div class="stat">
+          <span class="stat-num">18K</span>
+          <span class="stat-label">Gold plated</span>
+        </div>
+        <div class="stat">
+          <span class="stat-num">4.9★</span>
+          <span class="stat-label">Avg. rating</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT 3D EARRING -->
+    <div class="hero-right" id="heroRight">
+
+      <div class="earring-halo"></div>
+      <div class="earring-ring"></div>
+      <div class="earring-ring-2"></div>
+
+      <!-- Particles layer -->
+      <div class="particles" id="particles"></div>
+
+      <!-- 3D Scene -->
+      <div class="earring-scene">
+        <div class="earring-3d" id="earring3d">
+          <!-- SVG Luxury Earring (vector fallback) -->
+          <svg class="earring-svg" viewBox="0 0 200 360" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="gold1" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#F0D060"/>
+                <stop offset="40%" stop-color="#D4AF37"/>
+                <stop offset="100%" stop-color="#8B6914"/>
+              </linearGradient>
+              <linearGradient id="gold2" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#F0D060"/>
+                <stop offset="50%" stop-color="#D4AF37"/>
+                <stop offset="100%" stop-color="#B76E79"/>
+              </linearGradient>
+              <linearGradient id="gem1" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#ffffff"/>
+                <stop offset="30%" stop-color="#e0d4f0"/>
+                <stop offset="60%" stop-color="#B76E79"/>
+                <stop offset="100%" stop-color="#6a3040"/>
+              </linearGradient>
+              <linearGradient id="gemGold" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#fffde0"/>
+                <stop offset="50%" stop-color="#D4AF37"/>
+                <stop offset="100%" stop-color="#7a5500"/>
+              </linearGradient>
+              <filter id="glow">
+                <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+                <feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge>
+              </filter>
+              <filter id="strongGlow">
+                <feGaussianBlur stdDeviation="6" result="coloredBlur"/>
+                <feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge>
+              </filter>
+            </defs>
+
+            <!-- Ear wire hook -->
+            <path d="M95 10 Q95 2 103 2 Q116 2 116 14 Q116 22 109 26" stroke="url(#gold1)" stroke-width="4" stroke-linecap="round" fill="none" filter="url(#glow)" />
+
+            <!-- Post / stem -->
+            <line x1="100" y1="26" x2="100" y2="60" stroke="url(#gold1)" stroke-width="3" filter="url(#glow)"/>
+
+            <!-- Top connector ball -->
+            <circle cx="100" cy="64" r="7" fill="url(#gold1)" filter="url(#glow)"/>
+
+            <!-- Chain links (3 links) -->
+            <ellipse cx="100" cy="78" rx="5" ry="8" stroke="url(#gold1)" stroke-width="2.5" fill="none"/>
+            <ellipse cx="100" cy="93" rx="5" ry="8" stroke="url(#gold1)" stroke-width="2.5" fill="none" transform="rotate(45, 100, 93)"/>
+            <ellipse cx="100" cy="108" rx="5" ry="8" stroke="url(#gold1)" stroke-width="2.5" fill="none"/>
+
+            <!-- Middle connector -->
+            <rect x="88" y="118" width="24" height="8" rx="4" fill="url(#gold1)" filter="url(#glow)"/>
+
+            <!-- Starburst / sun mandala centerpiece -->
+            <g transform="translate(100, 165)" filter="url(#strongGlow)">
+              <!-- Outer ray lines -->
+              <line x1="0" y1="-45" x2="0" y2="-55" stroke="#F0D060" stroke-width="2"/>
+              <line x1="0" y1="45" x2="0" y2="55" stroke="#F0D060" stroke-width="2"/>
+              <line x1="-45" y1="0" x2="-55" y2="0" stroke="#F0D060" stroke-width="2"/>
+              <line x1="45" y1="0" x2="55" y2="0" stroke="#F0D060" stroke-width="2"/>
+              <line x1="-32" y1="-32" x2="-38" y2="-38" stroke="#F0D060" stroke-width="1.5"/>
+              <line x1="32" y1="-32" x2="38" y2="-38" stroke="#F0D060" stroke-width="1.5"/>
+              <line x1="-32" y1="32" x2="-38" y2="38" stroke="#F0D060" stroke-width="1.5"/>
+              <line x1="32" y1="32" x2="38" y2="38" stroke="#F0D060" stroke-width="1.5"/>
+              <!-- Outer ring -->
+              <circle cx="0" cy="0" r="44" stroke="url(#gold1)" stroke-width="1.5" fill="none" opacity="0.6"/>
+              <!-- Mid ring -->
+              <circle cx="0" cy="0" r="34" stroke="url(#gold2)" stroke-width="2" fill="none"/>
+              <!-- Inner decorative ring -->
+              <circle cx="0" cy="0" r="22" stroke="#F0D060" stroke-width="1" fill="rgba(212,175,55,0.08)"/>
+              <!-- Center gem -->
+              <polygon points="0,-18 15.6,9 -15.6,9" fill="url(#gem1)" opacity="0.9"/>
+              <polygon points="0,18 15.6,-9 -15.6,-9" fill="url(#gem1)" opacity="0.9"/>
+              <circle cx="0" cy="0" r="10" fill="url(#gemGold)"/>
+              <circle cx="0" cy="0" r="5" fill="white" opacity="0.8"/>
+              <!-- Corner gems on ring -->
+              <circle cx="0" cy="-34" r="3" fill="url(#gem1)"/>
+              <circle cx="0" cy="34" r="3" fill="url(#gem1)"/>
+              <circle cx="-34" cy="0" r="3" fill="url(#gem1)"/>
+              <circle cx="34" cy="0" r="3" fill="url(#gem1)"/>
+            </g>
+
+            <!-- Chain from mandala down -->
+            <line x1="100" y1="212" x2="100" y2="225" stroke="url(#gold1)" stroke-width="2.5" filter="url(#glow)"/>
+
+            <!-- Lower connector -->
+            <rect x="88" y="225" width="24" height="7" rx="3.5" fill="url(#gold1)" filter="url(#glow)"/>
+
+            <!-- Teardrop pendant base -->
+            <path d="M100 235 L120 275 Q120 295 100 300 Q80 295 80 275 Z"
+              fill="url(#gem1)" filter="url(#strongGlow)" opacity="0.95"/>
+            <!-- Teardrop gold frame -->
+            <path d="M100 235 L120 275 Q120 295 100 300 Q80 295 80 275 Z"
+              stroke="url(#gold2)" stroke-width="2" fill="none" filter="url(#glow)"/>
+            <!-- Highlight on gem -->
+            <ellipse cx="94" cy="260" rx="6" ry="14" fill="white" opacity="0.25" transform="rotate(-10, 94, 260)"/>
+            <!-- Inner gem facets -->
+            <line x1="100" y1="245" x2="100" y2="295" stroke="rgba(255,255,255,0.2)" stroke-width="1"/>
+            <line x1="83" y1="275" x2="117" y2="275" stroke="rgba(255,255,255,0.2)" stroke-width="1"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- SCROLL INDICATOR -->
+    <div class="scroll-indicator">
+      <span class="scroll-text">Scroll</span>
+      <div class="scroll-line"></div>
+    </div>
+
+  </section>
+
+  <!-- COLLECTIONS MARQUEE STRIP -->
+  <div class="collections-strip">
+    <div class="collections-inner" id="marqueeInner">
+      <span>Earrings <span class="dot"></span></span>
+      <span>Necklaces <span class="dot"></span></span>
+      <span>Bracelets <span class="dot"></span></span>
+      <span>Hair Accessories <span class="dot"></span></span>
+      <span>Anklets <span class="dot"></span></span>
+      <span>Rings <span class="dot"></span></span>
+      <span>Bangles <span class="dot"></span></span>
+      <span>Statement Pieces <span class="dot"></span></span>
+      <span>Earrings <span class="dot"></span></span>
+      <span>Necklaces <span class="dot"></span></span>
+      <span>Bracelets <span class="dot"></span></span>
+      <span>Hair Accessories <span class="dot"></span></span>
+      <span>Anklets <span class="dot"></span></span>
+      <span>Rings <span class="dot"></span></span>
+      <span>Bangles <span class="dot"></span></span>
+      <span>Statement Pieces <span class="dot"></span></span>
+    </div>
+  </div>
+
+  <script>
+    /* ─────────────────────────────────────────── */
+    /* PARTICLE SYSTEM                             */
+    /* ─────────────────────────────────────────── */
+    const particlesEl = document.getElementById('particles');
+    const heroRight = document.getElementById('heroRight');
+    const W = () => heroRight.offsetWidth;
+    const H = () => heroRight.offsetHeight;
+
+    function rand(min, max) { return Math.random() * (max - min) + min; }
+
+    function createParticle() {
+      const el = document.createElement('div');
+      const isRose = Math.random() > 0.6;
+      el.className = 'particle ' + (isRose ? 'rose' : 'gold');
+
+      const size = rand(3, 9);
+      el.style.width = size + 'px';
+      el.style.height = size + 'px';
+
+      const cx = W() / 2, cy = H() / 2;
+      const angle = rand(0, Math.PI * 2);
+      const r = rand(60, 180);
+      const x = cx + Math.cos(angle) * r;
+      const y = cy + Math.sin(angle) * r;
+
+      el.style.left = x + 'px';
+      el.style.top = y + 'px';
+
+      const spread = rand(30, 90);
+      const a2 = angle + rand(-0.5, 0.5);
+      const a3 = angle + rand(-1, 1);
+
+      el.style.setProperty('--tx1', `${Math.cos(a2) * spread * 0.5}px`);
+      el.style.setProperty('--ty1', `${Math.sin(a2) * spread * 0.5}px`);
+      el.style.setProperty('--tx2', `${Math.cos(a3) * spread}px`);
+      el.style.setProperty('--ty2', `${Math.sin(a3) * spread}px`);
+      el.style.setProperty('--tx3', `${Math.cos(a3) * spread * 1.4}px`);
+      el.style.setProperty('--ty3', `${Math.sin(a3) * spread * 1.4}px`);
+      el.style.setProperty('--dur', `${rand(2.5, 5)}s`);
+      el.style.setProperty('--delay', `-${rand(0, 5)}s`);
+
+      particlesEl.appendChild(el);
+    }
+
+    function createSparkle() {
+      const el = document.createElement('div');
+      el.className = 'sparkle';
+
+      const cx = W() / 2, cy = H() / 2;
+      const angle = rand(0, Math.PI * 2);
+      const r = rand(80, 200);
+      const x = cx + Math.cos(angle) * r;
+      const y = cy + Math.sin(angle) * r;
+
+      const size = rand(10, 24);
+      el.style.width = size + 'px';
+      el.style.height = size + 'px';
+      el.style.left = x + 'px';
+      el.style.top = y + 'px';
+      el.style.setProperty('--dur', `${rand(2, 4.5)}s`);
+      el.style.setProperty('--delay', `-${rand(0, 4)}s`);
+
+      particlesEl.appendChild(el);
+    }
+
+    // Generate particles
+    for (let i = 0; i < 28; i++) createParticle();
+    for (let i = 0; i < 14; i++) createSparkle();
+
+    /* ─────────────────────────────────────────── */
+    /* MOUSE PARALLAX                              */
+    /* ─────────────────────────────────────────── */
+    const earring = document.getElementById('earring3d');
+    let targetX = 0, targetY = 0, currentX = 0, currentY = 0;
+
+    document.addEventListener('mousemove', (e) => {
+      const rect = heroRight.getBoundingClientRect();
+      if (e.clientX < rect.left || e.clientX > rect.right) {
+        // Mouse not over right panel — gentle center drift
+        targetX = 0; targetY = 0; return;
+      }
+      const cx = rect.left + rect.width / 2;
+      const cy = rect.top + rect.height / 2;
+      targetX = (e.clientX - cx) / rect.width * 25;
+      targetY = (e.clientY - cy) / rect.height * -15;
+    });
+
+    function animateParallax() {
+      currentX += (targetX - currentX) * 0.06;
+      currentY += (targetY - currentY) * 0.06;
+      earring.style.transform = `translateX(${currentX}px) translateY(${currentY}px)`;
+      // Note: base animations are on the parent wrapper, but we still apply a small offset here
+      requestAnimationFrame(animateParallax);
+    }
+    // Use a separate parallax wrapper so CSS animations aren't conflicted
+    const sceneEl = earring.parentElement;
+    let pX = 0, pY = 0, cpX = 0, cpY = 0;
+
+    document.addEventListener('mousemove', (e) => {
+      const rect = heroRight.getBoundingClientRect();
+      const cx = rect.left + rect.width / 2;
+      const cy = rect.top + rect.height / 2;
+      pX = (e.clientX - cx) / rect.width * 30;
+      pY = (e.clientY - cy) / rect.height * -20;
+    });
+
+    function parallaxLoop() {
+      cpX += (pX - cpX) * 0.05;
+      cpY += (pY - cpY) * 0.05;
+      sceneEl.style.marginLeft = cpX + 'px';
+      sceneEl.style.marginTop = cpY + 'px';
+      requestAnimationFrame(parallaxLoop);
+    }
+    parallaxLoop();
+
+    /* ─────────────────────────────────────────── */
+    /* MARQUEE DUPLICATE for seamless loop         */
+    /* ─────────────────────────────────────────── */
+    // Already duplicated in HTML markup above
+
+  </script>
+</body>
+</html>
