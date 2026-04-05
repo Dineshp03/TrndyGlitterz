@@ -5,6 +5,7 @@ import Navbar from "@/components/Navbar";
 import { Footerdemo } from "@/components/ui/footer-section";
 import CartDrawer from "@/components/CartDrawer";
 import SmoothScroll from "@/components/SmoothScroll";
+import { Analytics } from '@vercel/analytics/next';
 
 const cormorant = Cormorant_Garamond({ 
   subsets: ["latin"],
@@ -43,6 +44,7 @@ export default function RootLayout({
           {children}
         </main>
         <Footerdemo />
+        <Analytics />
       </body>
     </html>
   );
