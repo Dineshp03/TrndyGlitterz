@@ -1,7 +1,8 @@
 "use client";
 
 import Image from "next/image";
-import { useParams, notFound } from "next/navigation";
+import { useParams, notFound, useRouter } from "next/navigation";
+import { useUser } from "@clerk/nextjs";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useProductStore } from "@/store/useProductStore";
 import ProductCard from "@/components/ProductCard";
@@ -257,6 +258,8 @@ export default function ProductDetailClient() {
   const [mounted, setMounted] = useState(false);
   const { products } = useProductStore();
   const product = products.find((p) => p.id === id);
+  const router = useRouter();
+  const { isSignedIn } = useUser();
 
   const images = (product?.images && product.images.length > 0) 
     ? product.images 
@@ -365,8 +368,8 @@ export default function ProductDetailClient() {
           <div className="h-px w-12 bg-dustyrose/30 mb-8" />
           <p className="text-sm font-light text-obsidian/70 leading-relaxed mb-10 max-w-lg">{product.description}</p>
           <div className="flex flex-col sm:flex-row gap-4">
-            <MagneticButton onClick={() => addItem(product)} className="sm:w-1/2">Add to Cart</MagneticButton>
-            <MagneticButton onClick={() => setShowPayment(true)} className="sm:w-1/2" variant="secondary">Buy Now</MagneticButton>
+            <MagneticButton onClick={() => isSignedIn ? addItem(product) : router.push("/login")} className="sm:w-1/2">Add to Cart</MagneticButton>
+            <MagneticButton onClick={() => isSignedIn ? setShowPayment(true) : router.push("/login")} className="sm:w-1/2" variant="secondary">Buy Now</MagneticButton>
           </div>
         </div>
       </div>

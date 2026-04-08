@@ -8,6 +8,7 @@ import { useCart } from "@/hooks/useCart";
 import { useWishlistStore } from "@/store/useWishlistStore";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import { useUser } from "@clerk/nextjs";
 
 export default function ProductCard({ product }: { product: Product }) {
   const router = useRouter();
@@ -15,10 +16,15 @@ export default function ProductCard({ product }: { product: Product }) {
   const { addItem } = useCart();
   const { toggleWishlist, isInWishlist } = useWishlistStore();
   const activeWishlist = isInWishlist(product.id);
+  const { isSignedIn } = useUser();
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
+    if (!isSignedIn) {
+      router.push("/login");
+      return;
+    }
     addItem(product);
     toast.success(`${product.name} added to cart!`);
   };
@@ -26,6 +32,10 @@ export default function ProductCard({ product }: { product: Product }) {
   const handleWishlist = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
+    if (!isSignedIn) {
+      router.push("/login");
+      return;
+    }
     toggleWishlist(product.id);
     if (!activeWishlist) {
       toast.success(`${product.name} added to wishlist!`);
@@ -44,7 +54,7 @@ export default function ProductCard({ product }: { product: Product }) {
   return (
     <div className="group flex flex-col relative w-full overflow-visible">
       {/* Image Container — clean and crisp */}
-      <div className="relative aspect-[1/1] w-full bg-[#f3f3f3] mb-4 cursor-pointer overflow-hidden rounded-2xl border border-transparent group-hover:border-obsidian/5 transition-all">
+      <div className="relative aspect-[1/1] w-full bg-[#1A1A1A] mb-4 cursor-pointer overflow-hidden rounded-2xl border border-transparent group-hover:border-white/10 transition-all">
         <Link href={`/product/${product.id}`} className="block w-full h-full relative">
           <Image 
             src={product.image} 
@@ -71,24 +81,24 @@ export default function ProductCard({ product }: { product: Product }) {
         <div className="absolute top-2 right-2 flex flex-col gap-2 z-10 sm:opacity-0 sm:group-hover:opacity-100 sm:translate-x-4 sm:group-hover:translate-x-0 transition-all duration-300">
           <button 
             onClick={handleWishlist}
-            className={`w-8 h-8 rounded-full flex items-center justify-center shadow-md transition-all duration-300 ${activeWishlist ? 'bg-[#ff4d4f] text-white' : 'bg-white text-obsidian hover:bg-obsidian hover:text-white'}`} 
+            className={`w-8 h-8 rounded-full flex items-center justify-center shadow-md transition-all duration-300 ${activeWishlist ? 'bg-[#ff4d4f] text-white' : 'bg-white text-black hover:bg-[#111111] hover:text-white'}`} 
             title="Wishlist"
           >
             <Heart size={14} fill={activeWishlist ? "currentColor" : "none"} />
           </button>
           <button 
             onClick={handleQuickView}
-            className="w-8 h-8 bg-white rounded-full flex items-center justify-center shadow-md hover:bg-obsidian hover:text-white transition-all duration-300" 
+            className="w-8 h-8 bg-white rounded-full flex items-center justify-center shadow-md hover:bg-[#111111] hover:text-white transition-all duration-300 group/btn" 
             title="Quick View"
           >
-            <Eye size={14} className="text-obsidian group-hover:inherit" />
+            <Eye size={14} className="text-black group-hover/btn:text-white" />
           </button>
         </div>
 
         {/* Quick Add Bar */}
         <button 
           onClick={handleAddToCart}
-          className="absolute bottom-0 left-0 w-full bg-obsidian text-white py-3 text-[10px] font-bold uppercase tracking-[0.2em] translate-y-full group-hover:translate-y-0 transition-transform duration-300 flex items-center justify-center gap-2 z-20 hover:bg-obsidian/90 active:scale-95 origin-bottom"
+          className="absolute bottom-0 left-0 w-full bg-[#111111] text-white py-3 text-[10px] font-bold uppercase tracking-[0.2em] translate-y-full group-hover:translate-y-0 transition-all duration-300 flex items-center justify-center gap-2 z-20 hover:bg-[#D4AF37] hover:text-black border-t border-white/5 active:scale-95 origin-bottom"
         >
           <ShoppingCart size={12} />
           Quick Add

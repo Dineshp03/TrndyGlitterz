@@ -88,7 +88,7 @@ function Footerdemo() {
               <p>Shipping &amp; Returns</p>
               <p>Care Guide</p>
               <p>FAQ</p>
-              <p className="pt-2 text-obsidian/50">hello@trendyglitterz.com</p>
+              <p className="pt-2 text-obsidian/50">trendyglitterzz@gmail.com</p>
             </address>
           </div>
 

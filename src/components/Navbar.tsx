@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { ShoppingBag, Menu, X, UserCircle, LayoutDashboard } from "lucide-react";
+import Image from "next/image";
+import { ShoppingBag, Menu, X, UserCircle, LayoutDashboard, Heart } from "lucide-react";
 import { useCart } from "@/hooks/useCart";
 import { useSettingsStore } from "@/store/useSettingsStore";
 import { usePathname, useRouter } from "next/navigation";
@@ -43,33 +44,35 @@ export default function Navbar() {
 
   return (
     <>
-      {/* Top Notification Bar */}
-      <div className="bg-dustyrose text-alabaster text-center py-2 text-[10px] font-sans tracking-widest uppercase md:block hidden relative z-50">
-        <p className="opacity-90">{shippingDetails}</p>
-      </div>
       <nav
         className={`fixed w-full z-50 transition-all duration-700 ease-in-out border-b ${
           isScrolled 
-            ? "top-0 bg-alabaster/90 backdrop-blur-xl border-obsidian/5 py-4 shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07),0_4px_6px_-2px_rgba(0,0,0,0.02)]" 
-            : "top-0 md:top-8 bg-alabaster/95 border-transparent py-6"
+            ? "top-0 bg-[#0A0A0A]/95 backdrop-blur-xl border-white/10 py-4 shadow-lg" 
+            : "top-0 bg-transparent border-transparent py-6"
         }`}
       >
       <div className="container mx-auto px-6 md:px-12 flex items-center justify-between">
         
         {/* Mobile menu button */}
         <button 
-          className="md:hidden p-2 text-obsidian"
+          className="md:hidden p-2 text-white"
           onClick={() => setMobileMenuOpen(true)}
         >
-          <Menu className="w-5 h-5" strokeWidth={1} />
+          <Menu className="w-5 h-5" strokeWidth={1.5} />
         </button>
 
         {/* Logo (Left) */}
         <Link 
           href="/" 
-          className="text-lg sm:text-xl md:text-2xl font-sans font-bold tracking-[0.15em] text-obsidian flex-shrink-0 relative group"
+          className="flex-shrink-0 transition-opacity hover:opacity-80"
         >
-          TRENDY GLITTERZ
+          <Image 
+            src="/trendy_logo.png" 
+            alt="TRENDY GLITTERZ" 
+            width={180} 
+            height={40} 
+            className="h-10 w-auto object-contain brightness-0 invert" 
+          />
         </Link>
 
         {/* Desktop Navigation (Center) */}
@@ -78,7 +81,7 @@ export default function Navbar() {
             <Link
               key={link.name}
               href={link.href}
-              className="text-[11px] font-sans text-obsidian/60 hover:text-obsidian transition-colors uppercase tracking-[0.1em]"
+              className="text-[11px] font-sans text-white/70 hover:text-white transition-colors uppercase tracking-[0.1em]"
             >
               {link.name}
             </Link>
@@ -96,33 +99,47 @@ export default function Navbar() {
         {/* Desktop Navigation (Right) */}
         <div className="hidden md:flex flex-shrink-0 items-center justify-end space-x-6">
           <Show when="signed-out">
-            <Link
-              href="/login"
-              className="text-obsidian/60 hover:text-obsidian transition-colors"
+            <button
+              onClick={() => router.push('/login')}
+              className="text-white/70 hover:text-white transition-colors"
               aria-label="Account"
             >
               <UserCircle className="w-5 h-5" strokeWidth={1.5} />
-            </Link>
+            </button>
+            <button
+              onClick={() => router.push('/login')}
+              className="text-white/70 hover:text-[#ff4d4f] transition-colors"
+              aria-label="Wishlist"
+            >
+              <Heart className="w-5 h-5" strokeWidth={1.5} />
+            </button>
           </Show>
           
           <Show when="signed-in">
             <Link
               href="/profile"
-              className="text-obsidian/60 hover:text-obsidian transition-colors"
+              className="text-white/70 hover:text-white transition-colors"
               aria-label="Account"
             >
               <UserCircle className="w-5 h-5" strokeWidth={1.5} />
             </Link>
+            <Link
+              href="/wishlist" 
+              className="text-white/70 hover:text-[#ff4d4f] transition-colors"
+              aria-label="Wishlist"
+            >
+              <Heart className="w-5 h-5" strokeWidth={1.5} />
+            </Link>
           </Show>
           
           <button 
-            className="flex items-center gap-2 text-obsidian/60 hover:text-obsidian transition-colors group relative"
-            onClick={openCart}
+            className="flex items-center gap-2 text-white/70 hover:text-white transition-colors group relative"
+            onClick={() => isSignedIn ? openCart() : router.push('/login')}
             aria-label="Open cart"
           >
             <ShoppingBag className="w-5 h-5" strokeWidth={1.5} />
             {mounted && getCartCount() > 0 && (
-              <span className="absolute -top-1.5 -right-2 bg-dustyrose text-alabaster text-[9px] w-4 h-4 flex items-center justify-center rounded-full font-medium">
+              <span className="absolute -top-1.5 -right-2 bg-dustyrose text-white text-[9px] w-4 h-4 flex items-center justify-center rounded-full font-medium">
                 {getCartCount()}
               </span>
             )}
@@ -130,24 +147,30 @@ export default function Navbar() {
         </div>
 
         {/* Mobile Right Icons */}
-        <div className="md:hidden flex items-center gap-1">
+        <div className="md:hidden flex items-center gap-3">
           <Show when="signed-out">
-            <Link href="/login" className="relative p-2 text-obsidian" aria-label="Login">
-              <UserCircle className="w-5 h-5" strokeWidth={1} />
-            </Link>
+            <button onClick={() => router.push('/login')} className="text-white">
+              <Heart className="w-5 h-5" strokeWidth={1.5} />
+            </button>
+            <button onClick={() => router.push('/login')} className="text-white" aria-label="Login">
+              <UserCircle className="w-5 h-5" strokeWidth={1.5} />
+            </button>
           </Show>
           <Show when="signed-in">
-            <Link href="/profile" className="relative p-2 text-obsidian" aria-label="Profile">
-              <UserCircle className="w-5 h-5" strokeWidth={1} />
+            <Link href="/wishlist" className="text-white">
+              <Heart className="w-5 h-5" strokeWidth={1.5} />
+            </Link>
+            <Link href="/profile" className="text-white" aria-label="Profile">
+              <UserCircle className="w-5 h-5" strokeWidth={1.5} />
             </Link>
           </Show>
           <button 
-            className="relative p-2 text-obsidian"
-            onClick={openCart}
+            className="relative text-white"
+            onClick={() => isSignedIn ? openCart() : router.push('/login')}
           >
-            <ShoppingBag className="w-5 h-5" strokeWidth={1} />
+            <ShoppingBag className="w-5 h-5" strokeWidth={1.5} />
             {mounted && getCartCount() > 0 && (
-              <span className="absolute top-1 right-0 bg-dustyrose text-alabaster text-[9px] w-3.5 h-3.5 flex items-center justify-center rounded-full">
+              <span className="absolute -top-1.5 -right-2 bg-dustyrose text-white text-[9px] w-3.5 h-3.5 flex items-center justify-center rounded-full">
                 {getCartCount()}
               </span>
             )}

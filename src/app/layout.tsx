@@ -42,18 +42,6 @@ export default function RootLayout({
         <ClerkProvider>
           <div className="noise-bg pointer-events-none fixed inset-0 z-[-1] opacity-[0.03]"></div>
           
-          <header className="fixed top-0 left-0 right-0 z-[60] px-6 py-2 flex justify-end gap-4 pointer-events-none">
-            <div className="pointer-events-auto flex items-center gap-4 bg-obsidian backdrop-blur-md px-4 py-1.5 rounded-full border border-obsidian/20 text-[10px] font-sans uppercase tracking-widest text-alabaster shadow-sm hover:shadow-md transition-all">
-              <Show when="signed-out">
-                <SignInButton />
-                <SignUpButton />
-              </Show>
-              <Show when="signed-in">
-                <UserButton />
-              </Show>
-            </div>
-          </header>
-
           <SmoothScroll />
           <Navbar />
           <CartDrawer />

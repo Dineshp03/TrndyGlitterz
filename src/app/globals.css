@@ -55,31 +55,31 @@
 
 @layer base {
   :root {
-    --color-alabaster: #FCF5F8;
-    --color-obsidian: #3D2232;
-    --color-dustyrose: #A34371;
-    --color-burgundy: #E1C5D1;
-    --color-sand: #F7E6ED;
+    --color-alabaster: #0A0A0A; /* Deep Black background */
+    --color-obsidian: #FFFFFF; /* White Text */
+    --color-dustyrose: #D4AF37; /* Gold accent */
+    --color-burgundy: #B8860B; /* Darker Gold accent */
+    --color-sand: #111111; /* Off-black */
 
-    --color-background: #FCF5F8;
-    --color-foreground: #3D2232;
-    --color-primary: #A34371;
-    --color-primary-foreground: #FCF5F8;
-    --color-secondary: #F7E6ED;
-    --color-secondary-foreground: #3D2232;
-    --color-muted: #F7E6ED;
-    --color-muted-foreground: #7a5068;
-    --color-accent: #F7E6ED;
-    --color-accent-foreground: #3D2232;
+    --color-background: #0A0A0A;
+    --color-foreground: #FFFFFF;
+    --color-primary: #D4AF37;
+    --color-primary-foreground: #0A0A0A;
+    --color-secondary: #111111;
+    --color-secondary-foreground: #FFFFFF;
+    --color-muted: #1A1A1A;
+    --color-muted-foreground: #A1A1AA;
+    --color-accent: #111111;
+    --color-accent-foreground: #FFFFFF;
     --color-destructive: #ef4444;
-    --color-destructive-foreground: #FCF5F8;
-    --color-border: #3D223220;
-    --color-input: #3D223220;
-    --color-ring: #A34371;
-    --color-popover: #FCF5F8;
-    --color-popover-foreground: #3D2232;
-    --color-card: #FCF5F8;
-    --color-card-foreground: #3D2232;
+    --color-destructive-foreground: #0A0A0A;
+    --color-border: #FFFFFF20;
+    --color-input: #FFFFFF20;
+    --color-ring: #D4AF37;
+    --color-popover: #0A0A0A;
+    --color-popover-foreground: #FFFFFF;
+    --color-card: #0A0A0A;
+    --color-card-foreground: #FFFFFF;
   }
 
   .footer-dark {

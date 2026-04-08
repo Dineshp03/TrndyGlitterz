@@ -2,22 +2,16 @@
 
 import { useEffect, useState } from "react";
 
-/* ─── reference photo (base64) ─────────────────────────────────────────── */
-const IMG_SRC =
-  "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEASABIAAD/4QtNaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wLwA8P3hwYWNrZXQgYmVnaW49J++7vycgaWQ9J1c1TTBNcENlaGlIenJlU3pOVGN6a2M5ZCc/Pgo8eDp4bXBtZXRhIHhtbG5zOng9J2Fkb2JlOm5zOm1ldGEvJyB4OnhtcHRrPSdJbWFnZTo6RXhpZlRvb2wgMTIuNzYnPgo8cmRmOlJERiB4bWxuczpyZGY9J2h0dHA6Ly93d3cudzMub3JnLzE5OTkvMDIvMjItcmRmLXN5bnRheC1ucyMnPgoKIDxyZGY6RGVzY3JpcHRpb24gcmRmOmFib3V0PScnCiAgeG1sbnM6ZGM9J2h0dHA6Ly9wdXJsLm9yZy9kYy9lbGVtZW50cy8xLjEvJz4KICA8ZGM6dGl0bGU+CiAgIDxyZGY6QWx0PgogICAgPHJkZjpsaSB4bWw6bGFuZz0neC1kZWZhdWx0Jz5pbWFnZS5qcGVnPC9yZGY6bGk+CiAgIDwvcmRmOkFsdD4KICA8L2RjOnRpdGxlPgogPC9yZGY6RGVzY3JpcHRpb24+CjwvcmRmOlJERj4KPC94OnhtcG1ldGE+CiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCjw/eHBhY2tldCBlbmQ9J3cnPz7/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wgARCARQAuADASIAAhEBAxEB/8QAGwABAQEBAQEBAQAAAAAAAAAAAAECAwQFBgf/xAAYAQEBAQEBAAAAAAAAAAAAAAAAAQIDBP/aAAwDAQACEAMQAAAB/lYsAAAqUAJRLAUlQqCgAAAAAAAAAAJSAFJQAAIKlAACUAIKBKJYLAoBAAABQiwAAAAAsABYAACgAAAAAAAAgshalCIoAAAoIAChUEKACKAAEogFgsAUgAAAAAKCLAAohSLAUAAAAAAAAIBJQACwWCkLLCpQlABCgErSEqUAAAAAAAAQAAABSAFIAABQlAlAAAAAAAAIFCEoigQAVCkABSKAEoLBFIUAWWwAAAAABLAsALAAAAqUAllIoIKAAAAAAAAQsJQAAAEBYLAUIoAAAEKAgoBBZRZLNoCwALABKJQQAAAACwoJULAUAAAAAAABBKllAAAQoIACgAAAAJSUJZRKAEsKlIsLYqpUAAAAAigQAAsUiwKEoAAAAAAAAEBFqWCCpQAAAAQoAABAUEKAAAABKAACE0KAAAAAgAAFgAWUAAAAFEUiiWVEFQlAAhSUAIBQJQBKAAABBQAAAAAAsAABYqhAAEolgssABSAAqUAAAAAoQFBJLFCUAABLAAUAlAQoCUAAigAAKAACAAAIUllKlsLAAAABLBYAKQoAAAACwoARLFglAAABEsVQAlAEBQAAAAAoAACwAgAKCBCgWLKAAAABLAsFlAJQALACyiFALBGbFliWgSwqAoSglCUiiAqCkFAAAqooiwAAAAACAAIoAqWwAAAABLBZQABYLAqUBJQsoi5WCVKJQAShKCUlAABKIoAAClAQoEolBAAAACAAAAFiqEWUSwAAAlAAAAoAFSKIBmxoIECgAACWUAASwWCgLKFIsCwWCgAIALAAFIoggAAAStJUVCwAAAAAAAFEALBQhCCaAllAEsFlEoASgAAAKAAWAABYAACwAFIAAAAIAAWLKogLAAAAAWUBFlCULACZsUJQAAAJQAAAAACgAAAALAoIACwBSWAAAAAICgANBAIAAAUgKApIolAsLmwkJoAAAAQoAAEolAKAAAAAAAoIUlgssKlJQgAAAAgKAJY0lsSiLCwAAFAEWUFAIBLlYJQAAAEsFgqUEKAAKAAABAUAAAAABYKgssBSLCwAABSAtlQCUAEolEBVlQBUixaiiZuVCUAQUEogCwWCygAKAABAUsSglBKUQLAAAAABZQBLACwAALVRAAAABAVRALKiWWksMxFolAAAlAACLCpQKAAAUJULLAEspUAAACoBSLAAUAQAAALKS2VEsAUBKAAKEAogShCZpQlAAAiiAoIUACgFlAACVIogAUCwACwAAFIUAARSKIABZU1YQCKIoSwBRUCAKirFJnWVgUIAAAgFQUAFgCiwKQgsollIogAAUAAUgAFgoQFllJQAAiiWVNKRKiCgEsAVZUCAoCgmdZWBQgABQFMtZoAUgKEAAlAAAAACKWAAAAWUBAACFsCwAALWkSpIKAAiwWUCAApZoixJjeGglAJQBYqiKmiTUsgAJQASgohRKIsACwSiFIAFAFSKAAJYAUICik2sAkgAoQsoAFiWCpaWAEznWWhJalEsKlFmjLQlgosiwLAtWCIoFIoKJNQzQSwCwBKIAolAAsABCyxQAKhNs00lkSwCoUCJSliKCUqgSjnLFCWUEoAtikCalFILEWUBRSLBVIUFljUqTUSSiTUJNKk1EiiBSxFlEoKJLFikgVvFCxJvOgWSAKIAAACgBFlouFwGggAACyylUzvNjTUiLKigoiiWpZVItXNujLZebpE5ukObYw0TDSszcMzRIujDVMXVjLel4zvDg64s5tZprNS3I1c6kAiwALACoqiARZaAY3hciaAAAFrUu45XQzNZN65dIssJSgFllpVLuXOunSa49O3SXz69VXyvZDx59uDxT1SzyT1ZTy59avG9OU87uTi7jje2zza9fWa8nf07msZ9KPneX6visAAAAA";
-
 /* ─── particles config ──────────────────────────────────────────────────── */
 const PARTICLES = [
-  { id: 1,  size: 5, left: "7%",  delay: "0s",   dur: "7s",   color: "#B5456B" },
-  { id: 2,  size: 3, left: "17%", delay: "1.5s", dur: "9s",   color: "#D4537E" },
-  { id: 3,  size: 4, left: "29%", delay: "0.6s", dur: "6.5s", color: "#B5456B" },
-  { id: 4,  size: 3, left: "41%", delay: "2.3s", dur: "8s",   color: "#E8A0B8" },
-  { id: 5,  size: 5, left: "53%", delay: "1s",   dur: "10s",  color: "#B5456B" },
-  { id: 6,  size: 3, left: "64%", delay: "1.8s", dur: "7s",   color: "#D4537E" },
-  { id: 7,  size: 4, left: "74%", delay: "0.3s", dur: "8.5s", color: "#E8A0B8" },
-  { id: 8,  size: 5, left: "83%", delay: "2.8s", dur: "9.5s", color: "#B5456B" },
-  { id: 9,  size: 3, left: "91%", delay: "1.1s", dur: "6s",   color: "#D4537E" },
-  { id: 10, size: 4, left: "3%",  delay: "3.3s", dur: "7.5s", color: "#E8A0B8" },
+  { id: 3,  size: 4, left: "29%", delay: "0.6s", dur: "6.5s", color: "#B8860B" },
+  { id: 4,  size: 3, left: "41%", delay: "2.3s", dur: "8s",   color: "#F9A826" },
+  { id: 5,  size: 5, left: "53%", delay: "1s",   dur: "10s",  color: "#D4AF37" },
+  { id: 6,  size: 3, left: "64%", delay: "1.8s", dur: "7s",   color: "#B8860B" },
+  { id: 7,  size: 4, left: "74%", delay: "0.3s", dur: "8.5s", color: "#FFDF00" },
+  { id: 8,  size: 5, left: "83%", delay: "2.8s", dur: "9.5s", color: "#FFD700" },
+  { id: 9,  size: 3, left: "91%", delay: "1.1s", dur: "6s",   color: "#D4AF37" },
+  { id: 10, size: 4, left: "3%",  delay: "3.3s", dur: "7.5s", color: "#F9A826" },
 ];
 
 /* ─── scoped CSS ────────────────────────────────────────────────────────── */
@@ -26,7 +20,7 @@ const CSS = `
 
 .tg-hero-wrap {
   position: relative;
-  background: #F8F5F7;
+  background: linear-gradient(to right, rgba(0,0,0,0.9), rgba(0,0,0,0.6)), url('/bg.png') center/cover no-repeat;
   font-family: 'DM Sans', sans-serif;
   overflow: hidden;
 }
@@ -78,7 +72,7 @@ const CSS = `
   font-size: 10px;
   letter-spacing: 3.5px;
   text-transform: uppercase;
-  color: #B5456B;
+  color: #D4AF37;
   margin-bottom: 20px;
   opacity: 0;
   transform: translateY(16px);
@@ -88,14 +82,14 @@ const CSS = `
 .tg-eyebrow::before, .tg-eyebrow::after {
   content: '';
   width: 24px; height: 1px;
-  background: #B5456B;
+  background: #D4AF37;
   flex-shrink: 0;
 }
 .tg-h1 {
   font-family: 'Bebas Neue', sans-serif;
   font-size: clamp(72px, 12vw, 160px);
   line-height: 0.88;
-  color: #2D1B2E;
+  color: #D4AF37;
   letter-spacing: 2px;
   margin-bottom: 22px;
   overflow: hidden;
@@ -111,7 +105,7 @@ const CSS = `
 .tg-sub {
   font-size: 16px;
   font-weight: 300;
-  color: #2D1B2E;
+  color: #FAFAFA;
   line-height: 1.7;
   max-width: 420px;
   margin-bottom: 38px;
@@ -129,14 +123,14 @@ const CSS = `
   animation: tgUp 0.65s 0.88s ease forwards;
 }
 .tg-btn-fill {
-  background: #B5456B;
-  color: #fff;
+  background: #D4AF37;
+  color: #111;
   border: none;
   padding: 13px 36px;
   border-radius: 50px;
   font-family: 'DM Sans', sans-serif;
   font-size: 11px;
-  font-weight: 500;
+  font-weight: 600;
   letter-spacing: 2px;
   text-transform: uppercase;
   cursor: pointer;
@@ -144,9 +138,9 @@ const CSS = `
   transition: background 0.22s, transform 0.15s, box-shadow 0.22s;
 }
 .tg-btn-fill:hover {
-  background: #9E3459;
+  background: #E5C158;
   transform: translateY(-2px);
-  box-shadow: 0 12px 30px rgba(181,69,107,0.32);
+  box-shadow: 0 12px 30px rgba(212,175,55,0.32);
 }
 .tg-btn-ghost {
   background: none;
@@ -159,8 +153,8 @@ const CSS = `
   font-size: 11px;
   letter-spacing: 2px;
   text-transform: uppercase;
-  color: #2D1B2E;
-  opacity: 0.45;
+  color: #FAFAFA;
+  opacity: 0.6;
   white-space: nowrap;
   transition: opacity 0.2s;
 }
@@ -168,14 +162,14 @@ const CSS = `
 .tg-ghost-circle {
   width: 28px; height: 28px;
   border-radius: 50%;
-  border: 1px solid rgba(45,27,46,0.22);
+  border: 1px solid rgba(250,250,250,0.3);
   display: inline-flex;
   align-items: center;
   justify-content: center;
   transition: border-color 0.2s, transform 0.2s;
 }
 .tg-btn-ghost:hover .tg-ghost-circle {
-  border-color: rgba(45,27,46,0.55);
+  border-color: rgba(250,250,250,0.8);
   transform: translateX(3px);
 }
 .tg-stats {
@@ -184,7 +178,7 @@ const CSS = `
   gap: 48px;
   margin-top: 46px;
   padding-top: 28px;
-  border-top: 1px solid rgba(45,27,46,0.09);
+  border-top: 1px solid rgba(250,250,250,0.15);
   opacity: 0;
   width: 100%;
   will-change: transform, opacity;
@@ -194,14 +188,13 @@ const CSS = `
   font-family: 'Bebas Neue', sans-serif;
   font-size: 34px;
   letter-spacing: 1px;
-  color: #2D1B2E;
+  color: #FAFAFA;
   line-height: 1;
 }
-.tg-stat-num em { color: #B5456B; font-style: normal; }
+.tg-stat-num em { color: #D4AF37; font-style: normal; }
 .tg-stat-lbl {
   font-size: 10px;
-  color: #2D1B2E;
-  opacity: 0.38;
+  color: #AAAAAA;
   letter-spacing: 0.4px;
   margin-top: 4px;
   font-weight: 300;
@@ -301,9 +294,8 @@ export default function HeroSection({ onStartShopping }: HeroSectionProps) {
               <span className="tg-h1-l">GLITTERZ</span>
             </h1>
 
-            <p className="tg-sub">
-              Brand of functional accessories<br />
-              crafted for an active lifestyle.
+            <p className="tg-sub uppercase tracking-[0.2em] font-medium">
+              Stay Trendy, Shine Glittery
             </p>
 
             <div className="tg-ctas">
