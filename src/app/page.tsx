@@ -164,30 +164,44 @@ export default function Home() {
         </section>
       ))}
 
-      {/* Brand Journal Section - B&W Minimalist (Moved here) */}
-      <section id="about" className="bg-[#FAFAFA] text-[#0A0A0A] py-16 md:py-24 overflow-hidden mt-12 border-t border-obsidian/5">
+      {/* Brand Journal Section - Premium Dark Theme */}
+      <section id="about" className="bg-[#121212] text-[#FAFAFA] py-16 md:py-24 overflow-hidden mt-12 border-t border-white/5">
         <div className="container mx-auto px-6 md:px-12">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-24 items-center">
             <div className="animate-reveal">
-              <span className="text-[10px] uppercase tracking-[0.4em] text-[#0A0A0A]/40 block mb-6">The Journal — Issue 01</span>
-              <h2 className="text-3xl md:text-5xl font-serif leading-tight italic max-w-lg">
+              <a 
+                href="https://wa.me/919884110778?text=Hi%20Trendy%20Glitterz!%20I'm%20reaching%20out%20from%20the%20website%20regarding%20some%20of%20your%20jewelry%20products." 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-[10px] uppercase tracking-[0.4em] text-[#FAFAFA]/40 block mb-6 hover:text-[#25D366] transition-colors"
+              >
+                The Journal — Issue 01
+              </a>
+              <h2 className="text-3xl md:text-5xl font-serif leading-tight italic max-w-lg text-white">
                 &quot;Modern elegance is not about what you add, but what you have the courage to leave behind.&quot;
               </h2>
             </div>
             <div className="space-y-8 animate-reveal delay-200">
-              <p className="font-sans font-light text-sm md:text-base leading-relaxed text-[#0A0A0A]/70 max-w-md">
-                Trendy Glitterz isn&apos;t just about jewelry. It&apos;s about the confidence that comes with feeling perfectly accessorized. Founded in 2024, Trendy Glitterz is more than an accessory brand—it&apos;s a dialogue between form and functionality.
+              <p className="font-sans font-light text-sm md:text-base leading-relaxed text-[#FAFAFA]/70 max-w-md">
+                <a 
+                  href="https://wa.me/919884110778?text=Hi%20Trendy%20Glitterz!%20I'm%20reaching%20out%20from%20the%20website%20regarding%20some%20of%20your%20jewelry%20products." 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="hover:text-white transition-colors underline decoration-white/10 underline-offset-4"
+                >
+                  Trendy Glitterz
+                </a> isn&apos;t just about jewelry. It&apos;s about the confidence that comes with feeling perfectly accessorized. Founded in 2024, Trendy Glitterz is more than an accessory brand—it&apos;s a dialogue between form and functionality.
               </p>
               <div className="flex flex-col gap-6">
                 <div className="flex items-center gap-6">
-                  <Link href="#" className="text-[11px] font-sans font-bold uppercase tracking-[0.2em] border-b border-[#0A0A0A] pb-1 hover:text-[#0A0A0A]/60 hover:border-[#0A0A0A]/60 transition-all">
+                  <Link href="#" className="text-[11px] font-sans font-bold uppercase tracking-[0.2em] border-b border-[#D4AF37]/50 pb-1 text-[#D4AF37] hover:text-[#FBF5B7] hover:border-[#FBF5B7] transition-all">
                     Our Philosophy
                   </Link>
-                  <div className="h-px w-8 bg-[#0A0A0A]/20"></div>
-                  <span className="text-[10px] font-mono text-[#0A0A0A]/30 uppercase tracking-[0.2em]">Crafted with Intention</span>
+                  <div className="h-px w-8 bg-white/10"></div>
+                  <span className="text-[10px] font-mono text-white/30 uppercase tracking-[0.2em]">Crafted with Intention</span>
                 </div>
                 
-                <a href="https://wa.me/something" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-3 text-sm font-sans font-medium text-[#25D366] hover:text-[#128C7E] transition-colors w-fit border border-[#25D366]/30 px-5 py-2.5 rounded-full hover:bg-[#25D366]/5">
+                <a href="https://wa.me/919884110778?text=Hi%20Trendy%20Glitterz!%20I'm%20reaching%20out%20from%20the%20website%20regarding%20some%20of%20your%20jewelry%20products." target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-3 text-sm font-sans font-medium text-[#25D366] hover:text-[#128C7E] transition-colors w-fit border border-[#25D366]/30 px-5 py-2.5 rounded-full hover:bg-[#25D366]/5">
                   <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
                     <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 1.927 6.541L0 24l5.602-1.464A11.9 11.9 0 0 0 11.944 24c6.627 0 12-5.373 12-12S18.571 0 11.944 0zm6.208 17.202c-.237.669-1.391 1.25-1.95 1.341-.561.092-1.282.261-4.041-.884-3.32-1.378-5.46-4.786-5.626-5.008-.165-.224-1.343-1.785-1.343-3.407 0-1.623.844-2.427 1.144-2.738.297-.311.642-.39.856-.39.213 0 .428 0 .605.008.2.012.463-.075.725.556.264.634.856 2.086.936 2.247.076.161.127.351.018.572-.11.222-.165.35-.331.545-.164.195-.349.421-.493.571-.164.168-.344.351-.15.688.194.335.867 1.433 1.867 2.327 1.287 1.155 2.368 1.503 2.697 1.666.329.162.521.144.717-.08.196-.226.843-.984 1.07-1.32.228-.337.457-.282.75-.17.294.113 1.859.877 2.174 1.034.316.158.528.236.603.368.077.133.077.768-.16 1.437z"/>
                   </svg>

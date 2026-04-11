@@ -88,7 +88,17 @@ function Footerdemo() {
               <p>Shipping &amp; Returns</p>
               <p>Care Guide</p>
               <p>FAQ</p>
-              <p className="pt-2 text-obsidian/50">trendyglitterzz@gmail.com</p>
+              <div className="pt-2 space-y-1">
+                <a 
+                  href="https://wa.me/919884110778?text=Hi%20Trendy%20Glitterz!%20I'm%20reaching%20out%20from%20the%20website%20regarding%20some%20of%20your%20jewelry%20products." 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="block text-[#25D366] hover:text-[#128C7E] transition-colors font-medium"
+                >
+                  WhatsApp: +91 9884110778
+                </a>
+                <p className="text-obsidian/50 text-[11px]">trendyglitterzz@gmail.com</p>
+              </div>
             </address>
           </div>
 
