@@ -127,27 +127,35 @@ export default function Home() {
       {sortedCategories.map((category) => (
         <section key={category} className="py-8 md:py-16 px-6 md:px-12 bg-[#0A0A0A] border-t border-white/5">
           <div className="container mx-auto">
-            <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 md:mb-16 gap-4">
-              <div className="flex items-center gap-6">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-8 md:mb-16 gap-6">
                 <div>
-                  <h2 className="text-2xl md:text-4xl font-sans font-bold tracking-tighter text-obsidian uppercase">{category}</h2>
+                  <h2 className="text-2xl md:text-3xl font-sans font-bold tracking-tighter text-obsidian uppercase">{category}</h2>
                   <div className="h-0.5 w-12 bg-obsidian/20 mt-4"></div>
                 </div>
-                <div className={`text-[9px] px-2 py-0.5 rounded-full border border-blue-100 text-blue-500 font-mono tracking-tighter uppercase ${showImportedOnly ? 'opacity-100' : 'opacity-0'}`}>
-                  Imported Edition
+                
+                <div className="flex items-center gap-6">
+                  <button 
+                    onClick={() => setShowImportedOnly(!showImportedOnly)}
+                    className={`shrink-0 text-[10px] px-4 py-2 rounded-full border transition-all uppercase tracking-widest ${
+                      showImportedOnly 
+                      ? "bg-[#ff4d4f] text-white border-[#ff4d4f]" 
+                      : "bg-transparent text-[#ff4d4f] border-[#ff4d4f]/30 hover:border-[#ff4d4f]"
+                    }`}
+                  >
+                    {showImportedOnly ? "Imported Only" : "Imported"}
+                  </button>
+
+                  <Link 
+                    href={`/catalog?category=${encodeURIComponent(category)}${showImportedOnly ? '&imported=true' : ''}`}
+                    className="group flex flex-col items-center gap-1.5 text-[10px] md:text-xs font-sans font-bold uppercase tracking-[0.2em] text-obsidian/60 hover:text-obsidian transition-colors"
+                  >
+                    <div className="w-10 h-10 rounded-full border border-obsidian/20 flex items-center justify-center group-hover:bg-obsidian group-hover:text-white transition-colors">
+                      <ArrowUpRight className="w-4 h-4 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+                    </div>
+                    <span>View All</span>
+                  </Link>
                 </div>
               </div>
-              
-              <div className="flex items-center gap-6">
-                <Link 
-                  href={`/catalog?category=${encodeURIComponent(category)}${showImportedOnly ? '&imported=true' : ''}`}
-                  className="group flex items-center gap-2 text-[10px] md:text-xs font-sans font-bold uppercase tracking-[0.2em] text-obsidian/60 hover:text-obsidian transition-colors"
-                >
-                  <span>View All</span>
-                  <ArrowUpRight className="w-4 h-4 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
-                </Link>
-              </div>
-            </div>
 
             <ProductSlider 
               products={filteredProducts.filter(p => p.category === category)} 

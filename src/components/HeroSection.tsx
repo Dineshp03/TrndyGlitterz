@@ -1,9 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 
 /* ─── particles config ──────────────────────────────────────────────────── */
 const PARTICLES = [
+  { id: 1,  size: 3, left: "7%",  delay: "0s",   dur: "7s",   color: "#D4AF37" },
+  { id: 2,  size: 5, left: "15%", delay: "1.5s", dur: "9s",   color: "#FFD700" },
   { id: 3,  size: 4, left: "29%", delay: "0.6s", dur: "6.5s", color: "#B8860B" },
   { id: 4,  size: 3, left: "41%", delay: "2.3s", dur: "8s",   color: "#F9A826" },
   { id: 5,  size: 5, left: "53%", delay: "1s",   dur: "10s",  color: "#D4AF37" },
@@ -11,234 +14,7 @@ const PARTICLES = [
   { id: 7,  size: 4, left: "74%", delay: "0.3s", dur: "8.5s", color: "#FFDF00" },
   { id: 8,  size: 5, left: "83%", delay: "2.8s", dur: "9.5s", color: "#FFD700" },
   { id: 9,  size: 3, left: "91%", delay: "1.1s", dur: "6s",   color: "#D4AF37" },
-  { id: 10, size: 4, left: "3%",  delay: "3.3s", dur: "7.5s", color: "#F9A826" },
 ];
-
-/* ─── scoped CSS ────────────────────────────────────────────────────────── */
-const CSS = `
-@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap');
-
-.tg-hero-wrap {
-  position: relative;
-  background: linear-gradient(to right, rgba(0,0,0,0.9), rgba(0,0,0,0.6)), url('/bg.png') center/cover no-repeat;
-  font-family: 'DM Sans', sans-serif;
-  overflow: hidden;
-}
-
-/* ── Particles ── */
-.tg-dot {
-  position: absolute;
-  bottom: -8px;
-  border-radius: 50%;
-  opacity: 0;
-  pointer-events: none;
-  z-index: 2;
-  will-change: transform, opacity;
-  animation: tgFloat var(--tg-dur) var(--tg-delay) ease-in-out infinite;
-}
-@keyframes tgFloat {
-  0%   { transform: translateY(0)      scale(1);    opacity: 0; }
-  10%  {                                             opacity: 0.55; }
-  50%  { transform: translateY(-46vh)  scale(1.25); opacity: 0.35; }
-  90%  {                                             opacity: 0.1; }
-  100% { transform: translateY(-94vh)  scale(0.8);  opacity: 0; }
-}
-
-/* ── 50/50 grid ── */
-.tg-grid {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 100svh;
-  position: relative;
-  z-index: 5;
-}
-
-/* ── Left pane ── */
-.tg-left {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  text-align: center;
-  padding: 130px 44px 80px 44px;
-  max-width: 800px;
-}
-.tg-eyebrow {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  font-size: 10px;
-  letter-spacing: 3.5px;
-  text-transform: uppercase;
-  color: #D4AF37;
-  margin-bottom: 20px;
-  opacity: 0;
-  transform: translateY(16px);
-  will-change: transform, opacity;
-  animation: tgUp 0.65s 0.1s ease forwards;
-}
-.tg-eyebrow::before, .tg-eyebrow::after {
-  content: '';
-  width: 24px; height: 1px;
-  background: #D4AF37;
-  flex-shrink: 0;
-}
-.tg-h1 {
-  font-family: 'Bebas Neue', sans-serif;
-  font-size: clamp(72px, 12vw, 160px);
-  line-height: 0.88;
-  color: #D4AF37;
-  letter-spacing: 2px;
-  margin-bottom: 22px;
-  overflow: hidden;
-}
-.tg-h1-l {
-  display: block;
-  opacity: 0;
-  transform: translateY(60px);
-  will-change: transform, opacity;
-}
-.tg-h1-l:nth-child(1) { animation: tgSlide 0.75s 0.3s  cubic-bezier(.16,1,.3,1) forwards; }
-.tg-h1-l:nth-child(2) { animation: tgSlide 0.75s 0.46s cubic-bezier(.16,1,.3,1) forwards; }
-.tg-sub {
-  font-size: 16px;
-  font-weight: 300;
-  color: #FAFAFA;
-  line-height: 1.7;
-  max-width: 420px;
-  margin-bottom: 38px;
-  opacity: 0;
-  will-change: transform, opacity;
-  animation: tgUp 0.65s 0.68s ease forwards;
-}
-.tg-ctas {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 20px;
-  opacity: 0;
-  will-change: transform, opacity;
-  animation: tgUp 0.65s 0.88s ease forwards;
-}
-.tg-btn-fill {
-  background: #D4AF37;
-  color: #111;
-  border: none;
-  padding: 13px 36px;
-  border-radius: 50px;
-  font-family: 'DM Sans', sans-serif;
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  cursor: pointer;
-  white-space: nowrap;
-  transition: background 0.22s, transform 0.15s, box-shadow 0.22s;
-}
-.tg-btn-fill:hover {
-  background: #E5C158;
-  transform: translateY(-2px);
-  box-shadow: 0 12px 30px rgba(212,175,55,0.32);
-}
-.tg-btn-ghost {
-  background: none;
-  border: none;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-family: 'DM Sans', sans-serif;
-  font-size: 11px;
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  color: #FAFAFA;
-  opacity: 0.6;
-  white-space: nowrap;
-  transition: opacity 0.2s;
-}
-.tg-btn-ghost:hover { opacity: 1; }
-.tg-ghost-circle {
-  width: 28px; height: 28px;
-  border-radius: 50%;
-  border: 1px solid rgba(250,250,250,0.3);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  transition: border-color 0.2s, transform 0.2s;
-}
-.tg-btn-ghost:hover .tg-ghost-circle {
-  border-color: rgba(250,250,250,0.8);
-  transform: translateX(3px);
-}
-.tg-stats {
-  display: flex;
-  justify-content: center;
-  gap: 48px;
-  margin-top: 46px;
-  padding-top: 28px;
-  border-top: 1px solid rgba(250,250,250,0.15);
-  opacity: 0;
-  width: 100%;
-  will-change: transform, opacity;
-  animation: tgUp 0.65s 1.08s ease forwards;
-}
-.tg-stat-num {
-  font-family: 'Bebas Neue', sans-serif;
-  font-size: 34px;
-  letter-spacing: 1px;
-  color: #FAFAFA;
-  line-height: 1;
-}
-.tg-stat-num em { color: #D4AF37; font-style: normal; }
-.tg-stat-lbl {
-  font-size: 10px;
-  color: #AAAAAA;
-  letter-spacing: 0.4px;
-  margin-top: 4px;
-  font-weight: 300;
-}
-
-/* ── keyframes ── */
-@keyframes tgUp {
-  from { opacity: 0; transform: translateY(18px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-@keyframes tgSlide {
-  from { opacity: 0; transform: translateY(60px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-@keyframes tgFade {
-  from { opacity: 0; }
-  to   { opacity: 1; }
-}
-
-/* ════════ MOBILE ≤ 640px ════════ */
-@media (max-width: 640px) {
-  .tg-left {
-    padding: 120px 20px 60px;
-  }
-  .tg-eyebrow { 
-    font-size: 9px; 
-    margin-bottom: 14px; 
-  }
-  .tg-h1 { font-size: clamp(68px, 20vw, 92px); margin-bottom: 14px; }
-  .tg-sub { 
-    font-size: 14px; 
-    max-width: 100%; 
-    margin-bottom: 26px; 
-  }
-  .tg-ctas { 
-    gap: 14px;
-  }
-  .tg-btn-fill { padding: 11px 26px; font-size: 10px; }
-  .tg-btn-ghost { font-size: 10px; }
-  .tg-stats { gap: 32px; margin-top: 30px; padding-top: 20px; }
-  .tg-stat-num { font-size: 28px; }
-  .tg-stat-lbl { font-size: 9px; }
-}
-`;
 
 /* ─── component ─────────────────────────────────────────────────────────── */
 interface HeroSectionProps {
@@ -260,9 +36,22 @@ export default function HeroSection({ onStartShopping }: HeroSectionProps) {
 
   return (
     <>
-      <style>{CSS}</style>
 
       <div className="tg-hero-wrap">
+        {/* Optimized background image for fast loading */}
+        <Image
+          src="/bgPart2.jpeg"
+          alt="Trendy Glitterz Background"
+          fill
+          priority
+          quality={95}
+          className="object-cover object-center pointer-events-none transition-opacity duration-1000"
+          sizes="100vw"
+        />
+        
+        {/* Dark overlay for text readability */}
+        <div className="absolute inset-0 bg-black/60 z-[1] pointer-events-none" />
+
 
         {/* floating particles — only after mount to avoid SSR mismatch */}
         {mounted && PARTICLES.map((p) => (
@@ -287,11 +76,21 @@ export default function HeroSection({ onStartShopping }: HeroSectionProps) {
 
           {/* CENTERED — copy */}
           <div className="tg-left">
-            <div className="tg-eyebrow">SS 2025 Collection</div>
+            <div className="tg-eyebrow">
+              <span className="gold-gradient-text">Since 2021</span>
+            </div>
 
-            <h1 className="tg-h1">
-              <span className="tg-h1-l">TRENDY</span>
-              <span className="tg-h1-l">GLITTERZ</span>
+            <h1 className="tg-h1 relative">
+              <span className="tg-h1-l relative inline-block">
+                <span className="gold-gradient-text pb-2">TRENDY</span>
+                <div className="tg-sparkle s1" />
+                <div className="tg-sparkle s3" />
+              </span>
+              <span className="tg-h1-l relative inline-block">
+                <span className="gold-gradient-text pb-2">GLITTERZ</span>
+                <div className="tg-sparkle s2" />
+                <div className="tg-sparkle s4" />
+              </span>
             </h1>
 
             <p className="tg-sub uppercase tracking-[0.2em] font-medium">
@@ -317,15 +116,15 @@ export default function HeroSection({ onStartShopping }: HeroSectionProps) {
 
             <div className="tg-stats">
               <div>
-                <div className="tg-stat-num">2<em>K+</em></div>
+                <div className="tg-stat-num gold-gradient-text">2K+</div>
                 <div className="tg-stat-lbl">Products</div>
               </div>
               <div>
-                <div className="tg-stat-num">50<em>K+</em></div>
+                <div className="tg-stat-num gold-gradient-text">50K+</div>
                 <div className="tg-stat-lbl">Customers</div>
               </div>
               <div>
-                <div className="tg-stat-num">4.<em>9</em></div>
+                <div className="tg-stat-num gold-gradient-text">4.9</div>
                 <div className="tg-stat-lbl">Rating</div>
               </div>
             </div>

@@ -29,7 +29,7 @@ function Footerdemo() {
     <footer className="relative overflow-hidden w-full h-full">
       {/* Container that switches background colors based on state */}
       <div 
-        className={`border-t border-obsidian/10 transition-colors duration-500 overflow-hidden relative w-full h-full ${isDarkMode ? 'footer-dark' : 'bg-alabaster text-obsidian'}`}
+        className={`border-t border-obsidian/10 transition-colors duration-500 overflow-hidden relative w-full h-full ${isDarkMode ? 'footer-dark' : 'footer-light'}`}
       >
       {/* Huge watermark text */}
       <div className="absolute top-6 left-0 w-full overflow-hidden select-none pointer-events-none flex justify-center whitespace-nowrap text-obsidian">

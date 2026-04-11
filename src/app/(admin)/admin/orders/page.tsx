@@ -25,9 +25,9 @@ export default function OrdersPage() {
   const filteredOrders = useMemo(() => {
     return orders.filter((order) => {
       const matchesSearch = 
-        order.customer?.toLowerCase().includes(search.toLowerCase()) || 
+        (order.customer?.toLowerCase() ?? "").includes(search.toLowerCase()) || 
         order.id.toLowerCase().includes(search.toLowerCase()) ||
-        order.product?.toLowerCase().includes(search.toLowerCase());
+        (order.product?.toLowerCase() ?? "").includes(search.toLowerCase());
       
       const matchesFilter = filter === "All" || 
         (filter === "Pending" && (order.status === "pending" || order.status === "processing")) ||

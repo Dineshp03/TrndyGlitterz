@@ -7,12 +7,14 @@ import { useAuth } from "@clerk/nextjs";
 import Link from "next/link";
 import { Plus, Search, Filter, Edit2, Trash2, Gem, X, Upload, Link as LinkIcon } from "lucide-react";
 import { toast } from "sonner";
+import imageCompression from 'browser-image-compression';
 
 export default function ProductsPage() {
   const { getToken } = useAuth();
   const { products, fetchProducts, addProduct, updateProduct, deleteProduct, setProducts } = useProductStore();
   const [searchQuery, setSearchQuery] = useState("");
   const [onlyShowImported, setOnlyShowImported] = useState(false);
+  const [selectedCategoryFilter, setSelectedCategoryFilter] = useState<string | null>(null);
   
   useEffect(() => {
     fetchProducts();
@@ -22,7 +24,8 @@ export default function ProductsPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   
-  const CATEGORIES = ["Earrings", "Bands", "Chains", "Bracelets", "Rings", "Uncategorized"];
+  const CATEGORIES = ["Earrings", "Neckpiece", "Bracelets", "Finger Rings", "Hair Accessories", "Korean Earrings", "Bands", "Chains", "Rings", "Uncategorized"];
+  const FILTER_CATEGORIES = ["All", ...CATEGORIES];
 
   // Form state
   const [formData, setFormData] = useState<{
@@ -61,8 +64,11 @@ export default function ProductsPage() {
     if (onlyShowImported) {
       result = result.filter(p => p.isImported);
     }
+    if (selectedCategoryFilter) {
+      result = result.filter(p => p.category === selectedCategoryFilter);
+    }
     return result;
-  }, [products, searchQuery, onlyShowImported]);
+  }, [products, searchQuery, onlyShowImported, selectedCategoryFilter]);
 
   const handleEdit = (product: Product) => {
     setEditingProduct(product);
@@ -111,8 +117,17 @@ export default function ProductsPage() {
     if (!file) return null;
 
     try {
+      toast.info("Compressing image...");
+      const options = {
+        maxSizeMB: 1,
+        maxWidthOrHeight: 1920,
+        useWebWorker: true,
+      };
+      
+      const compressedFile = await imageCompression(file, options);
+      
       const formData = new FormData();
-      formData.append('file', file);
+      formData.append('file', compressedFile, compressedFile.name || file.name);
 
       const response = await fetch('/api/upload', {
         method: 'POST',
@@ -241,6 +256,23 @@ export default function ProductsPage() {
       </div>
 
 
+
+      {/* Category filter chips */}
+      <div className="flex flex-wrap gap-2 mb-5">
+        {FILTER_CATEGORIES.map(cat => (
+          <button
+            key={cat}
+            onClick={() => setSelectedCategoryFilter(cat === "All" ? null : cat)}
+            className={`px-3 py-1 rounded-full text-[10px] font-mono uppercase tracking-wider border transition-all ${
+              (cat === "All" && !selectedCategoryFilter) || selectedCategoryFilter === cat
+                ? "bg-[#2C2C2C] text-white border-[#2C2C2C]"
+                : "bg-white text-[#888] border-[#F0EDE8] hover:border-[#ccc]"
+            }`}
+          >
+            {cat}
+          </button>
+        ))}
+      </div>
 
       {/* Product count */}
       <p className="text-[10px] font-mono text-[#bbb] uppercase tracking-[0.15em] mb-4">
