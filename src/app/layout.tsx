@@ -31,9 +31,50 @@ const bebas = Bebas_Neue({
   display: "swap",
 });
 
+import { siteConfig } from "@/lib/metadata-config";
+
 export const metadata: Metadata = {
-  title: "TRENDY GLITTERZ | Editorial Collection",
-  description: "Curated luxury accessories for the modern woman.",
+  metadataBase: new URL(siteConfig.url),
+  title: {
+    default: siteConfig.defaultTitle,
+    template: siteConfig.titleTemplate,
+  },
+  description: siteConfig.description,
+  keywords: siteConfig.keywords,
+  authors: [
+    {
+      name: "Trendy Glitterz",
+      url: siteConfig.url,
+    },
+  ],
+  creator: "Trendy Glitterz",
+  openGraph: {
+    type: "website",
+    locale: "en_US",
+    url: siteConfig.url,
+    title: siteConfig.defaultTitle,
+    description: siteConfig.description,
+    siteName: siteConfig.name,
+    images: [
+      {
+        url: siteConfig.ogImage,
+        width: 1200,
+        height: 630,
+        alt: siteConfig.name,
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: siteConfig.defaultTitle,
+    description: siteConfig.description,
+    images: [siteConfig.ogImage],
+    creator: "@trendyglitterz",
+  },
+  icons: {
+    icon: "/favicon.ico",
+  },
+  manifest: `${siteConfig.url}/site.webmanifest`,
 };
 
 export default function RootLayout({
