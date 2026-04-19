@@ -4,6 +4,7 @@ import Link from "next/link";
 import { ShoppingBag, Menu, X, UserCircle, Heart, ChevronDown } from "lucide-react";
 import { useCart } from "@/hooks/useCart";
 import { useSettingsStore } from "@/store/useSettingsStore";
+import { useWishlistStore } from "@/store/useWishlistStore";
 import { usePathname, useRouter } from "next/navigation";
 import { useState, useEffect, useCallback } from "react";
 import { useUser, Show } from "@clerk/nextjs";
@@ -49,6 +50,7 @@ export default function Navbar() {
   const router = useRouter();
   const { user, isSignedIn } = useUser();
   const { getCartCount, openCart } = useCart();
+  const wishlist = useWishlistStore();
   useSettingsStore();
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -158,16 +160,26 @@ export default function Navbar() {
               <button onClick={() => router.push("/login")} className="text-white/70 hover:text-white transition-colors" aria-label="Account">
                 <UserCircle className="w-5 h-5" strokeWidth={1.5} />
               </button>
-              <button onClick={() => router.push("/login")} className="text-white/70 hover:text-[#ff4d4f] transition-colors" aria-label="Wishlist">
+              <button onClick={() => router.push("/login")} className="text-white/70 hover:text-[#ff4d4f] transition-colors relative" aria-label="Wishlist">
                 <Heart className="w-5 h-5" strokeWidth={1.5} />
+                {mounted && wishlist.items.length > 0 && (
+                  <span className="absolute -top-1.5 -right-2 bg-[#ff4d4f] text-white text-[9px] w-4 h-4 flex items-center justify-center rounded-full font-medium">
+                    {wishlist.items.length}
+                  </span>
+                )}
               </button>
             </Show>
             <Show when="signed-in">
               <Link href="/profile" className="text-white/70 hover:text-white transition-colors" aria-label="Account">
                 <UserCircle className="w-5 h-5" strokeWidth={1.5} />
               </Link>
-              <Link href="/wishlist" className="text-white/70 hover:text-[#ff4d4f] transition-colors" aria-label="Wishlist">
+              <Link href="/wishlist" className="text-white/70 hover:text-[#ff4d4f] transition-colors relative" aria-label="Wishlist">
                 <Heart className="w-5 h-5" strokeWidth={1.5} />
+                {mounted && wishlist.items.length > 0 && (
+                  <span className="absolute -top-1.5 -right-2 bg-[#ff4d4f] text-white text-[9px] w-4 h-4 flex items-center justify-center rounded-full font-medium">
+                    {wishlist.items.length}
+                  </span>
+                )}
               </Link>
             </Show>
             <button
@@ -195,8 +207,13 @@ export default function Navbar() {
               </button>
             </Show>
             <Show when="signed-in">
-              <Link href="/wishlist" className="text-white">
+              <Link href="/wishlist" className="relative text-white">
                 <Heart className="w-5 h-5" strokeWidth={1.5} />
+                {mounted && wishlist.items.length > 0 && (
+                  <span className="absolute -top-1.5 -right-2 bg-[#ff4d4f] text-white text-[9px] w-3.5 h-3.5 flex items-center justify-center rounded-full">
+                    {wishlist.items.length}
+                  </span>
+                )}
               </Link>
               <Link href="/profile" className="text-white" aria-label="Profile">
                 <UserCircle className="w-5 h-5" strokeWidth={1.5} />
