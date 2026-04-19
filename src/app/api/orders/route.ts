@@ -43,6 +43,7 @@ export async function POST(request: NextRequest) {
       state,
       pincode,
       notes,
+      paymentMethod,
       items,
     } = body
 
@@ -94,6 +95,7 @@ export async function POST(request: NextRequest) {
         pincode: pincode ?? null,
         total,
         notes: notes ?? null,
+        payment_method: paymentMethod ?? null,
         status: 'pending',
       })
       .select()

@@ -105,10 +105,25 @@ export default function ProductsPage() {
   };
 
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = async (product: Product) => {
+    const isConfirmed = window.confirm(
+      `Are you sure you want to delete "${product.name}"?\n\nThis action cannot be undone.`
+    );
+    
+    if (!isConfirmed) return;
+
     const token = await getToken();
     if (!token) return toast.error("Unauthorized");
-    deleteProduct(id, token);
+    
+    try {
+      await deleteProduct(product.id, token);
+      toast.success("Product deleted successfully");
+      if (isModalOpen && editingProduct?.id === product.id) {
+        setIsModalOpen(false);
+      }
+    } catch (err) {
+      toast.error("Failed to delete product");
+    }
   };
 
   const [isUploading, setIsUploading] = useState(false);
@@ -312,7 +327,7 @@ export default function ProductsPage() {
                   <Edit2 size={14} className="text-[#555] inherit-hover" />
                 </button>
                 <button 
-                  onClick={() => handleDelete(product.id)}
+                  onClick={() => handleDelete(product)}
                   className="relative z-10 w-9 h-9 rounded-full bg-white flex items-center justify-center hover:bg-red-500 hover:text-white transition-colors shadow-sm group/delete"
                 >
                   <Trash2 size={14} className="text-red-500 group-hover/delete:text-white" />
@@ -540,6 +555,15 @@ export default function ProductsPage() {
 
             {/* Modal Footer */}
             <div className="bg-white border-t border-[#F0EDE8] px-6 py-4 flex items-center justify-end gap-3 shrink-0">
+              {editingProduct && (
+                <button 
+                  onClick={() => handleDelete(editingProduct)}
+                  className="mr-auto flex items-center gap-1.5 text-xs font-semibold text-red-500 hover:text-red-600 transition-colors"
+                >
+                  <Trash2 size={13} />
+                  Delete Product
+                </button>
+              )}
               <button 
                 onClick={() => setIsModalOpen(false)} 
                 className="px-5 py-2 text-xs font-semibold text-[#555] hover:bg-gray-100 rounded-full transition-all"

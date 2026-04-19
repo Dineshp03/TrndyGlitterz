@@ -1,17 +1,11 @@
 "use client";
 
-import { useState, useMemo } from "react";
-import { Search, Mail, Phone, MapPin, X, UserX, MessageSquare } from "lucide-react";
-
-// Initial mock data
-const initialCustomers = [
-  { id: "C001", name: "Priya Sharma", email: "priya@example.com", phone: "+91 98765 43210", location: "Mumbai", orders: 8, spent: "₹14,200", joined: "Jan 2026", avatar: "P" },
-  { id: "C002", name: "Ananya Reddy", email: "ananya@example.com", phone: "+91 87654 32109", location: "Bangalore", orders: 5, spent: "₹9,450", joined: "Feb 2026", avatar: "A" },
-  { id: "C003", name: "Meera Nair", email: "meera@example.com", phone: "+91 76543 21098", location: "Chennai", orders: 3, spent: "₹6,100", joined: "Feb 2026", avatar: "M" },
-  { id: "C004", name: "Divya Kapoor", email: "divya@example.com", phone: "+91 65432 10987", location: "Delhi", orders: 12, spent: "₹22,800", joined: "Dec 2025", avatar: "D" },
-  { id: "C005", name: "Riya Patel", email: "riya@example.com", phone: "+91 54321 09876", location: "Ahmedabad", orders: 2, spent: "₹4,200", joined: "Mar 2026", avatar: "R" },
-  { id: "C006", name: "Kavya Singh", email: "kavya@example.com", phone: "+91 43210 98765", location: "Pune", orders: 7, spent: "₹12,700", joined: "Jan 2026", avatar: "K" },
-];
+import { useEffect, useMemo, useState } from "react";
+import { useOrderStore, GlobalOrder } from "@/store/useOrderStore";
+import {
+  Search, Phone, MapPin, X, Package, CheckCircle2,
+  CreditCard, ChevronDown, ChevronUp, ShoppingBag
+} from "lucide-react";
 
 const avatarColors = [
   "from-[#F5B8C8] to-[#E8809A]",
@@ -22,29 +16,80 @@ const avatarColors = [
   "from-[#d4b8f5] to-[#a080e8]",
 ];
 
-type Customer = typeof initialCustomers[0];
+function getInitials(name: string) {
+  return name
+    .split(" ")
+    .map((n) => n[0])
+    .slice(0, 2)
+    .join("")
+    .toUpperCase();
+}
+
+type CustomerRow = {
+  name: string;
+  phone: string;
+  address: string;
+  totalOrders: number;
+  totalSpent: number;
+  orders: GlobalOrder[];
+};
 
 export default function CustomersPage() {
-  const [customers, setCustomers] = useState<Customer[]>(initialCustomers);
+  const { orders, fetchOrders, isLoading } = useOrderStore();
   const [search, setSearch] = useState("");
-  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
+  const [selectedCustomer, setSelectedCustomer] = useState<CustomerRow | null>(null);
+  const [expandedOrder, setExpandedOrder] = useState<string | null>(null);
 
-  const filteredCustomers = useMemo(() => {
-    return customers.filter(c => 
-      c.name.toLowerCase().includes(search.toLowerCase()) || 
-      c.email.toLowerCase().includes(search.toLowerCase()) ||
-      c.id.toLowerCase().includes(search.toLowerCase()) ||
-      c.phone.includes(search)
-    );
-  }, [customers, search]);
+  useEffect(() => {
+    fetchOrders();
+  }, [fetchOrders]);
 
-  const handleBlockCustomer = () => {
-    if (selectedCustomer) {
-      if(confirm(`Are you sure you want to block ${selectedCustomer.name}? this action is permanent.`)){
-         setCustomers(customers.filter(c => c.id !== selectedCustomer.id));
-         setSelectedCustomer(null);
+  // Only Razorpay-paid orders
+  const razorpayOrders = useMemo(
+    () => orders.filter((o) => o.payment_method === "razorpay"),
+    [orders]
+  );
+
+  // Group by phone number → deduplicate customers
+  const customers = useMemo<CustomerRow[]>(() => {
+    const map = new Map<string, CustomerRow>();
+    for (const order of razorpayOrders) {
+      const key = order.customer_phone ?? order.customer_email;
+      if (!key) continue;
+      if (!map.has(key)) {
+        map.set(key, {
+          name: order.customer_name,
+          phone: order.customer_phone ?? "—",
+          address: order.address,
+          totalOrders: 0,
+          totalSpent: 0,
+          orders: [],
+        });
       }
+      const entry = map.get(key)!;
+      entry.totalOrders += 1;
+      entry.totalSpent += order.total;
+      entry.orders.push(order);
     }
+    return Array.from(map.values());
+  }, [razorpayOrders]);
+
+  const filtered = useMemo(
+    () =>
+      customers.filter((c) => {
+        const q = search.toLowerCase();
+        return (
+          c.name.toLowerCase().includes(q) ||
+          c.phone.includes(q) ||
+          c.address.toLowerCase().includes(q)
+        );
+      }),
+    [customers, search]
+  );
+
+  const whatsappLink = (phone: string, name: string) => {
+    const num = phone.replace(/\D/g, "");
+    return `https://wa.me/91${num}?text=Hi%20${encodeURIComponent(name)}%2C%20thank%20you%20for%20shopping%20at%20Trendy%20Glitterz!`;
   };
 
   return (
@@ -53,13 +98,19 @@ export default function CustomersPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 md:mb-8 pt-4 md:pt-0">
         <div>
           <p className="text-[10px] font-mono text-[#bbb] uppercase tracking-[0.2em]">Admin</p>
-          <h1 className="text-2xl md:text-3xl font-serif text-[#2C2C2C] mt-0.5 tracking-tight">Customers</h1>
+          <h1 className="text-2xl md:text-3xl font-serif text-[#2C2C2C] mt-0.5 tracking-tight">
+            Customers
+          </h1>
+          <p className="text-[11px] text-[#aaa] font-sans mt-1 flex items-center gap-1.5">
+            <CreditCard size={11} className="text-green-500" />
+            Showing only verified Razorpay-paid customers
+          </p>
         </div>
         <div className="relative w-full sm:w-64">
           <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#ccc]" />
           <input
             type="text"
-            placeholder="Search customers..."
+            placeholder="Search by name, phone..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="w-full bg-white border border-[#F0EDE8] rounded-full pl-8 pr-4 py-2 text-xs text-[#555] placeholder-[#ccc] focus:outline-none focus:border-[#F5B8C8] transition-all"
@@ -70,9 +121,14 @@ export default function CustomersPage() {
       {/* Stats */}
       <div className="grid grid-cols-3 gap-3 mb-6">
         {[
-          { label: "Total Customers", value: customers.length.toString() },
-          { label: "New This Month", value: "64" },
-          { label: "Avg. Order Value", value: "₹2,280" },
+          { label: "Verified Customers", value: isLoading ? "..." : customers.length.toString() },
+          {
+            label: "Total Revenue",
+            value: isLoading
+              ? "..."
+              : `₹${customers.reduce((acc, c) => acc + c.totalSpent, 0).toLocaleString("en-IN")}`,
+          },
+          { label: "Total Orders", value: isLoading ? "..." : razorpayOrders.length.toString() },
         ].map((stat) => (
           <div key={stat.label} className="bg-white rounded-2xl border border-[#F0EDE8] p-3 md:p-4 text-center">
             <p className="text-xl md:text-2xl font-bold text-[#2C2C2C]">{stat.value}</p>
@@ -81,145 +137,269 @@ export default function CustomersPage() {
         ))}
       </div>
 
-      {/* Desktop Table */}
-      <div className="hidden md:block bg-white rounded-2xl border border-[#F0EDE8] overflow-hidden">
-        <table className="w-full">
-          <thead>
-            <tr className="border-b border-[#F0EDE8]">
-              {["Customer", "Contact", "Location", "Orders", "Total Spent", "Joined"].map((h) => (
-                <th key={h} className="text-left text-[9px] font-mono text-[#bbb] uppercase tracking-[0.15em] px-5 py-3.5">
-                  {h}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {filteredCustomers.length > 0 ? filteredCustomers.map((customer, i) => (
-              <tr key={customer.id} onClick={() => setSelectedCustomer(customer)} className="border-b border-[#F0EDE8]/60 hover:bg-[#FAFAF8] transition-colors cursor-pointer">
-                <td className="px-5 py-3.5">
-                  <div className="flex items-center gap-3">
-                    <div className={`w-9 h-9 rounded-full bg-gradient-to-br ${avatarColors[i % avatarColors.length]} flex items-center justify-center text-white text-sm font-bold flex-shrink-0`}>
-                      {customer.avatar}
-                    </div>
-                    <div>
-                      <p className="text-xs font-medium text-[#2C2C2C]">{customer.name}</p>
-                      <p className="text-[9px] font-mono text-[#bbb]">{customer.id}</p>
-                    </div>
-                  </div>
-                </td>
-                <td className="px-5 py-3.5">
-                  <div className="flex flex-col gap-0.5">
-                    <span className="flex items-center gap-1 text-[10px] text-[#888]"><Mail size={10} className="text-[#ccc]" />{customer.email}</span>
-                    <span className="flex items-center gap-1 text-[10px] text-[#888]"><Phone size={10} className="text-[#ccc]" />{customer.phone}</span>
-                  </div>
-                </td>
-                <td className="px-5 py-3.5">
-                  <span className="flex items-center gap-1 text-xs text-[#888]">
-                    <MapPin size={11} className="text-[#ccc]" />
-                    {customer.location}
-                  </span>
-                </td>
-                <td className="px-5 py-3.5 text-xs font-medium text-[#555]">{customer.orders}</td>
-                <td className="px-5 py-3.5 text-xs font-bold text-[#2C2C2C]">{customer.spent}</td>
-                <td className="px-5 py-3.5 text-[10px] text-[#bbb]">{customer.joined}</td>
-              </tr>
-            )) : (
-              <tr>
-                <td colSpan={6} className="px-5 py-12 text-center text-xs text-[#888]">No customers found.</td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
-
-      {/* Mobile Cards */}
-      <div className="md:hidden space-y-3">
-        {filteredCustomers.length > 0 ? filteredCustomers.map((customer, i) => (
-          <div key={customer.id} onClick={() => setSelectedCustomer(customer)} className="bg-white rounded-2xl border border-[#F0EDE8] p-4 cursor-pointer">
-            <div className="flex items-center gap-3 mb-3">
-              <div className={`w-10 h-10 rounded-full bg-gradient-to-br ${avatarColors[i % avatarColors.length]} flex items-center justify-center text-white font-bold`}>
-                {customer.avatar}
-              </div>
-              <div>
-                <p className="text-sm font-medium text-[#2C2C2C]">{customer.name}</p>
-                <p className="text-[10px] text-[#bbb]">{customer.email}</p>
-              </div>
-            </div>
-            <div className="grid grid-cols-3 gap-2 pt-3 border-t border-[#F0EDE8]">
-              <div className="text-center">
-                <p className="text-sm font-bold text-[#2C2C2C]">{customer.orders}</p>
-                <p className="text-[9px] text-[#bbb] uppercase tracking-widest">Orders</p>
-              </div>
-              <div className="text-center">
-                <p className="text-xs font-bold text-[#2C2C2C]">{customer.spent}</p>
-                <p className="text-[9px] text-[#bbb] uppercase tracking-widest">Spent</p>
-              </div>
-              <div className="text-center">
-                <p className="text-[10px] font-medium text-[#888]">{customer.location}</p>
-                <p className="text-[9px] text-[#bbb] uppercase tracking-widest">City</p>
-              </div>
-            </div>
+      {/* Loading */}
+      {isLoading ? (
+        <div className="flex items-center justify-center py-24 bg-white rounded-2xl border border-[#F0EDE8]">
+          <div className="w-6 h-6 rounded-full border-2 border-[#F5B8C8]/30 border-t-[#F5B8C8] animate-spin" />
+        </div>
+      ) : filtered.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-24 bg-white rounded-2xl border border-[#F0EDE8] gap-4">
+          <ShoppingBag size={36} className="text-[#ddd]" strokeWidth={1} />
+          <div className="text-center">
+            <p className="text-sm font-medium text-[#888]">No Razorpay customers yet</p>
+            <p className="text-[11px] text-[#bbb] mt-1">
+              Customers will appear here after completing a Razorpay payment.
+            </p>
           </div>
-        )) : (
-          <div className="text-center py-8 text-xs text-[#888]">No customers found.</div>
-        )}
-      </div>
+        </div>
+      ) : (
+        <>
+          {/* Desktop Table */}
+          <div className="hidden md:block bg-white rounded-2xl border border-[#F0EDE8] overflow-hidden">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b border-[#F0EDE8]">
+                  {["Customer", "WhatsApp", "Address", "Orders", "Total Spent"].map((h) => (
+                    <th
+                      key={h}
+                      className="text-left text-[9px] font-mono text-[#bbb] uppercase tracking-[0.15em] px-5 py-3.5"
+                    >
+                      {h}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {filtered.map((customer, i) => (
+                  <tr
+                    key={customer.phone + i}
+                    onClick={() => setSelectedCustomer(customer)}
+                    className="border-b border-[#F0EDE8]/60 hover:bg-[#FAFAF8] transition-colors cursor-pointer"
+                  >
+                    <td className="px-5 py-3.5">
+                      <div className="flex items-center gap-3">
+                        <div
+                          className={`w-9 h-9 rounded-full bg-gradient-to-br ${avatarColors[i % avatarColors.length]} flex items-center justify-center text-white text-xs font-bold flex-shrink-0`}
+                        >
+                          {getInitials(customer.name)}
+                        </div>
+                        <p className="text-xs font-medium text-[#2C2C2C]">{customer.name}</p>
+                      </div>
+                    </td>
+                    <td className="px-5 py-3.5">
+                      <a
+                        href={whatsappLink(customer.phone, customer.name)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={(e) => e.stopPropagation()}
+                        className="flex items-center gap-1.5 text-[11px] text-[#25D366] hover:underline font-medium"
+                      >
+                        <Phone size={10} />
+                        {customer.phone}
+                      </a>
+                    </td>
+                    <td className="px-5 py-3.5">
+                      <span className="flex items-center gap-1 text-[11px] text-[#888]">
+                        <MapPin size={10} className="text-[#ccc] flex-shrink-0" />
+                        <span className="truncate max-w-[200px]">{customer.address}</span>
+                      </span>
+                    </td>
+                    <td className="px-5 py-3.5 text-xs font-medium text-[#555]">
+                      {customer.totalOrders}
+                    </td>
+                    <td className="px-5 py-3.5 text-xs font-bold text-[#2C2C2C]">
+                      ₹{customer.totalSpent.toLocaleString("en-IN")}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
 
-      {/* Modal for Customer Details */}
+          {/* Mobile Cards */}
+          <div className="md:hidden space-y-3">
+            {filtered.map((customer, i) => (
+              <div
+                key={customer.phone + i}
+                onClick={() => setSelectedCustomer(customer)}
+                className="bg-white rounded-2xl border border-[#F0EDE8] p-4 cursor-pointer"
+              >
+                <div className="flex items-center gap-3 mb-3">
+                  <div
+                    className={`w-10 h-10 rounded-full bg-gradient-to-br ${avatarColors[i % avatarColors.length]} flex items-center justify-center text-white text-xs font-bold`}
+                  >
+                    {getInitials(customer.name)}
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-[#2C2C2C]">{customer.name}</p>
+                    <a
+                      href={whatsappLink(customer.phone, customer.name)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={(e) => e.stopPropagation()}
+                      className="text-[11px] text-[#25D366] font-medium"
+                    >
+                      {customer.phone}
+                    </a>
+                  </div>
+                </div>
+                <p className="text-[11px] text-[#888] mb-3 flex items-start gap-1">
+                  <MapPin size={10} className="text-[#ccc] mt-0.5 flex-shrink-0" />
+                  {customer.address}
+                </p>
+                <div className="grid grid-cols-2 gap-2 pt-3 border-t border-[#F0EDE8]">
+                  <div className="text-center">
+                    <p className="text-sm font-bold text-[#2C2C2C]">{customer.totalOrders}</p>
+                    <p className="text-[9px] text-[#bbb] uppercase tracking-widest">Orders</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-xs font-bold text-[#2C2C2C]">
+                      ₹{customer.totalSpent.toLocaleString("en-IN")}
+                    </p>
+                    <p className="text-[9px] text-[#bbb] uppercase tracking-widest">Spent</p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </>
+      )}
+
+      {/* Customer Detail Modal */}
       {selectedCustomer && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-obsidian/40 backdrop-blur-sm" onClick={() => setSelectedCustomer(null)}>
-          <div className="w-full max-w-md bg-white rounded-3xl shadow-xl overflow-hidden" onClick={e => e.stopPropagation()}>
-            <div className="flex flex-col items-center justify-center pt-8 pb-6 px-6 relative border-b border-[#F0EDE8]">
-              <button onClick={() => setSelectedCustomer(null)} className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full hover:bg-black/5 text-[#888]">
+        <div
+          className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-obsidian/40 backdrop-blur-sm"
+          onClick={() => { setSelectedCustomer(null); setExpandedOrder(null); }}
+        >
+          <div
+            className="w-full max-w-lg bg-white rounded-3xl shadow-xl overflow-hidden max-h-[90vh] flex flex-col"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Modal Header */}
+            <div className="flex flex-col items-center justify-center pt-8 pb-6 px-6 relative border-b border-[#F0EDE8] flex-shrink-0">
+              <button
+                onClick={() => { setSelectedCustomer(null); setExpandedOrder(null); }}
+                className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full hover:bg-black/5 text-[#888]"
+              >
                 <X size={16} />
               </button>
-              <div className={`w-20 h-20 rounded-full bg-gradient-to-br from-[#F5B8C8] to-[#E8809A] flex items-center justify-center text-white text-3xl font-bold mb-4 shadow-sm`}>
-                {selectedCustomer.avatar}
+              <div className="w-20 h-20 rounded-full bg-gradient-to-br from-[#F5B8C8] to-[#E8809A] flex items-center justify-center text-white text-2xl font-bold mb-4 shadow-sm">
+                {getInitials(selectedCustomer.name)}
               </div>
               <h2 className="text-xl font-serif text-[#2C2C2C] mb-1">{selectedCustomer.name}</h2>
-              <p className="text-[10px] font-mono text-[#E8809A] uppercase tracking-widest">{selectedCustomer.id} · Joined {selectedCustomer.joined}</p>
+              <span className="flex items-center gap-1 text-[10px] text-green-600 bg-green-50 px-3 py-1 rounded-full font-mono uppercase tracking-widest">
+                <CheckCircle2 size={10} className="fill-green-100" />
+                Razorpay Verified
+              </span>
             </div>
-            
-            <div className="p-6">
-              <div className="grid grid-cols-2 gap-4 mb-6">
-                <div>
-                  <p className="text-[10px] font-mono text-[#bbb] uppercase tracking-widest mb-1"><Mail size={10} className="inline mr-1" />Email</p>
-                  <p className="text-sm font-medium text-[#2C2C2C] truncate">{selectedCustomer.email}</p>
+
+            {/* Scrollable Content */}
+            <div className="overflow-y-auto flex-1 p-6 space-y-5">
+              {/* Contact Details */}
+              <div className="grid grid-cols-1 gap-4">
+                <div className="bg-[#FAFAF8] rounded-xl p-4 border border-[#F0EDE8] space-y-3">
+                  <p className="text-[10px] font-mono text-[#bbb] uppercase tracking-widest">Contact Details</p>
+                  <div className="flex items-center gap-3">
+                    <Phone size={14} className="text-[#25D366]" />
+                    <a
+                      href={whatsappLink(selectedCustomer.phone, selectedCustomer.name)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-sm font-medium text-[#25D366] hover:underline"
+                    >
+                      {selectedCustomer.phone} (WhatsApp)
+                    </a>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <MapPin size={14} className="text-[#aaa] mt-0.5 flex-shrink-0" />
+                    <p className="text-sm text-[#2C2C2C]">{selectedCustomer.address}</p>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-[10px] font-mono text-[#bbb] uppercase tracking-widest mb-1"><Phone size={10} className="inline mr-1" />Phone</p>
-                  <p className="text-sm font-medium text-[#2C2C2C]">{selectedCustomer.phone}</p>
-                </div>
-                <div className="col-span-2">
-                  <p className="text-[10px] font-mono text-[#bbb] uppercase tracking-widest mb-1"><MapPin size={10} className="inline mr-1" />Location</p>
-                  <p className="text-sm font-medium text-[#2C2C2C]">{selectedCustomer.location}</p>
+
+                {/* Stats */}
+                <div className="bg-[#FAFAF8] rounded-xl p-4 border border-[#F0EDE8] grid grid-cols-2 gap-4">
+                  <div className="text-center border-r border-[#F0EDE8]">
+                    <p className="text-2xl font-bold text-[#2C2C2C]">{selectedCustomer.totalOrders}</p>
+                    <p className="text-[9px] font-mono text-[#888] uppercase tracking-widest mt-1">Paid Orders</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-xl font-bold text-[#2C2C2C]">₹{selectedCustomer.totalSpent.toLocaleString("en-IN")}</p>
+                    <p className="text-[9px] font-mono text-[#888] uppercase tracking-widest mt-1">Total Spent</p>
+                  </div>
                 </div>
               </div>
 
-              <div className="bg-[#FAFAF8] rounded-xl p-4 border border-[#F0EDE8] grid grid-cols-2 gap-4">
-                <div className="text-center border-r border-[#F0EDE8]">
-                  <p className="text-xl font-bold text-[#2C2C2C]">{selectedCustomer.orders}</p>
-                  <p className="text-[9px] font-mono text-[#888] uppercase tracking-widest mt-1">Total Orders</p>
-                </div>
-                <div className="text-center">
-                  <p className="text-xl font-bold text-[#2C2C2C]">{selectedCustomer.spent}</p>
-                  <p className="text-[9px] font-mono text-[#888] uppercase tracking-widest mt-1">Total Spent</p>
+              {/* Orders Breakdown */}
+              <div>
+                <p className="text-[10px] font-mono text-[#bbb] uppercase tracking-widest mb-3">
+                  Order History
+                </p>
+                <div className="space-y-3">
+                  {selectedCustomer.orders.map((order) => {
+                    const isOpen = expandedOrder === order.id;
+                    const totalQty = order.items?.reduce((acc, i) => acc + i.quantity, 0) ?? 0;
+                    return (
+                      <div key={order.id} className="border border-[#F0EDE8] rounded-xl overflow-hidden">
+                        <button
+                          onClick={() => setExpandedOrder(isOpen ? null : order.id)}
+                          className="w-full flex items-center justify-between p-4 hover:bg-[#FAFAF8] transition-colors text-left"
+                        >
+                          <div className="flex items-center gap-3">
+                            <Package size={16} className="text-[#D4AF37]" strokeWidth={1.5} />
+                            <div>
+                              <p className="text-xs font-medium text-[#2C2C2C]">
+                                {order.product ?? "Order"}
+                              </p>
+                              <p className="text-[10px] text-[#aaa]">
+                                {new Date(order.created_at).toLocaleDateString("en-IN", {
+                                  day: "numeric", month: "short", year: "numeric"
+                                })}
+                                {" · "}Qty: {totalQty}
+                                {" · "}₹{order.total.toLocaleString("en-IN")}
+                              </p>
+                            </div>
+                          </div>
+                          {isOpen ? <ChevronUp size={14} className="text-[#ccc]" /> : <ChevronDown size={14} className="text-[#ccc]" />}
+                        </button>
+
+                        {isOpen && order.items && (
+                          <div className="border-t border-[#F0EDE8] px-4 py-3 bg-[#FAFAF8] space-y-2">
+                            {order.items.map((item) => (
+                              <div key={item.id} className="flex items-center justify-between text-xs text-[#555]">
+                                <div>
+                                  <p className="font-medium text-[#2C2C2C]">{item.product_name}</p>
+                                  <p className="text-[#aaa]">Qty: {item.quantity} × ₹{item.price}</p>
+                                </div>
+                                <p className="font-bold text-[#2C2C2C]">
+                                  ₹{(item.quantity * item.price).toLocaleString("en-IN")}
+                                </p>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             </div>
 
-            <div className="px-6 py-4 border-t border-[#F0EDE8] flex flex-col sm:flex-row justify-end gap-3 bg-[#FAFAF8]">
-              <button 
-                onClick={handleBlockCustomer}
-                className="flex items-center justify-center gap-2 px-4 py-2 border border-red-200 text-red-600 rounded-full hover:bg-red-50 text-xs font-bold transition-colors w-full sm:w-auto"
+            {/* Footer */}
+            <div className="px-6 py-4 border-t border-[#F0EDE8] flex gap-3 bg-[#FAFAF8] flex-shrink-0">
+              <a
+                href={whatsappLink(selectedCustomer.phone, selectedCustomer.name)}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex-1 flex items-center justify-center gap-2 py-2.5 bg-[#25D366] text-white text-xs font-bold uppercase tracking-[0.1em] rounded-full hover:bg-[#128C7E] transition-colors shadow-sm"
               >
-                <UserX size={14} /> Block
-              </button>
-              <button 
-                onClick={() => { alert(`Emailing ${selectedCustomer.email}...`); setSelectedCustomer(null); }}
-                className="flex items-center justify-center gap-2 px-5 py-2 bg-[#2C2C2C] text-white text-xs font-bold uppercase tracking-[0.1em] rounded-full hover:bg-black transition-colors shadow-sm w-full sm:w-auto"
+                <Phone size={14} />
+                WhatsApp
+              </a>
+              <button
+                onClick={() => { setSelectedCustomer(null); setExpandedOrder(null); }}
+                className="px-5 py-2.5 border border-[#E0DDD8] text-[#888] text-xs font-bold uppercase tracking-[0.1em] rounded-full hover:bg-[#F0EDE8] transition-colors"
               >
-                <MessageSquare size={14} /> Contact
+                Close
               </button>
             </div>
           </div>

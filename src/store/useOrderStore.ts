@@ -23,6 +23,7 @@ export interface GlobalOrder {
   state?: string;
   pincode?: string;
   total: number;
+  payment_method?: string;
   status: "pending" | "processing" | "shipped" | "delivered" | "cancelled";
   notes?: string;
   created_at: string;
@@ -46,6 +47,7 @@ export interface PlaceOrderPayload {
   pincode?: string;
   total: number;
   notes?: string;
+  payment_method?: string;
   items: Omit<OrderItem, "id">[];
 }
 
@@ -139,7 +141,20 @@ export const useOrderStore = create<OrderState>((set, get) => ({
     // 1. Insert order
     const { data: order, error: orderError } = await supabase
       .from("orders")
-      .insert([orderFields])
+      .insert([{
+        user_id: payload.user_id ?? null,
+        customer_name: payload.customer_name,
+        customer_email: payload.customer_email,
+        customer_phone: payload.customer_phone ?? null,
+        address: payload.address,
+        city: payload.city ?? null,
+        state: payload.state ?? null,
+        pincode: payload.pincode ?? null,
+        total: payload.total,
+        notes: payload.notes ?? null,
+        payment_method: payload.payment_method ?? null,
+        status: "pending",
+      }])
       .select()
       .single();
 

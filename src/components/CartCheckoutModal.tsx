@@ -121,11 +121,12 @@ export default function CartCheckoutModal({ onClose }: { onClose: () => void }) 
         customer_name: details.fullName,
         customer_email: details.email,
         customer_phone: details.phone,
-        address: details.address,
+        address: `${details.address}, ${details.city}, ${details.state} - ${details.pincode}`,
         city: details.city,
         state: details.state,
         pincode: details.pincode,
         total: total,
+        payment_method: payment.method,
         items: items.map(item => ({
           product_id: item.id,
           product_name: item.name,
