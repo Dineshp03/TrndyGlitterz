@@ -7,8 +7,6 @@ import { useEffect, useState, useMemo } from "react";
 import Link from "next/link";
 import { Heart, ShoppingBag, Trash2, ArrowLeft, Star } from "lucide-react";
 import ProductCard from "@/components/ProductCard";
-import Navbar from "@/components/Navbar";
-import { Footerdemo } from "@/components/ui/footer-section";
 
 export default function WishlistPage() {
   const { user, isLoaded, isSignedIn } = useUser();
@@ -35,8 +33,6 @@ export default function WishlistPage() {
 
   return (
     <div className="min-h-screen bg-[#0A0A0A] text-white selection:bg-dustyrose/30">
-      <Navbar />
-      
       <main className="container mx-auto px-6 pt-32 pb-24 md:px-12">
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6 border-b border-white/10 pb-10">
@@ -109,8 +105,6 @@ export default function WishlistPage() {
           </div>
         )}
       </main>
-
-      <Footerdemo />
     </div>
   );
 }
