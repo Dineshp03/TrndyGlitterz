@@ -10,6 +10,7 @@ export interface Product {
   isImported?: boolean;
   images?: string[]; // Additional images (8+ supported)
   oldPrice?: number;
+  createdAt?: string;
 }
 
 export const products: Product[] = [];

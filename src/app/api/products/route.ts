@@ -2,6 +2,8 @@ import { NextRequest } from 'next/server'
 import { createAdminSupabaseClient } from '@/lib/supabase-server'
 import { getAuthUserId, jsonResponse, serverErrorResponse, unauthorizedResponse, badRequestResponse } from '@/lib/auth'
 
+export const dynamic = 'force-dynamic'
+
 // ─── GET /api/products ────────────────────────────────────────────────────────
 // Public — no auth required.
 // Supports ?category=rings&featured=true&limit=20&search=gold query params.

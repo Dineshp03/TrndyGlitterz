@@ -72,9 +72,9 @@ function Footerdemo() {
           <div>
             <h4 className="text-[10px] font-sans uppercase tracking-[0.2em] text-obsidian/40 mb-6">Explore</h4>
             <nav className="space-y-3 text-sm font-sans font-light">
-              <Link href="/#shop" className="block transition-colors hover:text-dustyrose">Collections</Link>
-              <Link href="/#shop" className="block transition-colors hover:text-dustyrose">New Arrivals</Link>
-              <Link href="#" className="block transition-colors hover:text-dustyrose">Journal</Link>
+              <Link href="/catalog" className="block transition-colors hover:text-dustyrose">Collections</Link>
+              <Link href="/catalog?featured=true" className="block transition-colors hover:text-dustyrose">New Arrivals</Link>
+              <Link href="/catalog" className="block transition-colors hover:text-dustyrose">Journal</Link>
               <Link href="/#about" className="block transition-colors hover:text-dustyrose">Our Ethos</Link>
               <Link href="/login" className="block transition-colors hover:text-dustyrose">Member Login</Link>
             </nav>
@@ -174,9 +174,9 @@ function Footerdemo() {
             &copy; {new Date().getFullYear()} TRENDY GLITTERZ. All rights reserved.
           </p>
           <nav className="flex gap-6 text-[10px] font-sans uppercase tracking-[0.1em] text-obsidian/40">
-            <a href="#" className="transition-colors hover:text-dustyrose">Privacy Policy</a>
-            <a href="#" className="transition-colors hover:text-dustyrose">Terms of Service</a>
-            <a href="#" className="transition-colors hover:text-dustyrose">Cookie Settings</a>
+            <Link href="/privacy" className="transition-colors hover:text-dustyrose">Privacy Policy</Link>
+            <Link href="/terms" className="transition-colors hover:text-dustyrose">Terms of Service</Link>
+            <Link href="/cookies" className="transition-colors hover:text-dustyrose">Cookie Settings</Link>
           </nav>
         </div>
       </div>

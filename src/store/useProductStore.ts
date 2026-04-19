@@ -31,7 +31,7 @@ export const useProductStore = create<ProductState>((set, get) => ({
 
       const { products } = await fetchApi(`/api/products?${query.toString()}`);
       
-      const mappedProducts: Product[] = products.map((p: any) => ({
+      const mappedProducts: Product[] = products.map((p: any, index: number) => ({
         id: p.id,
         name: p.name,
         price: p.price,
@@ -43,6 +43,7 @@ export const useProductStore = create<ProductState>((set, get) => ({
         featured: p.featured,
         isImported: p.is_imported,
         oldPrice: p.old_price,
+        createdAt: p.created_at,
       }));
 
       set({ 

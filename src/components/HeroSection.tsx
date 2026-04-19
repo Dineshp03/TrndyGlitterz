@@ -19,9 +19,11 @@ const PARTICLES = [
 /* ─── component ─────────────────────────────────────────────────────────── */
 interface HeroSectionProps {
   onStartShopping?: () => void;
+  hasNewArrivals?: boolean;
+  productCount?: number;
 }
 
-export default function HeroSection({ onStartShopping }: HeroSectionProps) {
+export default function HeroSection({ onStartShopping, hasNewArrivals, productCount = 0 }: HeroSectionProps) {
   const [mounted, setMounted] = useState(false);
   useEffect(() => { setMounted(true); }, []);
 
@@ -40,7 +42,7 @@ export default function HeroSection({ onStartShopping }: HeroSectionProps) {
       <div className="tg-hero-wrap">
         {/* Optimized background image for fast loading */}
         <Image
-          src="/bgPart2.jpeg"
+          src="/hero-bg-professional.png"
           alt="Trendy Glitterz Background"
           fill
           priority
@@ -101,22 +103,29 @@ export default function HeroSection({ onStartShopping }: HeroSectionProps) {
               <button className="tg-btn-fill" onClick={handleShop}>
                 Start Shopping
               </button>
-              <button className="tg-btn-ghost" onClick={handleShop}>
-                Explore
-                <span className="tg-ghost-circle">
-                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none"
-                    stroke="currentColor" strokeWidth="2"
-                    strokeLinecap="round" strokeLinejoin="round">
-                    <line x1="5" y1="12" x2="19" y2="12" />
-                    <polyline points="12 5 19 12 12 19" />
-                  </svg>
-                </span>
-              </button>
+              {hasNewArrivals && (
+                <button className="tg-btn-ghost" onClick={() => {
+                  const el = document.getElementById("new-arrivals");
+                  if (el) el.scrollIntoView({ behavior: "smooth" });
+                }}>
+                  New Arrivals
+                  <span className="tg-ghost-circle">
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none"
+                      stroke="currentColor" strokeWidth="2"
+                      strokeLinecap="round" strokeLinejoin="round">
+                      <line x1="5" y1="12" x2="19" y2="12" />
+                      <polyline points="12 5 19 12 12 19" />
+                    </svg>
+                  </span>
+                </button>
+              )}
             </div>
 
             <div className="tg-stats">
               <div>
-                <div className="tg-stat-num gold-gradient-text">2K+</div>
+                <div className="tg-stat-num gold-gradient-text">
+                  {productCount > 0 ? `${productCount}` : '0'}
+                </div>
                 <div className="tg-stat-lbl">Products</div>
               </div>
               <div>

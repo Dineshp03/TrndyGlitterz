@@ -83,6 +83,32 @@
     --color-card-foreground: #FFFFFF;
   }
 
+  .admin-theme {
+    --color-alabaster: #FAFAF8;
+    --color-obsidian: #2C2C2C;
+    --color-dustyrose: #E8809A;
+    --color-burgundy: #D66D87;
+    --color-sand: #F3F1ED;
+    --color-background: #FAFAF8;
+    --color-foreground: #2C2C2C;
+    --color-primary: #E8809A;
+    --color-primary-foreground: #FFFFFF;
+    --color-secondary: #FFFFFF;
+    --color-secondary-foreground: #2C2C2C;
+    --color-muted: #F3F1ED;
+    --color-muted-foreground: #888888;
+    --color-accent: #E8809A10;
+    --color-accent-foreground: #E8809A;
+    --color-border: #F0EDE8;
+    --color-input: #F0EDE8;
+    --color-ring: #E8809A;
+    --color-popover: #FFFFFF;
+    --color-popover-foreground: #2C2C2C;
+    --color-card: #FFFFFF;
+    --color-card-foreground: #2C2C2C;
+    color-scheme: light;
+  }
+
   .footer-dark {
     --color-alabaster: #0A0A0A;
     --color-obsidian: #FAFAFA;

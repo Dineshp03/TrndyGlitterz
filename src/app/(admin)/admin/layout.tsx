@@ -236,7 +236,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
   }
 
   return (
-    <div className="min-h-screen bg-[#FAFAF8]">
+    <div className="min-h-screen bg-[#FAFAF8] admin-theme text-obsidian">
       <DesktopSidebar pathname={pathname} user={user} onLogout={() => setShowLogoutConfirm(true)} />
       <TopHeader pathname={pathname} />
       <main className="pt-0 pb-20 md:ml-64 md:pt-16 md:pb-0">

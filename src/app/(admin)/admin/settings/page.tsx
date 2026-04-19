@@ -77,7 +77,12 @@ export default function SettingsPage() {
   const { deleteAllOrders } = useOrderStore();
   const settingsStore = useSettingsStore();
 
-  const [toggles, setToggles] = useState(initialQuickToggles);
+  const [toggles, setToggles] = useState(() => [
+    { id: "maintenance", label: "Maintenance Mode", desc: "Take your store offline temporarily", enabled: settingsStore.maintenanceMode, icon: Globe },
+    { id: "new-badge", label: "New Arrivals Badge", desc: "Show 'New' badge on recent products", enabled: settingsStore.newBadgeEnabled, icon: Package },
+    { id: "dark-mode", label: "Dark Mode Theme", desc: "Enable dark storefront option", enabled: settingsStore.darkMode, icon: Palette },
+    { id: "2fa", label: "Two-Factor Auth", desc: "Extra security for admin login", enabled: true, icon: Shield },
+  ]);
   const [groups, setGroups] = useState(() => {
     const defaultGroups = [...initialSettingGroups];
     
@@ -135,11 +140,18 @@ export default function SettingsPage() {
   };
 
   const handleToggle = (id: string) => {
-    setToggles(toggles.map(t => t.id === id ? { ...t, enabled: !t.enabled } : t));
-    const toggle = toggles.find(t => t.id === id);
-    if (toggle) {
-      displayToast(`${toggle.label} ${!toggle.enabled ? 'Enabled' : 'Disabled'}`);
-    }
+    const newToggles = toggles.map(t => t.id === id ? { ...t, enabled: !t.enabled } : t);
+    setToggles(newToggles);
+    
+    const toggle = newToggles.find(t => t.id === id);
+    if (!toggle) return;
+
+    // Sync with store
+    if (id === "maintenance") settingsStore.updateToggle("maintenanceMode", toggle.enabled);
+    if (id === "new-badge") settingsStore.updateToggle("newBadgeEnabled", toggle.enabled);
+    if (id === "dark-mode") settingsStore.updateToggle("darkMode", toggle.enabled);
+    
+    displayToast(`${toggle.label} ${toggle.enabled ? 'Enabled' : 'Disabled'}`);
   };
 
   const openEditModal = (groupIdx: number, itemIdx: number) => {

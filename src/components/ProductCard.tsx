@@ -98,7 +98,7 @@ export default function ProductCard({ product }: { product: Product }) {
         {/* Quick Add Bar */}
         <button 
           onClick={handleAddToCart}
-          className="absolute bottom-0 left-0 w-full bg-[#111111] text-white py-3 text-[10px] font-bold uppercase tracking-[0.2em] translate-y-full group-hover:translate-y-0 transition-all duration-300 flex items-center justify-center gap-2 z-20 hover:bg-[#D4AF37] hover:text-black border-t border-white/5 active:scale-95 origin-bottom"
+          className="absolute bottom-0 left-0 w-full bg-[#111111] text-white py-3 text-[10px] font-bold uppercase tracking-[0.2em] translate-y-full group-hover:translate-y-0 transition-all duration-300 flex items-center justify-center gap-2 z-20 hover:bg-gradient-to-r hover:from-[#BF953F] hover:via-[#FCF6BA] hover:to-[#B38728] hover:text-[#111] border-t border-white/5 active:scale-95 origin-bottom"
         >
           <ShoppingCart size={12} />
           Quick Add

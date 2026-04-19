@@ -22,7 +22,7 @@ const MENU_CATEGORIES = [
   },
   {
     label: "Price Based",
-    items: ["Under ₹99", "Under ₹299", "Under ₹499"],
+    items: ["Under ₹99", "Under ₹299", "Under ₹499", "Premium Range"],
   },
   {
     label: "Offer Zone",
@@ -41,7 +41,7 @@ const CATEGORY_MAP: Record<string, string> = {
   "Under ₹99": "under-99",
   "Under ₹299": "under-299",
   "Under ₹499": "under-499",
-  "Premium Range": "premium",
+  "Premium Range": "premium-500",
 };
 
 export default function Navbar() {
@@ -98,7 +98,7 @@ export default function Navbar() {
   const handleCategoryNavigate = (displayName: string) => {
     const param = CATEGORY_MAP[displayName];
     if (param) {
-      if (param.startsWith("under-") || param === "premium") {
+      if (param.startsWith("under-") || param.includes("premium")) {
         router.push(`/catalog?price=${param}`);
       } else {
         router.push(`/catalog?category=${encodeURIComponent(param)}`);

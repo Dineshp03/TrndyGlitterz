@@ -5,7 +5,7 @@ import { useProductStore } from "@/store/useProductStore";
 import ProductCard from "@/components/ProductCard";
 import Link from "next/link";
 import { ArrowLeft, SlidersHorizontal, X } from "lucide-react";
-import { Suspense, useState, useMemo } from "react";
+import { Suspense, useState, useMemo, useEffect } from "react";
 
 const CATEGORY_GROUPS = [
   {
@@ -24,6 +24,7 @@ const PRICE_FILTERS: PriceFilter[] = [
   { label: "Under ₹99",  param: "under-99",  max: 99 },
   { label: "Under ₹299", param: "under-299", max: 299 },
   { label: "Under ₹499", param: "under-499", max: 499 },
+  { label: "Premium Range", param: "premium-500", min: 500 },
 ];
 
 /* ─── Dark theme tokens ──────────────────────────────────────────────────────── */
@@ -82,7 +83,13 @@ function CatalogContent() {
   const [showOfferOnly,    setShowOfferOnly]    = useState(searchParams.get("offer")    === "true");
   const [filterPanelOpen,  setFilterPanelOpen]  = useState(false);
 
-  const { products, categories } = useProductStore();
+  const { products, categories, syncWithInitial } = useProductStore();
+
+  useEffect(() => {
+    if (products.length === 0) {
+      syncWithInitial();
+    }
+  }, [products.length, syncWithInitial]);
 
   const allCategories = useMemo(() => {
     const known = ["Earrings","Neckpiece","Bracelets","Finger Rings","Hair Accessories","Korean Earrings"];
@@ -198,7 +205,18 @@ function CatalogContent() {
               {/* Category groups */}
               {CATEGORY_GROUPS.map((group) => (
                 <div key={group.label}>
-                  <p style={{ fontSize: "9px", fontFamily: "monospace", letterSpacing: "0.3em", textTransform: "uppercase", color: T.textDim, margin: "0 0 10px 0" }}>
+                  <p style={{ 
+                    fontSize: "10px", 
+                    fontFamily: "monospace", 
+                    letterSpacing: "0.35em", 
+                    textTransform: "uppercase", 
+                    margin: "0 0 12px 0",
+                    background: "linear-gradient(to right, #BF953F 0%, #B38728 50%, #BF953F 100%)",
+                    WebkitBackgroundClip: "text",
+                    WebkitTextFillColor: "transparent",
+                    backgroundClip: "text",
+                    fontWeight: "bold"
+                  }}>
                     {group.label}
                   </p>
                   <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
@@ -214,7 +232,18 @@ function CatalogContent() {
               {/* Extra categories */}
               {allCategories.filter(c => !CATEGORY_GROUPS.flatMap(g => g.items).includes(c)).length > 0 && (
                 <div>
-                  <p style={{ fontSize: "9px", fontFamily: "monospace", letterSpacing: "0.3em", textTransform: "uppercase", color: T.textDim, margin: "0 0 10px 0" }}>More</p>
+                  <p style={{ 
+                    fontSize: "10px", 
+                    fontFamily: "monospace", 
+                    letterSpacing: "0.35em", 
+                    textTransform: "uppercase", 
+                    margin: "0 0 12px 0",
+                    background: "linear-gradient(to right, #BF953F 0%, #B38728 50%, #BF953F 100%)",
+                    WebkitBackgroundClip: "text",
+                    WebkitTextFillColor: "transparent",
+                    backgroundClip: "text",
+                    fontWeight: "bold"
+                  }}>More</p>
                   <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
                     {allCategories.filter(c => !CATEGORY_GROUPS.flatMap(g => g.items).includes(c)).map(cat => (
                       <FilterBtn key={cat} active={selectedCategory === cat} onClick={() => setSelectedCategory(selectedCategory === cat ? null : cat)}>
@@ -227,7 +256,18 @@ function CatalogContent() {
 
               {/* Price */}
               <div>
-                <p style={{ fontSize: "9px", fontFamily: "monospace", letterSpacing: "0.3em", textTransform: "uppercase", color: T.textDim, margin: "0 0 10px 0" }}>Price Based</p>
+                <p style={{ 
+                  fontSize: "10px", 
+                  fontFamily: "monospace", 
+                  letterSpacing: "0.35em", 
+                  textTransform: "uppercase", 
+                  margin: "0 0 12px 0",
+                  background: "linear-gradient(to right, #BF953F 0%, #B38728 50%, #BF953F 100%)",
+                  WebkitBackgroundClip: "text",
+                  WebkitTextFillColor: "transparent",
+                  backgroundClip: "text",
+                  fontWeight: "bold"
+                }}>Price Based</p>
                 <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
                   {PRICE_FILTERS.map(pf => (
                     <FilterBtn key={pf.param} active={selectedPrice === pf.param} onClick={() => setSelectedPrice(selectedPrice === pf.param ? null : pf.param)} gold>
@@ -239,7 +279,18 @@ function CatalogContent() {
 
               {/* Offers */}
               <div>
-                <p style={{ fontSize: "9px", fontFamily: "monospace", letterSpacing: "0.3em", textTransform: "uppercase", color: T.textDim, margin: "0 0 10px 0" }}>Offers</p>
+                <p style={{ 
+                  fontSize: "10px", 
+                  fontFamily: "monospace", 
+                  letterSpacing: "0.35em", 
+                  textTransform: "uppercase", 
+                  margin: "0 0 12px 0",
+                  background: "linear-gradient(to right, #BF953F 0%, #B38728 50%, #BF953F 100%)",
+                  WebkitBackgroundClip: "text",
+                  WebkitTextFillColor: "transparent",
+                  backgroundClip: "text",
+                  fontWeight: "bold"
+                }}>Offers</p>
                 <FilterBtn active={showOfferOnly} onClick={() => setShowOfferOnly(!showOfferOnly)} gold>🏷️ Offer Zone</FilterBtn>
                 <div style={{ marginTop: "4px" }}>
                   <FilterBtn active={showImportedOnly} onClick={() => setShowImportedOnly(!showImportedOnly)}>✈️ Imported Only</FilterBtn>

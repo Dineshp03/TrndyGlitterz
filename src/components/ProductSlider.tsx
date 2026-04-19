@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { Swiper, SwiperSlide } from 'swiper/react';
-import { Navigation, Pagination, Mousewheel, FreeMode } from 'swiper/modules';
+import { Navigation, Pagination, Mousewheel, FreeMode, Autoplay } from 'swiper/modules';
 import 'swiper/css';
 import 'swiper/css/navigation';
 import 'swiper/css/pagination';
@@ -13,24 +13,28 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 interface ProductSliderProps {
   products: Product[];
+  mobileSwipe?: boolean;
+  autoPlay?: boolean;
 }
 
-export default function ProductSlider({ products }: ProductSliderProps) {
+export default function ProductSlider({ products, mobileSwipe = false, autoPlay = false }: ProductSliderProps) {
   return (
     <div className="relative group w-full px-0">
-      {/* Mobile View: 2-Column Grid matching Image 3 */}
-      <div className="block md:hidden">
-        <div className="grid grid-cols-2 gap-x-3 gap-y-10 px-4">
-          {products.map((product) => (
-            <ProductCard key={product.id} product={product} />
-          ))}
+      {/* Mobile View: 2-Column Grid matching Image 3 (unless mobileSwipe is true) */}
+      {!mobileSwipe && (
+        <div className="block md:hidden">
+          <div className="grid grid-cols-2 gap-x-3 gap-y-10 px-4">
+            {products.map((product) => (
+              <ProductCard key={product.id} product={product} />
+            ))}
+          </div>
         </div>
-      </div>
+      )}
 
-      {/* Desktop/Tablet View: Smooth Swiper Slider */}
-      <div className="hidden md:block">
+      {/* Desktop/Tablet View (or Mobile if mobileSwipe is true): Smooth Swiper Slider */}
+      <div className={mobileSwipe ? "block" : "hidden md:block"}>
         <Swiper
-          modules={[Navigation, Pagination, Mousewheel, FreeMode]}
+          modules={[Navigation, Pagination, Mousewheel, FreeMode, Autoplay]}
           spaceBetween={16}
           slidesPerView={1.2}
           centeredSlides={false}
@@ -47,6 +51,10 @@ export default function ProductSlider({ products }: ProductSliderProps) {
             prevEl: '.swiper-button-prev-custom',
             nextEl: '.swiper-button-next-custom',
           }}
+          autoplay={autoPlay ? {
+            delay: 3000,
+            disableOnInteraction: false,
+          } : false}
           breakpoints={{
             640: {
               slidesPerView: 2.2,

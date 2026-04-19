@@ -10,7 +10,7 @@ import MobileProductGallery from "@/components/MobileProductGallery";
 import { useCart } from "@/hooks/useCart";
 import { useOrderStore } from "@/store/useOrderStore";
 import { useSettingsStore } from "@/store/useSettingsStore";
-import { CheckCircle, X, ChevronRight, ChevronLeft, Loader2, ShoppingBag, CreditCard } from "lucide-react";
+import { CheckCircle, X, ChevronRight, ChevronLeft, Loader2, ShoppingBag, CreditCard, ShieldCheck, RotateCcw, Ban, Truck, Sparkles, Smile, Shield } from "lucide-react";
 
 /* ------------------------------------------------------------------ */
 /*  MagneticButton — cursor-tracking magnetic CTA button               */
@@ -34,7 +34,7 @@ function MagneticButton({
   const [ripples, setRipples] = useState<{ id: number; x: number; y: number }[]>([]);
 
   const handleMouseMove = useCallback((e: React.MouseEvent<HTMLButtonElement>) => {
-    if (!ref.current) return;
+    if (!ref.current || window.matchMedia("(pointer: coarse)").matches) return;
     const rect = ref.current.getBoundingClientRect();
     const cx = rect.left + rect.width / 2;
     const cy = rect.top + rect.height / 2;
@@ -50,17 +50,22 @@ function MagneticButton({
 
   const handleClick = useCallback((e: React.MouseEvent<HTMLButtonElement>) => {
     if (!ref.current) return;
-    const rect = ref.current.getBoundingClientRect();
-    const id = Date.now();
-    setRipples((r) => [...r, { id, x: e.clientX - rect.left, y: e.clientY - rect.top }]);
-    setTimeout(() => setRipples((r) => r.filter((rp) => rp.id !== id)), 700);
+    
+    // Only show ripples for fine pointers (mouse) to keep mobile snappy
+    if (!window.matchMedia("(pointer: coarse)").matches) {
+      const rect = ref.current.getBoundingClientRect();
+      const id = Date.now();
+      setRipples((r) => [...r, { id, x: e.clientX - rect.left, y: e.clientY - rect.top }]);
+      setTimeout(() => setRipples((r) => r.filter((rp) => rp.id !== id)), 700);
+    }
+    
     onClick?.();
   }, [onClick]);
 
   const base =
     variant === "primary"
-      ? "bg-dustyrose text-alabaster"
-      : "bg-obsidian text-alabaster";
+      ? "bg-gradient-to-r from-[#BF953F] via-[#FCF6BA] to-[#B38728] text-[#111] font-bold shadow-[0_4px_15px_rgba(212,175,55,0.3)]"
+      : "bg-obsidian text-alabaster border border-obsidian/10";
 
   return (
     <button
@@ -216,12 +221,20 @@ function PaymentModal({
                 {field("state", "State")}
                 {field("pincode", "Pincode")}
               </div>
-              <button onClick={() => validateDetails() && setStep("payment")} className="mt-4 w-full bg-dustyrose text-white py-4 font-sans uppercase text-[11px] tracking-widest">Continue</button>
+              <button onClick={() => validateDetails() && setStep("payment")} className="mt-4 w-full bg-gradient-to-r from-[#BF953F] via-[#FCF6BA] to-[#B38728] text-[#111] font-bold py-4 font-sans uppercase text-[11px] tracking-widest rounded-xl transition-all active:scale-95">Continue</button>
             </div>
           )}
           {step === "payment" && (
             <div className="flex flex-col gap-6">
               <div className="flex flex-col gap-4">
+                {!codEnabled && (
+                  <div className="p-4 border border-obsidian/10 bg-gray-50 opacity-60 rounded-xl">
+                    <p className="text-[10px] uppercase tracking-widest text-obsidian/40 flex items-center gap-2">
+                       <Ban size={12} /> Cash on Delivery (Unavailable)
+                    </p>
+                    <p className="text-[11px] mt-1 text-obsidian/30">We currently accept online payments only for secure doorstep delivery.</p>
+                  </div>
+                )}
                 {codEnabled && (
                   <button onClick={() => setPayment({method:'cod', upiId:''})} className={`p-4 border text-left ${payment.method === 'cod' ? 'border-burgundy bg-burgundy/5' : 'border-obsidian/10'}`}>COD</button>
                 )}
@@ -232,7 +245,7 @@ function PaymentModal({
                   </div>
                 )}
               </div>
-              <button onClick={handlePayNow} disabled={processing} className="w-full bg-burgundy text-white py-4">{processing ? "Processing..." : "Place Order"}</button>
+              <button onClick={handlePayNow} disabled={processing} className="w-full bg-gradient-to-r from-[#BF953F] via-[#FCF6BA] to-[#B38728] text-[#111] font-bold py-4 rounded-xl transition-all active:scale-95 disabled:opacity-50">{processing ? "Processing..." : "Place Order"}</button>
             </div>
           )}
           {step === "success" && (
@@ -248,7 +261,9 @@ function PaymentModal({
   );
 }
 
-export default function ProductDetailClient() {
+import { Product } from "@/data/products";
+
+export default function ProductDetailClient({ initialProduct }: { initialProduct?: Product }) {
   const params = useParams();
   const id = Array.isArray(params?.id) ? params.id[0] : params?.id;
   const { addItem } = useCart();
@@ -257,7 +272,7 @@ export default function ProductDetailClient() {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [mounted, setMounted] = useState(false);
   const { products } = useProductStore();
-  const product = products.find((p) => p.id === id);
+  const product = initialProduct || products.find((p) => p.id === id);
   const router = useRouter();
   const { isSignedIn } = useUser();
 
@@ -367,9 +382,71 @@ export default function ProductDetailClient() {
           <p className="text-xl md:text-2xl font-sans mb-8">₹{product.price.toFixed(2)}</p>
           <div className="h-px w-12 bg-dustyrose/30 mb-8" />
           <p className="text-sm font-light text-obsidian/70 leading-relaxed mb-10 max-w-lg">{product.description}</p>
-          <div className="flex flex-col sm:flex-row gap-4">
+          <div className="flex flex-col sm:flex-row gap-4 mb-8">
             <MagneticButton onClick={() => isSignedIn ? addItem(product) : router.push("/login")} className="sm:w-1/2">Add to Cart</MagneticButton>
             <MagneticButton onClick={() => isSignedIn ? setShowPayment(true) : router.push("/login")} className="sm:w-1/2" variant="secondary">Buy Now</MagneticButton>
+          </div>
+
+          {/* Trust Badges / Extra Details */}
+          <div className="flex flex-col gap-8 border-t border-obsidian/10 pt-8 mt-4">
+            {/* Group 1: Policy & Service */}
+            <div className="flex flex-col gap-4">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-full bg-dustyrose/10 flex items-center justify-center">
+                  <RotateCcw className="w-4 h-4 text-dustyrose" />
+                </div>
+                <div>
+                  <p className="text-[10px] font-sans uppercase tracking-[0.1em] font-bold text-obsidian">Replacement Policy</p>
+                  <p className="text-[11px] text-obsidian/60 font-light">Replacement only if the product is received damaged.</p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-full bg-gray-500/10 flex items-center justify-center">
+                  <Ban className="w-4 h-4 text-gray-500" />
+                </div>
+                <div>
+                  <p className="text-[10px] font-sans uppercase tracking-[0.1em] font-bold text-obsidian">No Cash on Delivery</p>
+                  <p className="text-[11px] text-obsidian/60 font-light">We accept all major online payments for security.</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Group 2: Quality & Fit with Minimal Topic */}
+            <div className="flex flex-col gap-5 pt-2">
+              <h3 className="text-[9px] font-mono font-medium text-dustyrose uppercase tracking-[0.25em] mb-1">Quality & Fit</h3>
+              <div className="flex flex-col gap-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-full bg-dustyrose/10 flex items-center justify-center">
+                    <Sparkles className="w-4 h-4 text-dustyrose" />
+                  </div>
+                  <div>
+                    <p className="text-[10px] font-sans uppercase tracking-[0.1em] font-bold text-obsidian">Universal Fit</p>
+                    <p className="text-[11px] text-obsidian/60 font-light">Free-size and adjustable designs for everyone.</p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-full bg-dustyrose/10 flex items-center justify-center">
+                    <Smile className="w-4 h-4 text-dustyrose" />
+                  </div>
+                  <div>
+                    <p className="text-[10px] font-sans uppercase tracking-[0.1em] font-bold text-obsidian">Skin Friendly</p>
+                    <p className="text-[11px] text-obsidian/60 font-light">Lead & Nickel free, safe for sensitive skin.</p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-full bg-dustyrose/10 flex items-center justify-center">
+                    <Shield className="w-4 h-4 text-dustyrose" />
+                  </div>
+                  <div>
+                    <p className="text-[10px] font-sans uppercase tracking-[0.1em] font-bold text-obsidian">Premium Quality</p>
+                    <p className="text-[11px] text-obsidian/60 font-light">High-durability, tarnish-resistant craftsmanship.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>

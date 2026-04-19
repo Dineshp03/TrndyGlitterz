@@ -8,12 +8,14 @@ import { Search, ShoppingBag, X, Menu, Gem, ArrowUpRight } from "lucide-react";
 import HeroSection from "@/components/HeroSection";
 import SmoothScroll from "@/components/SmoothScroll";
 import { Testimonials } from "@/components/ui/demo";
+import { useSettingsStore } from "@/store/useSettingsStore";
 
 export default function Home() {
   const [mounted, setMounted] = useState(false);
   const [showImportedOnly, setShowImportedOnly] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const { products, syncWithInitial } = useProductStore();
+  const settings = useSettingsStore();
 
   const scrollToProducts = () => {
     const el = document.getElementById('all-products');
@@ -46,11 +48,18 @@ export default function Home() {
     ? sortedProducts.filter(p => p.category === selectedCategory) 
     : sortedProducts;
 
+  const newArrivals = sortedProducts.filter(p => {
+    if (!p.createdAt) return false;
+    const diffTime = Math.abs(new Date().getTime() - new Date(p.createdAt).getTime());
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
+    return diffDays <= 30; // Increased to 30 days
+  });
+  const showNewArrivals = newArrivals.length > 0 && settings.newBadgeEnabled;
+
+
   useEffect(() => {
     setMounted(true);
-    if (products.length === 0) {
-      syncWithInitial();
-    }
+    syncWithInitial();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   
@@ -60,7 +69,33 @@ export default function Home() {
     <div className="flex flex-col min-h-screen bg-alabaster">
       <SmoothScroll />
       
-      <HeroSection onStartShopping={scrollToProducts} />
+      <HeroSection 
+        onStartShopping={scrollToProducts} 
+        hasNewArrivals={showNewArrivals} 
+        productCount={products.length}
+      />
+
+      {/* New Arrivals Section */}
+      {showNewArrivals && (
+        <section id="new-arrivals" className="py-8 md:py-16 px-0 md:px-12 bg-[#0A0A0A] overflow-hidden">
+          <div className="container mx-auto px-4 md:px-0">
+            <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 md:mb-16 gap-6 md:gap-8 border-b border-obsidian/10 pb-6 md:pb-8">
+              <div className="w-full md:w-auto overflow-hidden">
+                <h2 className="text-3xl md:text-5xl font-sans font-bold tracking-tighter uppercase mb-2" style={{
+                  background: "linear-gradient(to right, #BF953F 0%, #FCF6BA 30%, #B38728 55%, #FBF5B7 80%, #BF953F 100%)",
+                  WebkitBackgroundClip: "text",
+                  WebkitTextFillColor: "transparent",
+                  backgroundClip: "text",
+                }}>NEW ARRIVALS</h2>
+                <div className="flex flex-col md:flex-row md:items-center gap-4 mt-4 w-full">
+                   <p className="text-sm font-sans text-obsidian/60 tracking-wider">Discover our latest pieces, sparkling for the first time.</p>
+                </div>
+              </div>
+            </div>
+            <ProductSlider products={newArrivals} mobileSwipe={true} autoPlay={true} />
+          </div>
+        </section>
+      )}
 
       {/* All Products Section - Horizontal Swipe on Mobile */}
       <section id="all-products" className="py-8 md:py-16 px-0 md:px-12 bg-alabaster overflow-hidden">
@@ -69,7 +104,12 @@ export default function Home() {
           {/* Header */}
           <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 md:mb-16 gap-6 md:gap-8 border-b border-obsidian/10 pb-6 md:pb-8">
             <div className="w-full md:w-auto overflow-hidden">
-              <h2 className="text-3xl md:text-5xl font-sans font-bold tracking-tighter text-obsidian uppercase">ALL COLLECTIONS</h2>
+              <h2 className="text-3xl md:text-5xl font-sans font-bold tracking-tighter uppercase mb-2" style={{
+                background: "linear-gradient(to right, #BF953F 0%, #FCF6BA 30%, #B38728 55%, #FBF5B7 80%, #BF953F 100%)",
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+                backgroundClip: "text",
+              }}>ALL COLLECTIONS</h2>
               <div className="flex flex-col md:flex-row md:items-center gap-4 mt-4 w-full">
                 
                 {/* Scrollable Category Filters & Imported Toggle */}
@@ -129,7 +169,12 @@ export default function Home() {
           <div className="container mx-auto">
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-8 md:mb-16 gap-6">
                 <div>
-                  <h2 className="text-2xl md:text-3xl font-sans font-bold tracking-tighter text-obsidian uppercase">{category}</h2>
+                  <h2 className="text-2xl md:text-3xl font-sans font-bold tracking-tighter uppercase" style={{
+                    background: "linear-gradient(to right, #BF953F 0%, #FCF6BA 30%, #B38728 55%, #FBF5B7 80%, #BF953F 100%)",
+                    WebkitBackgroundClip: "text",
+                    WebkitTextFillColor: "transparent",
+                    backgroundClip: "text",
+                  }}>{category}</h2>
                   <div className="h-0.5 w-12 bg-obsidian/20 mt-4"></div>
                 </div>
                 
@@ -173,28 +218,38 @@ export default function Home() {
                 href="https://wa.me/919884110778?text=Hi%20Trendy%20Glitterz!%20I'm%20reaching%20out%20from%20the%20website%20regarding%20some%20of%20your%20jewelry%20products." 
                 target="_blank" 
                 rel="noopener noreferrer"
-                className="text-[10px] uppercase tracking-[0.4em] text-[#FAFAFA]/40 block mb-6 hover:text-[#25D366] transition-colors"
+                className="text-[10px] uppercase tracking-[0.4em] block mb-6 hover:text-[#25D366] transition-colors"
+                style={{
+                  background: "linear-gradient(to right, #BF953F 0%, #B38728 50%, #BF953F 100%)",
+                  WebkitBackgroundClip: "text",
+                  WebkitTextFillColor: "transparent",
+                  backgroundClip: "text",
+                  fontWeight: "bold"
+                }}
               >
                 The Journal — Issue 01
               </a>
-              <h2 className="text-3xl md:text-5xl font-serif leading-tight italic max-w-lg text-white">
-                &quot;Modern elegance is not about what you add, but what you have the courage to leave behind.&quot;
+              <h2 className="text-3xl md:text-5xl font-serif leading-tight italic max-w-lg" style={{
+                background: "linear-gradient(to right, #BF953F 0%, #FCF6BA 30%, #B38728 55%, #FBF5B7 80%, #BF953F 100%)",
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+                backgroundClip: "text",
+              }}>
+                &quot;Trendyglitterz – Where every sparkle tells your story.&quot;
               </h2>
             </div>
             <div className="space-y-8 animate-reveal delay-200">
               <p className="font-sans font-light text-sm md:text-base leading-relaxed text-[#FAFAFA]/70 max-w-md">
-                <a 
-                  href="https://wa.me/919884110778?text=Hi%20Trendy%20Glitterz!%20I'm%20reaching%20out%20from%20the%20website%20regarding%20some%20of%20your%20jewelry%20products." 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="hover:text-white transition-colors underline decoration-white/10 underline-offset-4"
-                >
-                  Trendy Glitterz
-                </a> isn&apos;t just about jewelry. It&apos;s about the confidence that comes with feeling perfectly accessorized. Founded in 2024, Trendy Glitterz is more than an accessory brand—it&apos;s a dialogue between form and functionality.
+                At Trendyglitterz, we&apos;ve been crafting stylish and elegant jewellery since 2021, bringing you pieces that blend trend and timeless beauty. Our passion lies in helping you shine with confidence through unique, high-quality designs made for every occasion.
               </p>
               <div className="flex flex-col gap-6">
                 <div className="flex items-center gap-6">
-                  <Link href="#" className="text-[11px] font-sans font-bold uppercase tracking-[0.2em] border-b border-[#D4AF37]/50 pb-1 text-[#D4AF37] hover:text-[#FBF5B7] hover:border-[#FBF5B7] transition-all">
+                  <Link href="#" className="text-[11px] font-sans font-bold uppercase tracking-[0.2em] border-b border-[#D4AF37]/50 pb-1 hover:text-[#FBF5B7] hover:border-[#FBF5B7] transition-all" style={{
+                    background: "linear-gradient(to right, #BF953F 0%, #B38728 100%)",
+                    WebkitBackgroundClip: "text",
+                    WebkitTextFillColor: "transparent",
+                    backgroundClip: "text",
+                  }}>
                     Our Philosophy
                   </Link>
                   <div className="h-px w-8 bg-white/10"></div>

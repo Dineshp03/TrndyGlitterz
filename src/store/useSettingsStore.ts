@@ -14,6 +14,11 @@ interface SettingsState {
   lowStockNotif: boolean;
   msgNotif: boolean;
   updateNotifSetting: (key: 'newOrdersNotif' | 'lowStockNotif' | 'msgNotif', value: boolean) => void;
+  // Additional Settings
+  maintenanceMode: boolean;
+  newBadgeEnabled: boolean;
+  darkMode: boolean;
+  updateToggle: (key: 'maintenanceMode' | 'newBadgeEnabled' | 'darkMode', value: boolean) => void;
 }
 
 export const useSettingsStore = create<SettingsState>()(
@@ -29,6 +34,10 @@ export const useSettingsStore = create<SettingsState>()(
       lowStockNotif: true,
       msgNotif: false,
       updateNotifSetting: (key, value) => set({ [key]: value }),
+      maintenanceMode: false,
+      newBadgeEnabled: true,
+      darkMode: false,
+      updateToggle: (key, value) => set({ [key]: value }),
     }),
     {
       name: "trendy-settings",

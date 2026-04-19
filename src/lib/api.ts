@@ -16,6 +16,7 @@ export async function fetchApi(
   const response = await fetch(endpoint, {
     ...options,
     headers,
+    cache: "no-store",
   });
 
   const data = await response.json();

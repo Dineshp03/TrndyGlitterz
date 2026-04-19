@@ -1,15 +1,35 @@
 import { Metadata } from "next";
 import ProductDetailClient from "./ProductDetailClient";
 import { siteConfig } from "@/lib/metadata-config";
+import { createAdminSupabaseClient } from "@/lib/supabase-server";
+import { Product } from "@/data/products";
 
-async function getProduct(id: string) {
+async function getProduct(id: string): Promise<Product | null> {
   try {
-    const res = await fetch(`${siteConfig.url}/api/products/${id}`, {
-      next: { revalidate: 3600 }, // Cache for 1 hour
-    });
-    if (!res.ok) return null;
-    return res.json();
+    const supabase = createAdminSupabaseClient();
+    const { data, error } = await supabase
+      .from("products")
+      .select("*")
+      .eq("id", id)
+      .single();
+
+    if (error || !data) return null;
+
+    return {
+      id: data.id,
+      name: data.name,
+      price: data.price,
+      category: data.category,
+      image: data.image,
+      images: data.images || [],
+      description: data.description,
+      stock: data.stock,
+      featured: data.featured,
+      isImported: data.is_imported,
+      oldPrice: data.old_price,
+    };
   } catch (error) {
+    console.error("Error fetching product:", error);
     return null;
   }
 }
@@ -17,9 +37,10 @@ async function getProduct(id: string) {
 export async function generateMetadata({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }): Promise<Metadata> {
-  const product = await getProduct(params.id);
+  const { id } = await params;
+  const product = await getProduct(id);
 
   if (!product) {
     return {
@@ -53,9 +74,10 @@ export async function generateMetadata({
 export default async function ProductDetailPage({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
-  const product = await getProduct(params.id);
+  const { id } = await params;
+  const product = await getProduct(id);
 
   const jsonLd = product ? {
     "@context": "https://schema.org",
@@ -72,7 +94,7 @@ export default async function ProductDetailPage({
       "url": `${siteConfig.url}/product/${product.id}`,
       "priceCurrency": "INR",
       "price": product.price,
-      "availability": product.stock > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock"
+      "availability": product.stock && product.stock > 0 ? "https://schema.org/InStock" : "https://schema.org/OutOfStock"
     }
   } : null;
 
@@ -84,7 +106,7 @@ export default async function ProductDetailPage({
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
       )}
-      <ProductDetailClient />
+      <ProductDetailClient initialProduct={product || undefined} />
     </>
   );
 }
