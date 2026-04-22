@@ -23,8 +23,10 @@ interface HeroSectionProps {
   productCount?: number;
 }
 
-export default function HeroSection({ onStartShopping, hasNewArrivals, productCount = 0 }: HeroSectionProps) {
+export default function HeroSection({ onStartShopping, hasNewArrivals }: HeroSectionProps) {
   const [mounted, setMounted] = useState(false);
+  const [activeBtn, setActiveBtn] = useState<'shop' | 'new'>('shop');
+
   useEffect(() => { setMounted(true); }, []);
 
   const handleShop = () => {
@@ -99,24 +101,36 @@ export default function HeroSection({ onStartShopping, hasNewArrivals, productCo
               Stay Trendy, Shine Glittery
             </p>
 
-            <div className="tg-ctas">
-              <button className="tg-btn-fill" onClick={handleShop}>
+            <div className="tg-ctas" onMouseLeave={() => setActiveBtn('shop')}>
+              <button 
+                className={activeBtn === 'shop' ? 'tg-btn-fill' : 'tg-btn-ghost'} 
+                onMouseEnter={() => setActiveBtn('shop')}
+                onTouchStart={() => setActiveBtn('shop')}
+                onClick={handleShop}
+              >
                 Start Shopping
               </button>
               {hasNewArrivals && (
-                <button className="tg-btn-ghost" onClick={() => {
-                  const el = document.getElementById("new-arrivals");
-                  if (el) el.scrollIntoView({ behavior: "smooth" });
-                }}>
+                <button 
+                  className={activeBtn === 'new' ? 'tg-btn-fill' : 'tg-btn-ghost'} 
+                  onMouseEnter={() => setActiveBtn('new')}
+                  onTouchStart={() => setActiveBtn('new')}
+                  onClick={() => {
+                    const el = document.getElementById("new-arrivals");
+                    if (el) el.scrollIntoView({ behavior: "smooth" });
+                  }}
+                >
                   New Arrivals
-                  <span className="tg-ghost-circle">
-                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none"
-                      stroke="currentColor" strokeWidth="2"
-                      strokeLinecap="round" strokeLinejoin="round">
-                      <line x1="5" y1="12" x2="19" y2="12" />
-                      <polyline points="12 5 19 12 12 19" />
-                    </svg>
-                  </span>
+                  {activeBtn !== 'new' && (
+                    <span className="tg-ghost-circle">
+                      <svg width="11" height="11" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" strokeWidth="2"
+                        strokeLinecap="round" strokeLinejoin="round">
+                        <line x1="5" y1="12" x2="19" y2="12" />
+                        <polyline points="12 5 19 12 12 19" />
+                      </svg>
+                    </span>
+                  )}
                 </button>
               )}
             </div>
@@ -124,7 +138,7 @@ export default function HeroSection({ onStartShopping, hasNewArrivals, productCo
             <div className="tg-stats">
               <div>
                 <div className="tg-stat-num gold-gradient-text">
-                  {productCount > 0 ? `${productCount}` : '0'}
+                  3K+
                 </div>
                 <div className="tg-stat-lbl">Products</div>
               </div>
