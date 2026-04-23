@@ -26,7 +26,7 @@ export default function OrdersPage() {
     return orders.filter((order) => {
       const matchesSearch = 
         (order.customer?.toLowerCase() ?? "").includes(search.toLowerCase()) || 
-        order.id.toLowerCase().includes(search.toLowerCase()) ||
+        (order.id?.toLowerCase() ?? "").includes(search.toLowerCase()) ||
         (order.product?.toLowerCase() ?? "").includes(search.toLowerCase());
       
       const matchesFilter = filter === "All" || 

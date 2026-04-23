@@ -242,9 +242,7 @@ export default function ProductsPage() {
             />
           </div>
           <button 
-            onClick={() => {
-              fetchProducts();
-            }}
+            onClick={() => fetchProducts()}
             className="flex items-center gap-1.5 bg-white border border-blue-100 text-blue-500 text-xs px-3 py-2 rounded-full hover:bg-blue-50 transition-colors"
           >
             <Gem size={13} />
@@ -260,9 +258,6 @@ export default function ProductsPage() {
         </div>
       </div>
 
-
-
-      {/* Category filter chips */}
       <div className="flex flex-wrap gap-2 mb-5">
         {FILTER_CATEGORIES.map(cat => (
           <button
@@ -279,19 +274,16 @@ export default function ProductsPage() {
         ))}
       </div>
 
-      {/* Product count */}
       <p className="text-[10px] font-mono text-[#bbb] uppercase tracking-[0.15em] mb-4">
         {filtered.length} product{filtered.length !== 1 ? "s" : ""} found
       </p>
 
-      {/* Grid */}
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 md:gap-4">
         {filtered.map((product) => (
           <div
             key={product.id}
             className="bg-white rounded-2xl border border-[#F0EDE8] overflow-hidden group hover:shadow-md hover:border-[#F5B8C8]/60 transition-all duration-300"
           >
-            {/* Image */}
             <div className="aspect-square relative overflow-hidden bg-[#FAFAF8]">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
@@ -299,33 +291,25 @@ export default function ProductsPage() {
                 alt={product.name}
                 className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
               />
-              {/* Hover actions */}
-              <div className="absolute inset-0 bg-[#2C2C2C]/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-2">
-                {/* Fallback translucent background to ensure buttons are visible */}
-                <div className="absolute inset-0 bg-black/20"></div>
-                
+              <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-2">
                 <button 
                   onClick={() => handleEdit(product)}
-                  className="relative z-10 w-9 h-9 rounded-full bg-white flex items-center justify-center hover:bg-[#F5B8C8] hover:text-white transition-colors shadow-sm"
+                  className="w-9 h-9 rounded-full bg-white flex items-center justify-center hover:bg-[#F5B8C8] hover:text-white transition-colors shadow-sm"
                 >
-                  <Edit2 size={14} className="text-[#555] inherit-hover" />
+                  <Edit2 size={14} className="text-[#555]" />
                 </button>
                 <button 
                   onClick={() => handleDelete(product)}
-                  className="relative z-10 w-9 h-9 rounded-full bg-white flex items-center justify-center hover:bg-red-500 hover:text-white transition-colors shadow-sm group/delete"
+                  className="w-9 h-9 rounded-full bg-white flex items-center justify-center hover:bg-red-500 hover:text-white transition-colors shadow-sm group/delete"
                 >
                   <Trash2 size={14} className="text-red-500 group-hover/delete:text-white" />
                 </button>
               </div>
-
-
             </div>
 
-            {/* Details */}
             <div className="p-3">
               <p className="text-[9px] font-mono text-[#E8809A] uppercase tracking-wider mb-1">{product.category}</p>
               <p className="text-xs font-medium text-[#2C2C2C] truncate leading-tight">{product.name}</p>
-
               <div className="flex items-center justify-between mt-2">
                 <div>
                    <span className="text-sm font-bold text-[#2C2C2C]">₹{product.price.toFixed(0)}</span>
@@ -343,7 +327,6 @@ export default function ProductsPage() {
           </div>
         ))}
 
-        {/* Add New Product Card */}
         <button 
           onClick={handleAddProduct}
           className="aspect-square bg-[#FAFAF8] rounded-2xl border-2 border-dashed border-[#F0EDE8] hover:border-[#F5B8C8] hover:bg-[#F5B8C8]/5 transition-all duration-300 flex flex-col items-center justify-center gap-2 group"
@@ -355,7 +338,6 @@ export default function ProductsPage() {
         </button>
       </div>
 
-      {/* View on storefront link */}
       <div className="mt-8 flex items-center justify-center">
         <Link
           href="/catalog"
@@ -366,12 +348,9 @@ export default function ProductsPage() {
         </Link>
       </div>
 
-      {/* Modal Overlay */}
       {isModalOpen && (
         <div className="fixed inset-0 bg-black/40 z-[100] flex items-center justify-center p-4 backdrop-blur-sm">
           <div className="bg-white rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden shadow-2xl flex flex-col">
-            
-            {/* Modal Header */}
             <div className="bg-white border-b border-[#F0EDE8] px-6 py-4 flex items-center justify-between shrink-0">
               <h2 className="text-lg font-serif text-[#2C2C2C]">
                 {editingProduct ? "Edit Product" : "Add Product"}
@@ -381,7 +360,6 @@ export default function ProductsPage() {
               </button>
             </div>
 
-            {/* Modal Body */}
             <div className="p-6 overflow-y-auto space-y-6 flex-1">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-4">
@@ -395,7 +373,6 @@ export default function ProductsPage() {
                        placeholder="Enter product name"
                      />
                    </div>
-                   
                    <div className="grid grid-cols-2 gap-4">
                      <div>
                        <label className="block text-xs font-semibold uppercase tracking-wider text-[#555] mb-2">Price (₹)</label>
@@ -418,7 +395,6 @@ export default function ProductsPage() {
                        />
                      </div>
                    </div>
-
                    <div>
                      <label className="block text-xs font-semibold uppercase tracking-wider text-[#555] mb-2">Category</label>
                      <select
@@ -431,9 +407,6 @@ export default function ProductsPage() {
                        ))}
                      </select>
                    </div>
-
-
-
                     <div className="flex flex-col gap-3 pt-2">
                       <div className="flex items-center gap-2">
                         <input 
@@ -445,6 +418,7 @@ export default function ProductsPage() {
                         />
                         <label htmlFor="featured" className="text-xs font-semibold uppercase tracking-wider text-[#555] cursor-pointer">Mark as Featured Product</label>
                       </div>
+                    </div>
                 </div>
 
                 <div className="space-y-4">
@@ -526,7 +500,6 @@ export default function ProductsPage() {
               </div>
             </div>
 
-            {/* Modal Footer */}
             <div className="bg-white border-t border-[#F0EDE8] px-6 py-4 flex items-center justify-end gap-3 shrink-0">
               {editingProduct && (
                 <button 
@@ -550,7 +523,6 @@ export default function ProductsPage() {
                 Save Product
               </button>
             </div>
-            
           </div>
         </div>
       )}
