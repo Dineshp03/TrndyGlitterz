@@ -72,7 +72,7 @@ export const metadata: Metadata = {
     creator: "@trendyglitterz",
   },
   icons: {
-    icon: "/favicon.ico",
+    icon: "/favicon.png",
   },
   manifest: `${siteConfig.url}/site.webmanifest`,
 };

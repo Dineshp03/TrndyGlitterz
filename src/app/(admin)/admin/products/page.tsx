@@ -13,7 +13,6 @@ export default function ProductsPage() {
   const { getToken } = useAuth();
   const { products, fetchProducts, addProduct, updateProduct, deleteProduct, setProducts } = useProductStore();
   const [searchQuery, setSearchQuery] = useState("");
-  const [onlyShowImported, setOnlyShowImported] = useState(false);
   const [selectedCategoryFilter, setSelectedCategoryFilter] = useState<string | null>(null);
   
   useEffect(() => {
@@ -61,14 +60,11 @@ export default function ProductsPage() {
         p.id.toLowerCase().includes(lowerQ)
       );
     }
-    if (onlyShowImported) {
-      result = result.filter(p => p.isImported);
-    }
     if (selectedCategoryFilter) {
       result = result.filter(p => p.category === selectedCategoryFilter);
     }
     return result;
-  }, [products, searchQuery, onlyShowImported, selectedCategoryFilter]);
+  }, [products, searchQuery, selectedCategoryFilter]);
 
   const handleEdit = (product: Product) => {
     setEditingProduct(product);
@@ -144,8 +140,13 @@ export default function ProductsPage() {
       const formData = new FormData();
       formData.append('file', compressedFile, compressedFile.name || file.name);
 
+      const token = await getToken();
+      
       const response = await fetch('/api/upload', {
         method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        },
         body: formData,
       });
 
@@ -241,17 +242,6 @@ export default function ProductsPage() {
             />
           </div>
           <button 
-            onClick={() => setOnlyShowImported(!onlyShowImported)}
-            className={`flex items-center gap-1.5 border mb-0 text-xs px-3 py-2 rounded-full transition-colors ${
-              onlyShowImported 
-              ? "bg-blue-500 text-white border-blue-500" 
-              : "bg-white border-[#F0EDE8] text-[#888] hover:border-[#ccc]"
-            }`}
-          >
-            <Gem size={12} />
-            <span className="hidden sm:inline">{onlyShowImported ? "Imported Only" : "Show Imported"}</span>
-          </button>
-          <button 
             onClick={() => {
               fetchProducts();
             }}
@@ -309,12 +299,6 @@ export default function ProductsPage() {
                 alt={product.name}
                 className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
               />
-              {/* Imported Badge */}
-              {product.isImported && (
-                <div className="absolute top-2 left-2 z-10 bg-blue-500 text-white text-[8px] font-bold px-1.5 py-0.5 rounded-full uppercase tracking-wider shadow-sm">
-                  Imported
-                </div>
-              )}
               {/* Hover actions */}
               <div className="absolute inset-0 bg-[#2C2C2C]/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-2">
                 {/* Fallback translucent background to ensure buttons are visible */}
@@ -461,17 +445,6 @@ export default function ProductsPage() {
                         />
                         <label htmlFor="featured" className="text-xs font-semibold uppercase tracking-wider text-[#555] cursor-pointer">Mark as Featured Product</label>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <input 
-                          type="checkbox"
-                          id="isImported"
-                          checked={formData.isImported}
-                          onChange={(e) => setFormData(p => ({...p, isImported: e.target.checked}))}
-                          className="w-4 h-4 rounded border-[#F0EDE8] text-blue-500 focus:ring-blue-400"
-                        />
-                        <label htmlFor="isImported" className="text-xs font-semibold uppercase tracking-wider text-[#555] cursor-pointer">Mark as Imported</label>
-                      </div>
-                    </div>
                 </div>
 
                 <div className="space-y-4">

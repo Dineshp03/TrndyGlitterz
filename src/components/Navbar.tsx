@@ -8,6 +8,7 @@ import { useWishlistStore } from "@/store/useWishlistStore";
 import { usePathname, useRouter } from "next/navigation";
 import { useState, useEffect, useCallback } from "react";
 import { useUser, Show } from "@clerk/nextjs";
+import Image from "next/image";
 
 const ADMIN_EMAILS = ["trendyglitterzz@gmail.com", "admin@trendyglitterz.com"];
 
@@ -17,10 +18,11 @@ const MENU_CATEGORIES = [
     label: "Xuping Exclusive",
     items: ["Earrings", "Neckpiece", "Bracelets", "Finger Rings"],
   },
-  {
-    label: "Korean Collection",
-    items: ["Korean Earrings", "Neckpiece", "Bracelets", "Finger Rings", "Hair Accessories"],
-  },
+  { label: "Korean Earrings", items: [] },
+  { label: "Neckpiece ", items: [] },
+  { label: "Bracelets ", items: [] },
+  { label: "Finger Rings ", items: [] },
+  { label: "Hair Accessories", items: [] },
   {
     label: "Price Based",
     items: ["Under ₹99", "Under ₹299", "Under ₹499", "Premium Range"],
@@ -36,8 +38,11 @@ const CATEGORY_MAP: Record<string, string> = {
   "Earrings": "Earrings",
   "Korean Earrings": "Earrings",
   "Neckpiece": "Neckpiece",
+  "Neckpiece ": "Neckpiece",
   "Bracelets": "Bracelets",
+  "Bracelets ": "Bracelets",
   "Finger Rings": "Finger Rings",
+  "Finger Rings ": "Finger Rings",
   "Hair Accessories": "Hair Accessories",
   "Under ₹99": "under-99",
   "Under ₹299": "under-299",
@@ -57,18 +62,29 @@ export default function Navbar() {
   const [mounted, setMounted] = useState(false);
   const [expandedSection, setExpandedSection] = useState<string | null>(null);
 
-  // ── Scroll lock when menu open ──────────────────────────────────────────────
+  // ── Robust Scroll Lock ──────────────────────────────────────────────────────
   useEffect(() => {
     if (mobileMenuOpen) {
-      document.body.style.overflow = "hidden";
-      document.body.style.touchAction = "none";
+      const scrollY = window.scrollY;
+      document.body.style.position = "fixed";
+      document.body.style.top = `-${scrollY}px`;
+      document.body.style.width = "100%";
+      document.body.style.overflowY = "scroll"; // Keep scrollbar space to avoid jump
     } else {
-      document.body.style.overflow = "";
-      document.body.style.touchAction = "";
+      const scrollY = document.body.style.top;
+      document.body.style.position = "";
+      document.body.style.top = "";
+      document.body.style.width = "";
+      document.body.style.overflowY = "";
+      if (scrollY) {
+        window.scrollTo(0, parseInt(scrollY || "0") * -1);
+      }
     }
     return () => {
-      document.body.style.overflow = "";
-      document.body.style.touchAction = "";
+      document.body.style.position = "";
+      document.body.style.top = "";
+      document.body.style.width = "";
+      document.body.style.overflowY = "";
     };
   }, [mobileMenuOpen]);
 
@@ -338,12 +354,21 @@ export default function Navbar() {
                   </div>
                 </>
               ) : (
-                // Offer Zone — direct link
+                // Individual Category or Offer Zone
                 <button
-                  onClick={() => { router.push("/catalog?offer=true"); closeMenu(); }}
-                  className="w-full text-left py-2.5 text-sm font-sans font-semibold text-[#D4AF37] hover:text-[#FBF5B7] tracking-wide transition-colors"
+                  onClick={() => { 
+                    if (section.label === "Offer Zone") {
+                      router.push("/catalog?offer=true");
+                    } else {
+                      handleCategoryNavigate(section.label);
+                    }
+                    closeMenu(); 
+                  }}
+                  className={`w-full text-left py-2.5 text-sm font-sans font-semibold tracking-wide transition-colors ${
+                    section.label === "Offer Zone" ? "text-[#D4AF37] hover:text-[#FBF5B7]" : "text-white/70 hover:text-white"
+                  }`}
                 >
-                  🏷️ {section.label}
+                  {section.label === "Offer Zone" ? `🏷️ ${section.label}` : section.label}
                 </button>
               )}
             </div>

@@ -524,12 +524,14 @@ html.lenis body {
   will-change: transform, opacity;
   animation: tgUp 0.65s 0.88s ease forwards;
 }
-.tg-btn-fill {
-  background: linear-gradient(135deg, #D4AF37, #FBF5B7, #BF953F);
-  background-size: 200% 200%;
-  color: #111 !important;
-  border: none;
-  padding: 13px 36px;
+.tg-btn-fill, .tg-btn-ghost {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 14px 37px; /* Compensating for the 1px border removal */
   border-radius: 50px;
   font-family: 'DM Sans', sans-serif;
   font-size: 11px;
@@ -538,9 +540,23 @@ html.lenis body {
   text-transform: uppercase;
   cursor: pointer;
   white-space: nowrap;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 15px rgba(212,175,55,0.2);
+  border: none;
+  outline: none;
+  background: none;
+  transition: color 0.4s ease, opacity 0.4s ease, transform 0.3s ease, box-shadow 0.3s ease;
+  z-index: 1;
+}
+
+.tg-btn-fill::before, .tg-btn-ghost::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, #D4AF37, #FBF5B7, #BF953F);
+  background-size: 200% 200%;
+  border-radius: 50px;
+  z-index: -1;
   animation: shine-btn 4s linear infinite;
+  transition: opacity 0.4s ease;
 }
 
 @keyframes shine-btn {
@@ -549,39 +565,48 @@ html.lenis body {
   100% { background-position: 0% 50%; }
 }
 
+.tg-btn-fill {
+  color: #111 !important;
+  box-shadow: 0 4px 15px rgba(212,175,55,0.2);
+}
+
+.tg-btn-fill::before {
+  opacity: 1;
+}
+
 .tg-btn-fill:hover {
   transform: translateY(-2px) scale(1.02);
   box-shadow: 0 12px 30px rgba(212,175,55,0.4), 0 0 15px rgba(251,245,183,0.5);
-  color: #000 !important;
 }
+
 .tg-btn-ghost {
-  background: none;
-  border: none;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-family: 'DM Sans', sans-serif;
-  font-size: 11px;
-  letter-spacing: 2px;
-  text-transform: uppercase;
   color: #FAFAFA;
   opacity: 0.6;
-  white-space: nowrap;
-  transition: opacity 0.2s;
+  box-shadow: inset 0 0 0 1px rgba(250, 250, 250, 0.1);
 }
-.tg-btn-ghost:hover { opacity: 1; }
+
+.tg-btn-ghost::before {
+  opacity: 0;
+}
+
+.tg-btn-ghost:hover {
+  opacity: 1;
+  box-shadow: inset 0 0 0 1px rgba(250, 250, 250, 0.3);
+}
+
 .tg-ghost-circle {
   width: 28px; height: 28px;
   border-radius: 50%;
-  border: 1px solid rgba(250,250,250,0.3);
+  border: 1px solid currentColor;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  transition: border-color 0.2s, transform 0.2s;
+  transition: transform 0.2s, opacity 0.2s;
+  opacity: 0.5;
 }
-.tg-btn-ghost:hover .tg-ghost-circle {
-  border-color: rgba(250,250,250,0.8);
+
+.tg-btn-ghost:hover .tg-ghost-circle, .tg-btn-fill:hover .tg-ghost-circle {
+  opacity: 0.9;
   transform: translateX(3px);
 }
 .tg-stats {
@@ -680,8 +705,7 @@ html.lenis body {
   .tg-ctas { 
     gap: 14px;
   }
-  .tg-btn-fill { padding: 11px 26px; font-size: 10px; }
-  .tg-btn-ghost { font-size: 10px; }
+  .tg-btn-fill, .tg-btn-ghost { padding: 11px 26px; font-size: 10px; }
   .tg-stats { gap: 32px; margin-top: 30px; padding-top: 20px; }
   .tg-stat-num { font-size: 28px; }
   .tg-stat-lbl { font-size: 9px; }

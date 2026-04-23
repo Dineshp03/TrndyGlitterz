@@ -97,19 +97,38 @@ export const useOrderStore = create<OrderState>((set, get) => ({
   fetchOrders: async () => {
     set({ isLoading: true });
     const supabase = getSupabaseClient();
-    const { data: ordersData, error } = await supabase
+
+    // Fetch orders
+    const { data: ordersData, error: ordersError } = await supabase
       .from("orders")
-      .select("*, order_items(*)")
+      .select("*")
       .order("created_at", { ascending: false });
 
-    if (error) {
-      console.error("Error fetching orders:", error);
+    if (ordersError) {
+      console.error("Error fetching orders:", ordersError);
       set({ isLoading: false });
       return;
     }
 
+    // Fetch all order items separately (avoids FK join issues)
+    const { data: itemsData, error: itemsError } = await supabase
+      .from("order_items")
+      .select("*");
+
+    if (itemsError) {
+      console.warn("Could not fetch order items:", itemsError);
+    }
+
+    // Merge items into orders manually
+    const itemsByOrderId: Record<string, OrderItem[]> = {};
+    for (const item of (itemsData ?? []) as OrderItem[]) {
+      const oid = (item as unknown as Record<string, string>)["order_id"];
+      if (!itemsByOrderId[oid]) itemsByOrderId[oid] = [];
+      itemsByOrderId[oid].push(item);
+    }
+
     const orders = (ordersData ?? []).map((row: Record<string, unknown>) =>
-      mapRow(row, row.order_items as OrderItem[])
+      mapRow(row, itemsByOrderId[row.id as string] ?? [])
     );
     set({ orders, isLoading: false });
   },

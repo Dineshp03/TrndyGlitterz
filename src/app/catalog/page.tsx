@@ -13,7 +13,7 @@ const CATEGORY_GROUPS = [
     items: ["Earrings", "Neckpiece", "Bracelets", "Finger Rings"],
   },
   {
-    label: "Korean Collection",
+    label: "Browse Categories",
     items: ["Korean Earrings", "Neckpiece", "Bracelets", "Finger Rings", "Hair Accessories"],
   },
 ];
@@ -79,7 +79,6 @@ function CatalogContent() {
 
   const [selectedCategory, setSelectedCategory] = useState<string | null>(searchParams.get("category"));
   const [selectedPrice,    setSelectedPrice]    = useState<string | null>(searchParams.get("price"));
-  const [showImportedOnly, setShowImportedOnly] = useState(searchParams.get("imported") === "true");
   const [showOfferOnly,    setShowOfferOnly]    = useState(searchParams.get("offer")    === "true");
   const [filterPanelOpen,  setFilterPanelOpen]  = useState(false);
 
@@ -99,7 +98,6 @@ function CatalogContent() {
   const filteredProducts = useMemo(() => {
     let items = products;
     if (selectedCategory)  items = items.filter(p => p.category === selectedCategory);
-    if (showImportedOnly)  items = items.filter(p => p.isImported);
     if (showOfferOnly)     items = items.filter(p => p.featured);
     if (selectedPrice) {
       const rule = PRICE_FILTERS.find(f => f.param === selectedPrice);
@@ -109,14 +107,13 @@ function CatalogContent() {
       }
     }
     return items;
-  }, [selectedCategory, showImportedOnly, showOfferOnly, selectedPrice, products]);
+  }, [selectedCategory, showOfferOnly, selectedPrice, products]);
 
-  const hasActiveFilters = selectedCategory || selectedPrice || showImportedOnly || showOfferOnly;
+  const hasActiveFilters = selectedCategory || selectedPrice || showOfferOnly;
 
   const clearAll = () => {
     setSelectedCategory(null);
     setSelectedPrice(null);
-    setShowImportedOnly(false);
     setShowOfferOnly(false);
   };
 
@@ -291,11 +288,7 @@ function CatalogContent() {
                   backgroundClip: "text",
                   fontWeight: "bold"
                 }}>Offers</p>
-                <FilterBtn active={showOfferOnly} onClick={() => setShowOfferOnly(!showOfferOnly)} gold>🏷️ Offer Zone</FilterBtn>
-                <div style={{ marginTop: "4px" }}>
-                  <FilterBtn active={showImportedOnly} onClick={() => setShowImportedOnly(!showImportedOnly)}>✈️ Imported Only</FilterBtn>
-                </div>
-              </div>
+            </div>
 
               {/* Divider + View Count */}
               <div style={{ borderTop: `1px solid ${T.border}`, paddingTop: "16px" }}>
@@ -328,12 +321,6 @@ function CatalogContent() {
                   <span style={{ display: "inline-flex", alignItems: "center", gap: "6px", fontSize: "10px", letterSpacing: "0.15em", textTransform: "uppercase", background: T.goldDim, color: T.gold, padding: "5px 14px", borderRadius: "50px", border: `1px solid ${T.borderGold}` }}>
                     Offer Zone
                     <button onClick={() => setShowOfferOnly(false)} style={{ background: "none", border: "none", cursor: "pointer", color: T.gold, padding: 0, display: "flex" }}><X style={{ width: "11px", height: "11px" }} /></button>
-                  </span>
-                )}
-                {showImportedOnly && (
-                  <span style={{ display: "inline-flex", alignItems: "center", gap: "6px", fontSize: "10px", letterSpacing: "0.15em", textTransform: "uppercase", background: "rgba(250,250,250,0.1)", color: T.text, padding: "5px 14px", borderRadius: "50px", border: `1px solid ${T.border}` }}>
-                    Imported
-                    <button onClick={() => setShowImportedOnly(false)} style={{ background: "none", border: "none", cursor: "pointer", color: T.textMuted, padding: 0, display: "flex" }}><X style={{ width: "11px", height: "11px" }} /></button>
                   </span>
                 )}
               </div>

@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useState, useEffect } from "react";
 import { useProductStore } from "@/store/useProductStore";
 import ProductSlider from "@/components/ProductSlider";
-import { Search, ShoppingBag, X, Menu, Gem, ArrowUpRight } from "lucide-react";
+import { Search, ShoppingBag, X, Menu, Gem, ArrowUpRight, Instagram } from "lucide-react";
 import HeroSection from "@/components/HeroSection";
 import SmoothScroll from "@/components/SmoothScroll";
 import { Testimonials } from "@/components/ui/demo";
@@ -12,10 +12,19 @@ import { useSettingsStore } from "@/store/useSettingsStore";
 
 export default function Home() {
   const [mounted, setMounted] = useState(false);
-  const [showImportedOnly, setShowImportedOnly] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const { products, syncWithInitial } = useProductStore();
   const settings = useSettingsStore();
+
+  // Fixed category filters matching the menu structure
+  const CATEGORY_FILTERS = [
+    { label: "Xuping Exclusive", categories: ["Earrings", "Neckpiece", "Bracelets", "Finger Rings"] },
+    { label: "Korean Earrings",  categories: ["Korean Earrings"] },
+    { label: "Neckpiece",        categories: ["Neckpiece"] },
+    { label: "Bracelets",        categories: ["Bracelets"] },
+    { label: "Finger Rings",     categories: ["Finger Rings"] },
+    { label: "Hair Accessories", categories: ["Hair Accessories"] },
+  ];
 
   const scrollToProducts = () => {
     const el = document.getElementById('all-products');
@@ -26,15 +35,7 @@ export default function Home() {
     }
   };
 
-  const filteredProducts = showImportedOnly ? products.filter(p => p.isImported) : products;
-
-  // Category Ordering: Earrings first, then rest
-  const allCategories = Array.from(new Set(filteredProducts.map(p => p.category).filter(Boolean)));
-  const sortedCategories = allCategories.sort((a, b) => {
-    if (a.toLowerCase() === "earrings") return -1;
-    if (b.toLowerCase() === "earrings") return 1;
-    return a.localeCompare(b);
-  });
+  const filteredProducts = products;
 
   // Sort products: Uncategorized at the last
   const sortedProducts = [...filteredProducts].sort((a, b) => {
@@ -43,9 +44,20 @@ export default function Home() {
     return 0;
   });
 
-  // Products specifically for the ALL COLLECTIONS slider
-  const displayProducts = selectedCategory 
-    ? sortedProducts.filter(p => p.category === selectedCategory) 
+  // For section-by-section display below the slider, derive unique categories from products
+  const sortedCategories = Array.from(new Set(filteredProducts.map(p => p.category).filter(Boolean))).sort((a, b) => {
+    if (a.toLowerCase() === "earrings") return -1;
+    if (b.toLowerCase() === "earrings") return 1;
+    return a.localeCompare(b);
+  });
+
+  // Products for the ALL COLLECTIONS slider — filter by selected category group
+  const displayProducts = selectedCategory
+    ? (() => {
+        const filter = CATEGORY_FILTERS.find(f => f.label === selectedCategory);
+        if (filter) return sortedProducts.filter(p => filter.categories.includes(p.category ?? ""));
+        return sortedProducts;
+      })()
     : sortedProducts;
 
   const newArrivals = sortedProducts.filter(p => {
@@ -114,6 +126,7 @@ export default function Home() {
                 
                 {/* Scrollable Category Filters & Imported Toggle */}
                 <div className="flex items-center overflow-x-auto pb-4 md:pb-0 -mb-4 md:mb-0 scrollbar-hide w-full gap-2 snap-x">
+                  {/* ALL */}
                   <button 
                     onClick={() => setSelectedCategory(null)}
                     className={`shrink-0 snap-start text-[10px] px-4 py-2 rounded-full border transition-all uppercase tracking-widest ${
@@ -124,33 +137,23 @@ export default function Home() {
                   >
                     All
                   </button>
-                  
-                  {sortedCategories.map(cat => (
+
+                  {/* Fixed category pills from menu */}
+                  {CATEGORY_FILTERS.map(filter => (
                     <button 
-                      key={cat}
-                      onClick={() => setSelectedCategory(cat)}
+                      key={filter.label}
+                      onClick={() => setSelectedCategory(filter.label)}
                       className={`shrink-0 snap-start text-[10px] px-4 py-2 rounded-full border transition-all uppercase tracking-widest ${
-                      selectedCategory === cat 
-                      ? "bg-[#D4AF37] text-black border-[#D4AF37]" 
-                      : "bg-[#111] text-white/60 border-transparent hover:border-[#D4AF37] hover:text-[#D4AF37]"
-                    }`}
+                        selectedCategory === filter.label
+                        ? "bg-[#D4AF37] text-black border-[#D4AF37]" 
+                        : "bg-[#111] text-white/60 border-transparent hover:border-[#D4AF37] hover:text-[#D4AF37]"
+                      }`}
                     >
-                      {cat}
+                      {filter.label}
                     </button>
                   ))}
                   
-                  <div className="w-px h-6 bg-obsidian/10 mx-1 shrink-0"></div>
-                  
-                  <button 
-                    onClick={() => setShowImportedOnly(!showImportedOnly)}
-                    className={`shrink-0 snap-start text-[10px] px-4 py-2 rounded-full border transition-all uppercase tracking-widest ${
-                      showImportedOnly 
-                      ? "bg-[#ff4d4f] text-white border-[#ff4d4f]" 
-                      : "bg-transparent text-[#ff4d4f] border-[#ff4d4f]/30 hover:border-[#ff4d4f]"
-                    }`}
-                  >
-                    {showImportedOnly ? "Imported Only" : "Imported"}
-                  </button>
+
                 </div>
               </div>
             </div>
@@ -179,19 +182,8 @@ export default function Home() {
                 </div>
                 
                 <div className="flex items-center gap-6">
-                  <button 
-                    onClick={() => setShowImportedOnly(!showImportedOnly)}
-                    className={`shrink-0 text-[10px] px-4 py-2 rounded-full border transition-all uppercase tracking-widest ${
-                      showImportedOnly 
-                      ? "bg-[#ff4d4f] text-white border-[#ff4d4f]" 
-                      : "bg-transparent text-[#ff4d4f] border-[#ff4d4f]/30 hover:border-[#ff4d4f]"
-                    }`}
-                  >
-                    {showImportedOnly ? "Imported Only" : "Imported"}
-                  </button>
-
                   <Link 
-                    href={`/catalog?category=${encodeURIComponent(category)}${showImportedOnly ? '&imported=true' : ''}`}
+                    href={`/catalog?category=${encodeURIComponent(category)}`}
                     className="group flex flex-col items-center gap-1.5 text-[10px] md:text-xs font-sans font-bold uppercase tracking-[0.2em] text-obsidian/60 hover:text-obsidian transition-colors"
                   >
                     <div className="w-10 h-10 rounded-full border border-obsidian/20 flex items-center justify-center group-hover:bg-obsidian group-hover:text-white transition-colors">
@@ -214,53 +206,31 @@ export default function Home() {
         <div className="container mx-auto px-6 md:px-12">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-24 items-center">
             <div className="animate-reveal">
-              <a 
-                href="https://wa.me/919884110778?text=Hi%20Trendy%20Glitterz!%20I'm%20reaching%20out%20from%20the%20website%20regarding%20some%20of%20your%20jewelry%20products." 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="text-[10px] uppercase tracking-[0.4em] block mb-6 hover:text-[#25D366] transition-colors"
-                style={{
-                  background: "linear-gradient(to right, #BF953F 0%, #B38728 50%, #BF953F 100%)",
-                  WebkitBackgroundClip: "text",
-                  WebkitTextFillColor: "transparent",
-                  backgroundClip: "text",
-                  fontWeight: "bold"
-                }}
-              >
-                The Journal — Issue 01
-              </a>
+
               <h2 className="text-3xl md:text-5xl font-serif leading-tight italic max-w-lg" style={{
                 background: "linear-gradient(to right, #BF953F 0%, #FCF6BA 30%, #B38728 55%, #FBF5B7 80%, #BF953F 100%)",
                 WebkitBackgroundClip: "text",
                 WebkitTextFillColor: "transparent",
                 backgroundClip: "text",
               }}>
-                &quot;Trendyglitterz – Where every sparkle tells your story.&quot;
+                &quot;Trendyglitterz – Where every sparkle tells a story.&quot;
               </h2>
             </div>
             <div className="space-y-8 animate-reveal delay-200">
               <p className="font-sans font-light text-sm md:text-base leading-relaxed text-[#FAFAFA]/70 max-w-md">
                 At Trendyglitterz, we&apos;ve been crafting stylish and elegant jewellery since 2021, bringing you pieces that blend trend and timeless beauty. Our passion lies in helping you shine with confidence through unique, high-quality designs made for every occasion.
               </p>
-              <div className="flex flex-col gap-6">
-                <div className="flex items-center gap-6">
-                  <Link href="#" className="text-[11px] font-sans font-bold uppercase tracking-[0.2em] border-b border-[#D4AF37]/50 pb-1 hover:text-[#FBF5B7] hover:border-[#FBF5B7] transition-all" style={{
-                    background: "linear-gradient(to right, #BF953F 0%, #B38728 100%)",
-                    WebkitBackgroundClip: "text",
-                    WebkitTextFillColor: "transparent",
-                    backgroundClip: "text",
-                  }}>
-                    Our Philosophy
-                  </Link>
-                  <div className="h-px w-8 bg-white/10"></div>
-                  <span className="text-[10px] font-mono text-white/30 uppercase tracking-[0.2em]">Crafted with Intention</span>
-                </div>
-                
+              <div className="pt-4 flex flex-col gap-4">
                 <a href="https://wa.me/919884110778?text=Hi%20Trendy%20Glitterz!%20I'm%20reaching%20out%20from%20the%20website%20regarding%20some%20of%20your%20jewelry%20products." target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-3 text-sm font-sans font-medium text-[#25D366] hover:text-[#128C7E] transition-colors w-fit border border-[#25D366]/30 px-5 py-2.5 rounded-full hover:bg-[#25D366]/5">
                   <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
                     <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 1.927 6.541L0 24l5.602-1.464A11.9 11.9 0 0 0 11.944 24c6.627 0 12-5.373 12-12S18.571 0 11.944 0zm6.208 17.202c-.237.669-1.391 1.25-1.95 1.341-.561.092-1.282.261-4.041-.884-3.32-1.378-5.46-4.786-5.626-5.008-.165-.224-1.343-1.785-1.343-3.407 0-1.623.844-2.427 1.144-2.738.297-.311.642-.39.856-.39.213 0 .428 0 .605.008.2.012.463-.075.725.556.264.634.856 2.086.936 2.247.076.161.127.351.018.572-.11.222-.165.35-.331.545-.164.195-.349.421-.493.571-.164.168-.344.351-.15.688.194.335.867 1.433 1.867 2.327 1.287 1.155 2.368 1.503 2.697 1.666.329.162.521.144.717-.08.196-.226.843-.984 1.07-1.32.228-.337.457-.282.75-.17.294.113 1.859.877 2.174 1.034.316.158.528.236.603.368.077.133.077.768-.16 1.437z"/>
                   </svg>
                   Connect on WhatsApp
+                </a>
+                
+                <a href="https://www.instagram.com/trendyglitterz?igsh=MmRpanBnZ3NpOHhw" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-3 text-sm font-sans font-medium text-[#E4405F] hover:text-[#d62976] transition-colors w-fit border border-[#E4405F]/30 px-5 py-2.5 rounded-full hover:bg-[#E4405F]/5">
+                  <Instagram size={18} />
+                  Follow on Instagram
                 </a>
               </div>
             </div>

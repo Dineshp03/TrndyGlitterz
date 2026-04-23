@@ -46,16 +46,25 @@ export default function CartCheckoutModal({ onClose }: { onClose: () => void }) 
   const [step, setStep] = useState<Step>("details");
   const [details, setDetails] = useState<UserDetails>(emptyDetails);
   
-  // Pre-fill from Clerk
+  // Pre-fill from Clerk — all saved profile fields
   useEffect(() => {
     if (userLoaded && user) {
       setDetails(prev => ({
         ...prev,
         fullName: user.fullName || "",
         email: user.primaryEmailAddress?.emailAddress || "",
+        phone:   (user.unsafeMetadata?.phone   as string) || "",
+        address: (user.unsafeMetadata?.address as string) || "",
+        city:    (user.unsafeMetadata?.city    as string) || "",
+        state:   (user.unsafeMetadata?.state   as string) || "",
+        pincode: (user.unsafeMetadata?.pincode as string) || "",
       }));
     }
   }, [user, userLoaded]);
+
+  // Detect if address is incomplete (to show reminder)
+  const isAddressIncomplete = userLoaded && user &&
+    !(user.unsafeMetadata?.address as string);
   
   const defaultMethod = codEnabled ? "cod" : upiEnabled ? "upi" : "razorpay";
   
@@ -245,6 +254,23 @@ export default function CartCheckoutModal({ onClose }: { onClose: () => void }) 
           {/* ---- Step 1: User Details ---- */}
           {step === "details" && (
             <div className="flex flex-col gap-5">
+              {/* Profile reminder banner */}
+              {isAddressIncomplete && (
+                <div className="flex items-start gap-3 p-3.5 bg-amber-50 border border-amber-200 rounded-lg">
+                  <span className="text-amber-500 mt-0.5 flex-shrink-0">💡</span>
+                  <div className="flex-1">
+                    <p className="text-[11px] font-sans font-semibold text-amber-800">Save your address for faster checkout!</p>
+                    <p className="text-[10px] text-amber-700 mt-0.5 leading-relaxed">
+                      Add your delivery address in{" "}
+                      <a href="/profile" target="_blank" className="underline font-semibold hover:text-amber-900">
+                        My Profile
+                      </a>{" "}
+                      — it will auto-fill here next time.
+                    </p>
+                  </div>
+                </div>
+              )}
+
               {/* Cart summary preview */}
               <div className="p-4 bg-sand/30 border border-obsidian/10 mb-2 max-h-40 overflow-y-auto">
                 <p className="text-[10px] uppercase font-sans tracking-[0.2em] text-obsidian/60 mb-3 border-b border-obsidian/10 pb-2">

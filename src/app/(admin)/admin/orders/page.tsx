@@ -181,33 +181,110 @@ export default function OrdersPage() {
       {/* Modal for Order Details */}
       {selectedOrder && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-obsidian/40 backdrop-blur-sm" onClick={() => setSelectedOrder(null)}>
-          <div className="w-full max-w-md bg-white rounded-3xl shadow-xl overflow-hidden" onClick={e => e.stopPropagation()}>
-            <div className="flex items-center justify-between px-6 py-4 border-b border-[#F0EDE8]">
-              <h2 className="text-lg font-serif text-[#2C2C2C]">Order Details</h2>
+          <div className="w-full max-w-lg bg-white rounded-3xl shadow-xl overflow-hidden max-h-[90vh] flex flex-col" onClick={e => e.stopPropagation()}>
+
+            {/* Modal Header */}
+            <div className="flex items-center justify-between px-6 py-4 border-b border-[#F0EDE8] flex-shrink-0">
+              <div>
+                <p className="text-[9px] font-mono text-[#bbb] uppercase tracking-widest">Order Details</p>
+                <h2 className="text-base font-serif text-[#2C2C2C] mt-0.5">#{selectedOrder.id.split("-")[0].toUpperCase()}</h2>
+              </div>
               <button onClick={() => setSelectedOrder(null)} className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-black/5 text-[#888]">
                 <X size={16} />
               </button>
             </div>
-            <div className="p-6">
-              <div className="flex items-center justify-between mb-6">
-                <div>
-                  <p className="text-[10px] font-mono text-[#bbb] uppercase tracking-widest">Order ID</p>
-                  <p className="text-sm font-bold text-[#E8809A]">{selectedOrder.id}</p>
+
+            {/* Scrollable Content */}
+            <div className="overflow-y-auto flex-1 p-6 space-y-4">
+
+              {/* Customer Info */}
+              <div className="bg-[#FAFAF8] rounded-xl border border-[#F0EDE8] p-4 space-y-3">
+                <p className="text-[9px] font-mono text-[#bbb] uppercase tracking-widest mb-3">Customer</p>
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#F5B8C8]/60 to-[#E8809A]/60 flex items-center justify-center text-white text-sm font-bold flex-shrink-0">
+                    {(selectedOrder.customer_name || selectedOrder.customer || "?")[0].toUpperCase()}
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-[#2C2C2C]">{selectedOrder.customer_name || selectedOrder.customer}</p>
+                    {selectedOrder.customer_email && (
+                      <p className="text-[11px] text-[#888]">{selectedOrder.customer_email}</p>
+                    )}
+                  </div>
                 </div>
-                <div className="text-right">
-                  <p className="text-[10px] font-mono text-[#bbb] uppercase tracking-widest">Date</p>
-                  <p className="text-sm font-medium text-[#2C2C2C]">{selectedOrder.date}</p>
+                {selectedOrder.customer_phone && (
+                  <div className="flex items-center gap-2 pt-2 border-t border-[#F0EDE8]">
+                    <span className="text-[10px] text-[#bbb] font-mono uppercase tracking-wider w-16">Phone</span>
+                    <a
+                      href={`https://wa.me/91${selectedOrder.customer_phone.replace(/\D/g,"")}`}
+                      target="_blank" rel="noopener noreferrer"
+                      className="text-sm text-[#25D366] font-medium hover:underline"
+                    >
+                      {selectedOrder.customer_phone}
+                    </a>
+                  </div>
+                )}
+              </div>
+
+              {/* Delivery Address */}
+              <div className="bg-[#FAFAF8] rounded-xl border border-[#F0EDE8] p-4">
+                <p className="text-[9px] font-mono text-[#bbb] uppercase tracking-widest mb-2">Delivery Address</p>
+                <p className="text-sm text-[#2C2C2C] leading-relaxed">
+                  {selectedOrder.address || <span className="text-[#ccc] italic">No address provided</span>}
+                </p>
+              </div>
+
+              {/* Order Info Row */}
+              <div className="grid grid-cols-3 gap-3">
+                <div className="bg-[#FAFAF8] rounded-xl border border-[#F0EDE8] p-3 text-center">
+                  <p className="text-[9px] font-mono text-[#bbb] uppercase tracking-wider">Amount</p>
+                  <p className="text-sm font-bold text-[#2C2C2C] mt-1">₹{selectedOrder.total?.toLocaleString("en-IN") || selectedOrder.amount}</p>
+                </div>
+                <div className="bg-[#FAFAF8] rounded-xl border border-[#F0EDE8] p-3 text-center">
+                  <p className="text-[9px] font-mono text-[#bbb] uppercase tracking-wider">Payment</p>
+                  <p className="text-[11px] font-bold text-[#2C2C2C] mt-1 capitalize">
+                    {selectedOrder.payment_method === "cod" ? "Cash on Delivery" : selectedOrder.payment_method?.toUpperCase() || "—"}
+                  </p>
+                </div>
+                <div className="bg-[#FAFAF8] rounded-xl border border-[#F0EDE8] p-3 text-center">
+                  <p className="text-[9px] font-mono text-[#bbb] uppercase tracking-wider">Date</p>
+                  <p className="text-[11px] font-bold text-[#2C2C2C] mt-1">{selectedOrder.date || new Date(selectedOrder.created_at).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}</p>
                 </div>
               </div>
 
-              <div className="bg-[#FAFAF8] rounded-xl p-4 mb-6 border border-[#F0EDE8]">
-                <p className="text-xs font-semibold text-[#2C2C2C] mb-1">{selectedOrder.customer}</p>
-                <p className="text-xs text-[#555] mb-2">{selectedOrder.product} <span className="text-[#aaa] ml-1">x{selectedOrder.qty}</span></p>
-                <p className="text-sm font-bold text-[#2C2C2C]">{selectedOrder.amount}</p>
-              </div>
+              {/* Items */}
+              {selectedOrder.items && selectedOrder.items.length > 0 && (
+                <div className="border border-[#F0EDE8] rounded-xl overflow-hidden">
+                  <p className="text-[9px] font-mono text-[#bbb] uppercase tracking-widest px-4 py-3 border-b border-[#F0EDE8] bg-[#FAFAF8]">
+                    Items Ordered · {selectedOrder.items.length} product{selectedOrder.items.length > 1 ? "s" : ""}
+                  </p>
+                  <div className="divide-y divide-[#F0EDE8]">
+                    {selectedOrder.items.map((item) => (
+                      <div key={item.id} className="flex items-center gap-3 px-4 py-3">
+                        {item.product_image ? (
+                          <img src={item.product_image} alt={item.product_name} className="w-10 h-12 object-cover rounded-lg flex-shrink-0 bg-[#f5f5f5]" />
+                        ) : (
+                          <div className="w-10 h-12 rounded-lg bg-[#F0EDE8] flex-shrink-0 flex items-center justify-center text-[#ccc] text-[9px]">IMG</div>
+                        )}
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs font-medium text-[#2C2C2C] truncate">{item.product_name}</p>
+                          <p className="text-[10px] text-[#aaa]">Qty: {item.quantity} × ₹{item.price}</p>
+                        </div>
+                        <p className="text-xs font-bold text-[#2C2C2C] flex-shrink-0">
+                          ₹{(item.quantity * item.price).toLocaleString("en-IN")}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="flex justify-between px-4 py-3 border-t border-[#F0EDE8] bg-[#FAFAF8]">
+                    <span className="text-[10px] font-mono text-[#888] uppercase tracking-wider">Total</span>
+                    <span className="text-sm font-bold text-[#2C2C2C]">₹{selectedOrder.total?.toLocaleString("en-IN") || selectedOrder.amount}</span>
+                  </div>
+                </div>
+              )}
 
+              {/* Update Status */}
               <div>
-                <label className="text-[10px] font-mono text-[#bbb] uppercase tracking-widest mb-2 block">Update Status</label>
+                <label className="text-[9px] font-mono text-[#bbb] uppercase tracking-widest mb-2 block">Update Status</label>
                 <div className="grid grid-cols-2 gap-2">
                   {Object.entries(statusConfig).map(([key, config]) => (
                     <button
@@ -224,18 +301,20 @@ export default function OrdersPage() {
                 </div>
               </div>
             </div>
-            <div className="px-6 py-4 border-t border-[#F0EDE8] flex justify-end gap-3 bg-[#FAFAF8]">
-              <button 
+
+            {/* Footer */}
+            <div className="px-6 py-4 border-t border-[#F0EDE8] flex justify-end gap-3 bg-[#FAFAF8] flex-shrink-0">
+              <button
                 onClick={() => setSelectedOrder(null)}
                 className="px-4 py-2 text-xs font-semibold text-[#888] hover:text-[#2C2C2C] transition-colors"
               >
                 Cancel
               </button>
-              <button 
+              <button
                 onClick={handleUpdateStatus}
                 className="px-5 py-2 bg-[#E8809A] text-white text-xs font-bold uppercase tracking-[0.1em] rounded-full hover:bg-burgundy transition-colors shadow-sm"
               >
-                Save Changes
+                Save Status
               </button>
             </div>
           </div>
