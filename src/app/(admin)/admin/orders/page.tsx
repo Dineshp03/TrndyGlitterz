@@ -3,7 +3,9 @@
 import { useState, useMemo } from "react";
 import { ShoppingBag, Clock, CheckCircle2, AlertCircle, Package, Search, Filter, X } from "lucide-react";
 
+import { useAuth } from "@clerk/nextjs";
 import { useOrderStore, GlobalOrder } from "@/store/useOrderStore";
+import { useEffect } from "react";
 
 const statusConfig: Record<string, { label: string; icon: typeof CheckCircle2; color: string; bg: string }> = {
   delivered: { label: "Delivered", icon: CheckCircle2, color: "text-emerald-700", bg: "bg-emerald-50 border-emerald-100" },
@@ -15,11 +17,24 @@ const statusConfig: Record<string, { label: string; icon: typeof CheckCircle2; c
 type Order = GlobalOrder;
 
 export default function OrdersPage() {
-  const { orders, updateOrderStatus } = useOrderStore();
+  const { getToken, isLoaded, isSignedIn } = useAuth();
+  const { orders, fetchOrders, updateOrderStatus, deleteOrder } = useOrderStore();
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("All");
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [editStatus, setEditStatus] = useState<string>("");
+
+  useEffect(() => {
+    async function loadOrders() {
+      if (isLoaded && isSignedIn) {
+        const token = await getToken();
+        if (token) {
+          fetchOrders(token);
+        }
+      }
+    }
+    loadOrders();
+  }, [isLoaded, isSignedIn, getToken, fetchOrders]);
 
   // Filtering & Searching Logic
   const filteredOrders = useMemo(() => {
@@ -38,22 +53,25 @@ export default function OrdersPage() {
   }, [orders, search, filter]);
 
   // Tab stats calculated from all current orders
-  const stats = [
+  const stats = useMemo(() => [
     { label: "All", count: orders.length },
     { label: "Delivered", count: orders.filter(o => o.status === "delivered").length },
     { label: "Pending", count: orders.filter(o => o.status === "pending" || o.status === "processing").length },
     { label: "Cancelled", count: orders.filter(o => o.status === "cancelled").length },
-  ];
+  ], [orders]);
 
   const handleRowClick = (order: Order) => {
     setSelectedOrder(order);
     setEditStatus(order.status);
   };
 
-  const handleUpdateStatus = () => {
-    if (selectedOrder) {
-      updateOrderStatus(selectedOrder.id, editStatus as Order["status"])
-      setSelectedOrder(null);
+  const handleUpdateStatus = async () => {
+    if (selectedOrder && isLoaded && isSignedIn) {
+      const token = await getToken();
+      if (token) {
+        await updateOrderStatus(selectedOrder.id, editStatus as Order["status"], token);
+        setSelectedOrder(null);
+      }
     }
   };
 

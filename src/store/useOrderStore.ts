@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { getSupabaseClient } from "@/lib/supabase";
+import { fetchApi } from "@/lib/api";
 
 // ─── Types ─────────────────────────────────────────────────────────────────────
 
@@ -15,6 +15,7 @@ export interface OrderItem {
 export interface GlobalOrder {
   id: string;
   user_id?: string;
+  clerk_user_id?: string;
   customer_name: string;
   customer_email: string;
   customer_phone?: string;
@@ -37,7 +38,8 @@ export interface GlobalOrder {
 }
 
 export interface PlaceOrderPayload {
-  user_id?: string;
+  user_id?: string; // Legacy
+  clerk_user_id?: string;
   customer_name: string;
   customer_email: string;
   customer_phone?: string;
@@ -57,32 +59,32 @@ interface OrderState {
   orders: GlobalOrder[];
   isLoading: boolean;
   // Admin: fetch all orders
-  fetchOrders: () => Promise<void>;
-  // User: fetch own orders by user_id
-  fetchUserOrders: (userId: string) => Promise<GlobalOrder[]>;
+  fetchOrders: (token: string) => Promise<void>;
+  // User: fetch own orders
+  fetchUserOrders: (token: string) => Promise<GlobalOrder[]>;
   // Place a new order (from checkout)
-  placeOrder: (payload: PlaceOrderPayload) => Promise<{ success: boolean; orderId?: string; error?: string }>;
+  placeOrder: (payload: PlaceOrderPayload, token?: string | null) => Promise<{ success: boolean; orderId?: string; error?: string }>;
   // Admin actions
-  updateOrderStatus: (id: string, status: GlobalOrder["status"]) => Promise<void>;
-  deleteOrder: (id: string) => Promise<void>;
-  deleteAllOrders: () => Promise<void>;
+  updateOrderStatus: (id: string, status: GlobalOrder["status"], token: string) => Promise<void>;
+  deleteOrder: (id: string, token: string) => Promise<void>;
+  deleteAllOrders: (token: string) => Promise<void>;
 }
 
 // ─── Helpers ────────────────────────────────────────────────────────────────────
 
-function mapRow(row: Record<string, unknown>, items?: OrderItem[]): GlobalOrder {
+function mapRow(row: any): GlobalOrder {
+  const items = row.items || [];
   const firstItem = items && items.length > 0 ? items[0] : null;
   const productSummary = firstItem 
-    ? (items!.length > 1 ? `${firstItem.product_name} +${items!.length - 1}` : firstItem.product_name)
+    ? (items.length > 1 ? `${firstItem.product_name} +${items.length - 1}` : firstItem.product_name)
     : "No items";
 
   return {
-    ...(row as unknown as GlobalOrder),
-    items,
-    customer: row.customer_name as string,
+    ...row,
+    customer: row.customer_name,
     amount: `₹${Number(row.total).toLocaleString("en-IN")}`,
-    date: row.created_at as string,
-    qty: items?.reduce((acc, i) => acc + i.quantity, 0) ?? 0,
+    date: row.created_at,
+    qty: items.reduce((acc: number, i: any) => acc + (i.quantity || 0), 0),
     product: productSummary,
   };
 }
@@ -94,159 +96,93 @@ export const useOrderStore = create<OrderState>((set, get) => ({
   isLoading: false,
 
   // ── Fetch all orders (admin) ───────────────────────────────────────────────
-  fetchOrders: async () => {
+  fetchOrders: async (token) => {
     set({ isLoading: true });
-    const supabase = getSupabaseClient();
-
-    // Fetch orders
-    const { data: ordersData, error: ordersError } = await supabase
-      .from("orders")
-      .select("*")
-      .order("created_at", { ascending: false });
-
-    if (ordersError) {
-      console.error("Error fetching orders:", ordersError);
+    try {
+      const { orders: data } = await fetchApi("/api/admin/orders", {}, token);
+      const orders = (data || []).map(mapRow);
+      set({ orders, isLoading: false });
+    } catch (error) {
+      console.error("Error fetching orders:", error);
       set({ isLoading: false });
-      return;
     }
-
-    // Fetch all order items separately (avoids FK join issues)
-    const { data: itemsData, error: itemsError } = await supabase
-      .from("order_items")
-      .select("*");
-
-    if (itemsError) {
-      console.warn("Could not fetch order items:", itemsError);
-    }
-
-    // Merge items into orders manually
-    const itemsByOrderId: Record<string, OrderItem[]> = {};
-    for (const item of (itemsData ?? []) as OrderItem[]) {
-      const oid = (item as unknown as Record<string, string>)["order_id"];
-      if (!itemsByOrderId[oid]) itemsByOrderId[oid] = [];
-      itemsByOrderId[oid].push(item);
-    }
-
-    const orders = (ordersData ?? []).map((row: Record<string, unknown>) =>
-      mapRow(row, itemsByOrderId[row.id as string] ?? [])
-    );
-    set({ orders, isLoading: false });
   },
 
   // ── Fetch orders for a specific user ──────────────────────────────────────
-  fetchUserOrders: async (userId) => {
-    const supabase = getSupabaseClient();
-    const { data, error } = await supabase
-      .from("orders")
-      .select("*, order_items(*)")
-      .eq("user_id", userId)
-      .order("created_at", { ascending: false });
-
-    if (error) {
-      console.error("Error fetching user orders:", error);
+  fetchUserOrders: async (token: string) => {
+    try {
+      const resp = await fetch("/api/orders", {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (!resp.ok) throw new Error("Failed to fetch orders");
+      const data = await resp.json();
+      return (data || []).map(mapRow);
+    } catch (e) {
+      console.error(e);
       return [];
     }
-
-    return (data ?? []).map((row: Record<string, unknown>) =>
-      mapRow(row, row.order_items as OrderItem[])
-    );
   },
 
   // ── Place a new order ──────────────────────────────────────────────────────
-  placeOrder: async (payload) => {
-    const supabase = getSupabaseClient();
-    const { items, ...orderFields } = payload;
-
-    // 1. Insert order
-    const { data: order, error: orderError } = await supabase
-      .from("orders")
-      .insert([{
-        user_id: payload.user_id ?? null,
-        customer_name: payload.customer_name,
-        customer_email: payload.customer_email,
-        customer_phone: payload.customer_phone ?? null,
-        address: payload.address,
-        city: payload.city ?? null,
-        state: payload.state ?? null,
-        pincode: payload.pincode ?? null,
-        total: payload.total,
-        notes: payload.notes ?? null,
-        payment_method: payload.payment_method ?? null,
-        status: "pending",
-      }])
-      .select()
-      .single();
-
-    if (orderError || !order) {
-      console.error("Error placing order:", orderError);
-      return { success: false, error: orderError?.message ?? "Failed to place order." };
+  placeOrder: async (payload, token) => {
+    try {
+      const result = await fetchApi("/api/orders", {
+        method: "POST",
+        body: JSON.stringify(payload),
+      }, token);
+      
+      // If admin was looking at orders, refresh list
+      if (token) {
+        await get().fetchOrders(token);
+      }
+      
+      return result;
+    } catch (error: any) {
+      console.error("Error placing order:", error);
+      return { success: false, error: error.message || "Failed to place order." };
     }
-
-    // 2. Insert order items
-    const orderItems = items.map((item) => ({
-      order_id: order.id,
-      product_id: item.product_id ?? null,
-      product_name: item.product_name,
-      product_image: item.product_image ?? null,
-      price: item.price,
-      quantity: item.quantity,
-    }));
-
-    const { error: itemsError } = await supabase
-      .from("order_items")
-      .insert(orderItems);
-
-    if (itemsError) {
-      console.error("Error inserting order items:", itemsError);
-      // Order was created — don't fail completely
-    }
-
-    // 3. Refresh local store
-    await get().fetchOrders();
-
-    return { success: true, orderId: order.id };
   },
 
   // ── Update order status ────────────────────────────────────────────────────
-  updateOrderStatus: async (id, status) => {
-    const supabase = getSupabaseClient();
-    const { error } = await supabase
-      .from("orders")
-      .update({ status })
-      .eq("id", id);
-
-    if (error) {
+  updateOrderStatus: async (id, status, token) => {
+    try {
+      await fetchApi(`/api/admin/orders/${id}`, {
+        method: "PATCH",
+        body: JSON.stringify({ status }),
+      }, token);
+      
+      set((state) => ({
+        orders: state.orders.map((o) =>
+          o.id === id ? { ...o, status } : o
+        ),
+      }));
+    } catch (error) {
       console.error("Error updating order status:", error);
-      return;
     }
-    set((state) => ({
-      orders: state.orders.map((o) =>
-        o.id === id ? { ...o, status } : o
-      ),
-    }));
   },
 
   // ── Delete a single order ──────────────────────────────────────────────────
-  deleteOrder: async (id) => {
-    const supabase = getSupabaseClient();
-    const { error } = await supabase.from("orders").delete().eq("id", id);
-    if (error) {
+  deleteOrder: async (id, token) => {
+    try {
+      await fetchApi(`/api/admin/orders/${id}`, {
+        method: "DELETE",
+      }, token);
+      
+      set((state) => ({
+        orders: state.orders.filter((o) => o.id !== id),
+      }));
+    } catch (error) {
       console.error("Error deleting order:", error);
-      return;
     }
-    set((state) => ({
-      orders: state.orders.filter((o) => o.id !== id),
-    }));
   },
 
-  // ── Delete all orders (admin nuclear option) ───────────────────────────────
-  deleteAllOrders: async () => {
-    const supabase = getSupabaseClient();
-    const { error } = await supabase.from("orders").delete().neq("id", "00000000-0000-0000-0000-000000000000");
-    if (error) {
+  deleteAllOrders: async (token) => {
+    try {
+      await fetchApi("/api/admin/orders", { method: "DELETE" }, token);
+      set({ orders: [] });
+    } catch (error) {
       console.error("Error deleting all orders:", error);
-      return;
     }
-    set({ orders: [] });
   },
 }));
+

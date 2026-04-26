@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 export const dynamic = "force-dynamic";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { useClerk, useUser } from "@clerk/nextjs";
+import { useClerk, useUser, useAuth } from "@clerk/nextjs";
 import { useOrderStore, GlobalOrder } from "@/store/useOrderStore";
 import {
   User,
@@ -72,6 +72,8 @@ export default function ProfilePage() {
     }
   }, [isLoaded, isSignedIn, router]);
 
+  const { getToken } = useAuth();
+
   useEffect(() => {
     if (user) {
       setProfileForm({
@@ -83,11 +85,16 @@ export default function ProfilePage() {
         pincode: (user.unsafeMetadata.pincode as string) || "",
       });
 
-      useOrderStore.getState().fetchUserOrders(user.id).then(fetchedOrders => {
-        setOrders(fetchedOrders);
-      });
+      async function getOrders() {
+        const token = await getToken();
+        if (token) {
+          const fetchedOrders = await useOrderStore.getState().fetchUserOrders(token);
+          setOrders(fetchedOrders);
+        }
+      }
+      getOrders();
     }
-  }, [user]);
+  }, [user, getToken]);
 
   const handleSaveProfile = async () => {
     if (!user) return;

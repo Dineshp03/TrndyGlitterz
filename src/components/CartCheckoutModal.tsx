@@ -8,7 +8,7 @@ import { useCart } from "@/hooks/useCart";
 import { useOrderStore } from "@/store/useOrderStore";
 import { useSettingsStore } from "@/store/useSettingsStore";
 import { useNotificationStore } from "@/store/useNotificationStore";
-import { useUser } from "@clerk/nextjs";
+import { useUser, useAuth } from "@clerk/nextjs";
 
 type Step = "details" | "payment" | "success";
 
@@ -42,6 +42,7 @@ export default function CartCheckoutModal({ onClose }: { onClose: () => void }) 
   const { placeOrder } = useOrderStore();
   const { codEnabled, upiEnabled } = useSettingsStore();
   const { user, isLoaded: userLoaded } = useUser();
+  const { getToken } = useAuth();
   
   const [step, setStep] = useState<Step>("details");
   const [details, setDetails] = useState<UserDetails>(emptyDetails);
@@ -125,8 +126,9 @@ export default function CartCheckoutModal({ onClose }: { onClose: () => void }) 
     setProcessing(true);
     
     try {
+      const token = await getToken();
       const payload = {
-        user_id: user?.id,
+        clerk_user_id: user?.id,
         customer_name: details.fullName,
         customer_email: details.email,
         customer_phone: details.phone,
@@ -137,7 +139,7 @@ export default function CartCheckoutModal({ onClose }: { onClose: () => void }) 
         total: total,
         payment_method: payment.method,
         items: items.map(item => ({
-          product_id: item.id,
+          product_id: item.productId || item.id,
           product_name: item.name,
           product_image: item.image,
           price: item.price,
@@ -145,7 +147,7 @@ export default function CartCheckoutModal({ onClose }: { onClose: () => void }) 
         }))
       };
 
-      const result = await placeOrder(payload);
+      const result = await placeOrder(payload, token);
 
       if (result.success) {
         // Notification

@@ -7,6 +7,7 @@ import { useOrderStore } from "@/store/useOrderStore";
 import { toast } from "sonner";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
+import { useAuth } from "@clerk/nextjs";
 import {
   TrendingUp,
   ShoppingBag,
@@ -35,6 +36,7 @@ const statusConfig: Record<string, { label: string; icon: any; color: string; bg
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export default function AdminDashboard() {
+  const { getToken, isLoaded, isSignedIn } = useAuth();
   const { products, fetchProducts, deleteAllProducts } = useProductStore();
   const { orders, fetchOrders, deleteAllOrders, isLoading: ordersLoading } = useOrderStore();
   
@@ -44,14 +46,23 @@ export default function AdminDashboard() {
   const [showConfirmReset, setShowConfirmReset] = useState(false);
 
   useEffect(() => {
-    fetchProducts();
-    fetchOrders();
+    async function loadData() {
+      fetchProducts();
+      
+      if (isLoaded && isSignedIn) {
+        const token = await getToken();
+        if (token) {
+          fetchOrders(token);
+        }
+      }
+    }
+    loadData();
     
     const hour = new Date().getHours();
     if (hour < 12) setGreeting("Good morning");
     else if (hour < 17) setGreeting("Good afternoon");
     else setGreeting("Good evening");
-  }, [fetchProducts, fetchOrders]);
+  }, [fetchProducts, fetchOrders, getToken, isLoaded, isSignedIn]);
 
   // ─── Analytics Calculations ──────────────────────────────────────────────────
   
@@ -117,7 +128,10 @@ export default function AdminDashboard() {
 
   const handleConfirmReset = async () => {
     await deleteAllProducts();
-    await deleteAllOrders();
+    const token = await getToken();
+    if (token) {
+      await deleteAllOrders(token);
+    }
     setIsReset(true);
     setShowConfirmReset(false);
     toast.success("All store data has been successfully cleared from Supabase.");

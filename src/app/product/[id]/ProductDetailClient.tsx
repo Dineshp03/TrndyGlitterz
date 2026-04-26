@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { useParams, notFound, useRouter } from "next/navigation";
-import { useUser } from "@clerk/nextjs";
+import { useUser, useAuth } from "@clerk/nextjs";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useProductStore } from "@/store/useProductStore";
 import ProductCard from "@/components/ProductCard";
@@ -135,13 +135,33 @@ function PaymentModal({
   product,
   onClose,
 }: {
-  product: { name: string; price: number; image: string };
+  product: { name: string; price: number; image: string; id?: string };
   onClose: () => void;
 }) {
   const { placeOrder } = useOrderStore();
   const { codEnabled, upiEnabled } = useSettingsStore();
+  const { user, isLoaded: userLoaded } = useUser();
+  const { getToken } = useAuth();
+  
   const [step, setStep] = useState<Step>("details");
   const [details, setDetails] = useState<UserDetails>(emptyDetails);
+  
+  // Pre-fill
+  useEffect(() => {
+    if (userLoaded && user) {
+      setDetails(prev => ({
+        ...prev,
+        fullName: user.fullName || "",
+        email: user.primaryEmailAddress?.emailAddress || "",
+        phone: (user.unsafeMetadata?.phone as string) || "",
+        address: (user.unsafeMetadata?.address as string) || "",
+        city: (user.unsafeMetadata?.city as string) || "",
+        state: (user.unsafeMetadata?.state as string) || "",
+        pincode: (user.unsafeMetadata?.pincode as string) || "",
+      }));
+    }
+  }, [user, userLoaded]);
+
   const defaultMethod = codEnabled ? "cod" : upiEnabled ? "upi" : "razorpay";
   const [payment, setPayment] = useState<PaymentDetails>({ method: defaultMethod, upiId: "" });
   const [errors, setErrors] = useState<Partial<UserDetails & { upiId: string }>>({});
@@ -165,13 +185,15 @@ function PaymentModal({
     return Object.keys(e).length === 0;
   };
 
-  const handlePayNow = () => {
+  const handlePayNow = async () => {
     if (payment.method === "upi" && (!payment.upiId.trim() || !/^[\w.\-_]{1,99}@[a-zA-Z]{3,}$/.test(payment.upiId))) {
       setErrors({ upiId: "Valid UPI ID required" }); return;
     }
     setProcessing(true);
-    setTimeout(() => {
-      placeOrder({
+    try {
+      const token = await getToken();
+      const result = await placeOrder({
+        clerk_user_id: user?.id,
         customer_name: details.fullName,
         customer_email: details.email,
         customer_phone: details.phone,
@@ -180,15 +202,27 @@ function PaymentModal({
         state: details.state,
         pincode: details.pincode,
         total: product.price,
+        payment_method: payment.method,
         items: [{
+          product_id: product.id,
           product_name: product.name,
           product_image: product.image,
           price: product.price,
           quantity: 1
         }]
-      });
-      setProcessing(false); setStep("success");
-    }, 2000);
+      }, token);
+
+      if (result.success) {
+        setStep("success");
+      } else {
+        alert(result.error || "Failed to place order.");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Something went wrong.");
+    } finally {
+      setProcessing(false);
+    }
   };
 
   const field = (id: keyof UserDetails, label: string) => (

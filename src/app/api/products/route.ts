@@ -1,15 +1,26 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 
+import { getAuth } from "@clerk/nextjs/server";
+
 // Service role client — bypasses RLS, for admin operations only
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
 
+const isAdmin = (userId: string | null) => {
+  const admins = process.env.ADMIN_USER_IDS?.split(",") || [];
+  return userId && admins.includes(userId);
+};
+
 // POST /api/products — Add a new product
 export async function POST(request: NextRequest) {
   try {
+    const { userId } = getAuth(request);
+    if (!isAdmin(userId)) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
     const body = await request.json();
 
     const { data, error } = await supabaseAdmin
@@ -44,6 +55,10 @@ export async function POST(request: NextRequest) {
 // PUT /api/products — Update an existing product
 export async function PUT(request: NextRequest) {
   try {
+    const { userId } = getAuth(request);
+    if (!isAdmin(userId)) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
     const body = await request.json();
 
     if (!body.id) {
@@ -83,6 +98,10 @@ export async function PUT(request: NextRequest) {
 // DELETE /api/products?id=xxx — Delete a product
 export async function DELETE(request: NextRequest) {
   try {
+    const { userId } = getAuth(request);
+    if (!isAdmin(userId)) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
     const { searchParams } = new URL(request.url);
     const id = searchParams.get("id");
 
