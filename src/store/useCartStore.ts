@@ -57,68 +57,22 @@ export const useCartStore = create<CartState>((set, get) => ({
   addItem: async (product, token) => {
     const { items } = get();
     const existingSyncItem = items.find((item) => item.productId === product.id);
+    const newQuantity = existingSyncItem ? existingSyncItem.quantity + 1 : 1;
 
-    if (token) {
-      set({ isLoading: true });
-      try {
-        const { cartItem: syncedItem } = await fetchApi("/api/cart", {
-          method: "POST",
-          body: JSON.stringify({ 
-            productId: product.id, 
-            quantity: existingSyncItem ? existingSyncItem.quantity + 1 : 1 
-          }),
-        }, token);
-
-        if (existingSyncItem) {
-          set((state) => ({
-            items: state.items.map((item) =>
-              item.productId === product.id ? { ...item, quantity: syncedItem.quantity } : item
-            ),
-            isCartOpen: true,
-            isLoading: false,
-          }));
-        } else {
-          set((state) => ({
-            items: [
-              ...state.items,
-              {
-                id: syncedItem.id,
-                productId: product.id,
-                name: product.name,
-                price: product.price,
-                quantity: 1,
-                image: product.image,
-              },
-            ],
-            isCartOpen: true,
-            isLoading: false,
-          }));
-        }
-      } catch (error) {
-        console.error("Cart addItem error:", error);
-        set({ isLoading: false });
-      }
-      return;
-    }
-
-    // Locale fallback for guests
-    set((state) => {
-      const existingItem = state.items.find((item) => item.productId === product.id);
-      if (existingItem) {
-        return {
-          items: state.items.map((item) =>
-            item.productId === product.id
-              ? { ...item, quantity: item.quantity + 1 }
-              : item
-          ),
-          isCartOpen: true,
-        };
-      }
-      return {
+    // --- OPTIMISTIC UPDATE: Update UI immediately ---
+    if (existingSyncItem) {
+      set((state) => ({
+        items: state.items.map((item) =>
+          item.productId === product.id ? { ...item, quantity: newQuantity } : item
+        ),
+        isCartOpen: true,
+      }));
+    } else {
+      set((state) => ({
         items: [
           ...state.items,
           {
-            id: product.id,
+            id: product.id, // Temporary ID, will be updated by server if logged in
             productId: product.id,
             name: product.name,
             price: product.price,
@@ -127,61 +81,89 @@ export const useCartStore = create<CartState>((set, get) => ({
           },
         ],
         isCartOpen: true,
-      };
-    });
+      }));
+    }
+
+    if (!token) return; // Guest: local only
+
+    // --- BACKGROUND SYNC: Sync with server ---
+    try {
+      const { cartItem: syncedItem } = await fetchApi("/api/cart", {
+        method: "POST",
+        body: JSON.stringify({ 
+          productId: product.id, 
+          quantity: newQuantity 
+        }),
+      }, token);
+
+      // Update the local item with the real database ID
+      set((state) => ({
+        items: state.items.map((item) =>
+          item.productId === product.id ? { ...item, id: syncedItem.id } : item
+        ),
+      }));
+    } catch (error) {
+      console.error("Cart addItem background sync error:", error);
+      // Optional: Rollback if desired, but for jewelry apps, we usually just want it to work.
+    }
   },
 
   removeItem: async (productIdOrRowId, token) => {
-    if (token) {
-      set({ isLoading: true });
-      try {
-        await fetchApi(`/api/cart/${productIdOrRowId}`, {
-          method: "DELETE",
-        }, token);
-        set((state) => ({
-          items: state.items.filter((item) => item.id !== productIdOrRowId),
-          isLoading: false,
-        }));
-      } catch (error) {
-        console.error("Cart removeItem error:", error);
-        set({ isLoading: false });
-      }
-      return;
-    }
+    const { items } = get();
+    const removedItem = items.find((item) => item.id === productIdOrRowId);
 
+    // --- OPTIMISTIC UPDATE ---
     set((state) => ({
       items: state.items.filter((item) => item.id !== productIdOrRowId),
     }));
+
+    if (!token) return;
+
+    // --- BACKGROUND SYNC ---
+    try {
+      await fetchApi(`/api/cart/${productIdOrRowId}`, {
+        method: "DELETE",
+      }, token);
+    } catch (error) {
+      console.error("Cart removeItem background sync error:", error);
+      // Rollback on failure
+      if (removedItem) {
+        set((state) => ({ items: [...state.items, removedItem] }));
+      }
+    }
   },
 
   updateQuantity: async (productIdOrRowId, quantity, token) => {
     const qCount = Math.max(1, quantity);
+    const { items } = get();
+    const originalItem = items.find((item) => item.id === productIdOrRowId);
 
-    if (token) {
-      set({ isLoading: true });
-      try {
-        await fetchApi(`/api/cart/${productIdOrRowId}`, {
-          method: "PATCH",
-          body: JSON.stringify({ quantity: qCount }),
-        }, token);
-        set((state) => ({
-          items: state.items.map((item) =>
-            item.id === productIdOrRowId ? { ...item, quantity: qCount } : item
-          ),
-          isLoading: false,
-        }));
-      } catch (error) {
-        console.error("Cart updateQuantity error:", error);
-        set({ isLoading: false });
-      }
-      return;
-    }
-
+    // --- OPTIMISTIC UPDATE ---
     set((state) => ({
       items: state.items.map((item) =>
         item.id === productIdOrRowId ? { ...item, quantity: qCount } : item
       ),
     }));
+
+    if (!token) return;
+
+    // --- BACKGROUND SYNC ---
+    try {
+      await fetchApi(`/api/cart/${productIdOrRowId}`, {
+        method: "PATCH",
+        body: JSON.stringify({ quantity: qCount }),
+      }, token);
+    } catch (error) {
+      console.error("Cart updateQuantity background sync error:", error);
+      // Rollback on failure
+      if (originalItem) {
+        set((state) => ({
+          items: state.items.map((item) =>
+            item.id === productIdOrRowId ? originalItem : item
+          ),
+        }));
+      }
+    }
   },
 
   toggleCart: () => set((state) => ({ isCartOpen: !state.isCartOpen })),

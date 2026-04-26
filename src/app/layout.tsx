@@ -9,6 +9,7 @@ import FooterWrapper from "@/components/FooterWrapper";
 import CartDrawer from "@/components/CartDrawer";
 import SmoothScroll from "@/components/SmoothScroll";
 import { Toaster } from "sonner";
+import CartInitializer from "@/components/CartInitializer";
 
 const cormorant = Cormorant_Garamond({ 
   subsets: ["latin"],
@@ -92,6 +93,7 @@ export default function RootLayout({
           
           <SmoothScroll />
           <Navbar />
+          <CartInitializer />
           <CartDrawer />
           <Toaster richColors position="bottom-right" />
           <main className="flex-1 overflow-x-hidden">
