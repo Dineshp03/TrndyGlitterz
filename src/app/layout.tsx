@@ -1,11 +1,11 @@
 import { ClerkProvider, SignInButton, SignUpButton, Show, UserButton } from "@clerk/nextjs";
 import type { Metadata } from "next";
 
-export const dynamic = "force-dynamic";
+
 import { Cormorant_Garamond, Outfit, Bebas_Neue } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/Navbar";
-import { Footerdemo } from "@/components/ui/footer-section";
+import FooterWrapper from "@/components/FooterWrapper";
 import CartDrawer from "@/components/CartDrawer";
 import SmoothScroll from "@/components/SmoothScroll";
 import { Toaster } from "sonner";
@@ -97,7 +97,7 @@ export default function RootLayout({
           <main className="flex-1 overflow-x-hidden">
             {children}
           </main>
-          <Footerdemo />
+          <FooterWrapper />
         </ClerkProvider>
       </body>
     </html>

@@ -121,8 +121,15 @@ export default function HeroSection({ onStartShopping, hasNewArrivals }: HeroSec
                   }}
                 >
                   New Arrivals
-                  {activeBtn !== 'new' && (
-                    <span className="tg-ghost-circle">
+                  <span 
+                    className="overflow-hidden transition-all duration-300 flex items-center justify-center"
+                    style={{ 
+                      width: activeBtn === 'new' ? '0px' : '28px',
+                      opacity: activeBtn === 'new' ? 0 : 0.5,
+                      marginLeft: activeBtn === 'new' ? '0px' : '8px'
+                    }}
+                  >
+                    <span className="tg-ghost-circle shrink-0">
                       <svg width="11" height="11" viewBox="0 0 24 24" fill="none"
                         stroke="currentColor" strokeWidth="2"
                         strokeLinecap="round" strokeLinejoin="round">
@@ -130,7 +137,7 @@ export default function HeroSection({ onStartShopping, hasNewArrivals }: HeroSec
                         <polyline points="12 5 19 12 12 19" />
                       </svg>
                     </span>
-                  )}
+                  </span>
                 </button>
               )}
             </div>

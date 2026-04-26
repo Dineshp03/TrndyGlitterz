@@ -327,11 +327,7 @@ function CatalogContent() {
             )}
 
             {/* Product grid */}
-            <div style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fill, minmax(175px, 1fr))",
-              gap: "28px 16px",
-            }}>
+            <div className="grid grid-cols-2 sm:grid-cols-[repeat(auto-fill,minmax(175px,1fr))] gap-x-4 md:gap-x-4 gap-y-8 md:gap-y-7 px-0">
               {filteredProducts.map((product, index) => (
                 <div
                   key={product.id}

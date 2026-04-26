@@ -112,7 +112,7 @@ export default function ProductsPage() {
     if (!token) return toast.error("Unauthorized");
     
     try {
-      await deleteProduct(product.id, token);
+      await deleteProduct(product.id);
       toast.success("Product deleted successfully");
       if (isModalOpen && editingProduct?.id === product.id) {
         setIsModalOpen(false);
@@ -210,10 +210,10 @@ export default function ProductsPage() {
 
     try {
       if (editingProduct) {
-        await updateProduct(finalProduct, token);
+        await updateProduct(finalProduct);
         toast.success("Product updated!");
       } else {
-        await addProduct(finalProduct, token);
+        await addProduct(finalProduct);
         toast.success("Product added!");
       }
       setIsModalOpen(false);

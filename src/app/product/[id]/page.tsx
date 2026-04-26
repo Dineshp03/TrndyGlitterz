@@ -34,6 +34,17 @@ async function getProduct(id: string): Promise<Product | null> {
   }
 }
 
+export async function generateStaticParams() {
+  try {
+    const supabase = createAdminSupabaseClient();
+    const { data } = await supabase.from("products").select("id");
+    return (data || []).map((p) => ({ id: p.id }));
+  } catch (e) {
+    console.error("generateStaticParams error:", e);
+    return [];
+  }
+}
+
 export async function generateMetadata({
   params,
 }: {

@@ -14,21 +14,19 @@ export const useWishlistStore = create<WishlistState>()(
     (set, get) => ({
       items: [],
 
-      // Load wishlist from Supabase for logged-in users
+      // Load wishlist from API for logged-in users
       loadWishlist: async (userId: string) => {
-        const supabase = getSupabaseClient();
-        const { data, error } = await supabase
-          .from("wishlist")
-          .select("product_id")
-          .eq("user_id", userId);
-        if (error) {
+        try {
+          const response = await fetch(`/api/wishlist?userId=${userId}`);
+          const result = await response.json();
+          if (!response.ok) throw new Error(result.error || "Failed to load wishlist");
+          set({ items: result.items || [] });
+        } catch (error) {
           console.error("Error loading wishlist:", error);
-          return;
         }
-        set({ items: (data ?? []).map((row: { product_id: string }) => row.product_id) });
       },
 
-      // Toggle wishlist — syncs with Supabase if userId provided
+      // Toggle wishlist — syncs with Supabase via API if userId provided
       toggleWishlist: async (productId: string, userId?: string) => {
         const exists = get().items.includes(productId);
 
@@ -41,17 +39,26 @@ export const useWishlistStore = create<WishlistState>()(
 
         if (!userId) return; // Guest: local-only
 
-        const supabase = getSupabaseClient();
-        if (exists) {
-          await supabase
-            .from("wishlist")
-            .delete()
-            .eq("user_id", userId)
-            .eq("product_id", productId);
-        } else {
-          await supabase
-            .from("wishlist")
-            .insert([{ user_id: userId, product_id: productId }]);
+        try {
+          const response = await fetch("/api/wishlist", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              userId,
+              productId,
+              action: exists ? "remove" : "add",
+            }),
+          });
+          const result = await response.json();
+          if (!response.ok) throw new Error(result.error || "Failed to sync wishlist");
+        } catch (error) {
+          console.error("Wishlist sync error:", error);
+          // Rollback local state on failure
+          set((state) => ({
+            items: exists
+              ? [...state.items, productId]
+              : state.items.filter((id) => id !== productId),
+          }));
         }
       },
 

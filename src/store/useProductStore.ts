@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { Product } from "@/data/products";
-import { fetchApi } from "@/lib/api";
+import { getSupabaseClient } from "@/lib/supabase";
 
 interface ProductState {
   products: Product[];
@@ -8,10 +8,10 @@ interface ProductState {
   isLoading: boolean;
   
   fetchProducts: (params?: { category?: string; featured?: boolean; search?: string }) => Promise<void>;
-  addProduct: (product: Product, token: string) => Promise<void>;
-  updateProduct: (product: Product, token: string) => Promise<void>;
-  deleteProduct: (id: string, token: string) => Promise<void>;
-  deleteAllProducts: (token?: string) => Promise<void>;
+  addProduct: (product: any) => Promise<void>;
+  updateProduct: (product: any) => Promise<void>;
+  deleteProduct: (id: string) => Promise<void>;
+  deleteAllProducts: () => Promise<void>;
   setProducts: (products: Product[]) => void;
   syncWithInitial: () => Promise<void>;
 }
@@ -24,14 +24,18 @@ export const useProductStore = create<ProductState>((set, get) => ({
   fetchProducts: async (params = {}) => {
     set({ isLoading: true });
     try {
-      const query = new URLSearchParams();
-      if (params.category) query.append("category", params.category);
-      if (params.featured) query.append("featured", "true");
-      if (params.search) query.append("search", params.search);
+      const supabase = getSupabaseClient();
+      let query = supabase.from("products").select("*").order("created_at", { ascending: false });
 
-      const { products } = await fetchApi(`/api/products?${query.toString()}`);
+      if (params.category) query = query.eq("category", params.category);
+      if (params.featured) query = query.eq("featured", true);
+      if (params.search) query = query.ilike("name", `%${params.search}%`);
+
+      const { data, error } = await query;
       
-      const mappedProducts: Product[] = products.map((p: any, index: number) => ({
+      if (error) throw error;
+
+      const mappedProducts: Product[] = (data || []).map((p: any) => ({
         id: p.id,
         name: p.name,
         price: p.price,
@@ -57,69 +61,53 @@ export const useProductStore = create<ProductState>((set, get) => ({
     }
   },
 
-  addProduct: async (product, token) => {
+  addProduct: async (product) => {
     try {
-      await fetchApi("/api/products", {
-        method: "POST",
-        body: JSON.stringify({
-          name: product.name,
-          price: product.price,
-          oldPrice: product.oldPrice,
-          category: product.category,
-          image: product.image,
-          images: product.images,
-          description: product.description,
-          stock: product.stock,
-          featured: product.featured,
-          isImported: product.isImported,
-          // No id — Supabase auto-generates a UUID
-        }),
-      }, token);
+      const response = await fetch('/api/products', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(product),
+      });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || 'Failed to add product');
       await get().fetchProducts();
     } catch (error) {
       console.error("addProduct error:", error);
-      throw error; // Re-throw so the UI can show a toast
+      throw error;
     }
   },
 
-  updateProduct: async (product, token) => {
+  updateProduct: async (product) => {
     try {
-      await fetchApi(`/api/products/${product.id}`, {
-        method: "PATCH",
-        body: JSON.stringify({
-          name: product.name,
-          price: product.price,
-          oldPrice: product.oldPrice,
-          category: product.category,
-          image: product.image,
-          images: product.images,
-          description: product.description,
-          stock: product.stock,
-          featured: product.featured,
-          isImported: product.isImported,
-        }),
-      }, token);
+      const response = await fetch('/api/products', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(product),
+      });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || 'Failed to update product');
       await get().fetchProducts();
     } catch (error) {
       console.error("updateProduct error:", error);
+      throw error;
     }
   },
 
-  deleteProduct: async (id, token) => {
+  deleteProduct: async (id) => {
     try {
-      await fetchApi(`/api/products/${id}`, {
-        method: "DELETE",
-      }, token);
+      const response = await fetch(`/api/products?id=${id}`, {
+        method: 'DELETE',
+      });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || 'Failed to delete product');
       await get().fetchProducts();
     } catch (error) {
       console.error("deleteProduct error:", error);
     }
   },
 
-  deleteAllProducts: async (token) => {
-    // Note: No explicit "delete all" route currently exists to prevent accidents.
-    // This method would call a specific bulk delete if implemented.
-    console.warn("deleteAllProducts not implemented in backend API for safety.");
+  deleteAllProducts: async () => {
+    console.warn("deleteAllProducts not implemented for safety.");
   },
 
   setProducts: (products) => set({ 
