@@ -1,6 +1,7 @@
 "use client";
 import { useAuth } from "@clerk/nextjs";
-import { useCartStore, Product } from "@/store/useCartStore";
+import { useCartStore } from "@/store/useCartStore";
+import { Product } from "@/data/products";
 
 /**
  * Custom hook to interact with the cart store.

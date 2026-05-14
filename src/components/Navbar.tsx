@@ -353,34 +353,46 @@ export default function Navbar() {
                     }`}
                   >
                     <div className="pl-4 pb-2 space-y-0.5 border-l border-white/10 ml-2">
-                      {section.items.map((item: any) => (
-                        <button
-                          key={item.label}
-                          onClick={() => handleCategoryNavigate(item.param)}
-                          className="block w-full text-left text-sm text-white/50 hover:text-white/90 py-1.5 transition-colors tracking-wide"
-                        >
-                          {item.label}
-                        </button>
-                      ))}
+                      {section.items.map((item: any) => {
+                        let href = "/catalog";
+                        if (item.param.startsWith("price=")) href = `/catalog?price=${item.param.split("=")[1]}`;
+                        else if (item.param.startsWith("offer=")) href = `/catalog?offer=true`;
+                        else href = `/catalog?category=${encodeURIComponent(item.param)}`;
+
+                        return (
+                          <Link
+                            key={item.label}
+                            href={href}
+                            onClick={closeMenu}
+                            className="block w-full text-left text-sm text-white/50 hover:text-white/90 py-1.5 transition-colors tracking-wide"
+                          >
+                            {item.label}
+                          </Link>
+                        );
+                      })}
                     </div>
                   </div>
                 </>
               ) : (
-                <button
-                  onClick={() => {
-                    if ("param" in section && section.param) {
-                      handleCategoryNavigate(section.param);
-                    } else {
-                      router.push("/catalog");
-                    }
-                    closeMenu();
-                  }}
-                  className={`w-full text-left py-2.5 text-sm font-sans font-semibold tracking-wide transition-colors ${
-                    section.label === "Offer Zone" ? "text-[#D4AF37] hover:text-[#FBF5B7]" : "text-white/70 hover:text-white"
-                  }`}
-                >
-                  {section.label === "Offer Zone" ? `🏷️ ${section.label}` : section.label}
-                </button>
+                (() => {
+                  let href = "/catalog";
+                  if ("param" in section && section.param) {
+                    if (section.param.startsWith("price=")) href = `/catalog?price=${section.param.split("=")[1]}`;
+                    else if (section.param.startsWith("offer=")) href = `/catalog?offer=true`;
+                    else href = `/catalog?category=${encodeURIComponent(section.param)}`;
+                  }
+                  return (
+                    <Link
+                      href={href}
+                      onClick={closeMenu}
+                      className={`block w-full text-left py-2.5 text-sm font-sans font-semibold tracking-wide transition-colors ${
+                        section.label === "Offer Zone" ? "text-[#D4AF37] hover:text-[#FBF5B7]" : "text-white/70 hover:text-white"
+                      }`}
+                    >
+                      {section.label === "Offer Zone" ? `🏷️ ${section.label}` : section.label}
+                    </Link>
+                  );
+                })()
               )}
             </div>
           ))}

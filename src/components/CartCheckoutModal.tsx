@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { CheckCircle, X, ChevronRight, Loader2 } from "lucide-react";
+import { CheckCircle, X, ChevronRight, Loader2, CreditCard, ShieldCheck } from "lucide-react";
 import { useCart } from "@/hooks/useCart";
 import { useOrderStore } from "@/store/useOrderStore";
 import { useSettingsStore } from "@/store/useSettingsStore";
