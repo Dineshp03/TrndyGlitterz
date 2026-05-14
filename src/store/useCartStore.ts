@@ -2,16 +2,7 @@ import { create } from "zustand";
 import { fetchApi } from "@/lib/api";
 
 // Product Interface
-export interface Product {
-  id: string;
-  name: string;
-  price: number;
-  category: string;
-  image: string;
-  oldPrice?: number;
-  stock?: number;
-  images?: string[];
-}
+import { Product } from "@/data/products";
 
 // Cart Item Interface
 export interface CartItem {
@@ -188,7 +179,7 @@ export const useCartStore = create<CartState>((set, get) => ({
     set({ isLoading: true });
     try {
       const { cart } = await fetchApi("/api/cart", {}, token);
-      const mappedItems: CartItem[] = cart.map((row: any) => ({
+      const mappedItems: CartItem[] = (cart || []).map((row: { id: string; product: Product; quantity: number }) => ({
         id: row.id,
         productId: row.product.id,
         name: row.product.name,

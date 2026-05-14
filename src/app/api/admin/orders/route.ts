@@ -3,10 +3,15 @@ import { createAdminSupabaseClient } from '@/lib/supabase-server'
 import {
   getAuthUserId,
   unauthorizedResponse,
+  badRequestResponse,
   serverErrorResponse,
   jsonResponse,
 } from '@/lib/auth'
 
+/**
+ * GET /api/admin/orders
+ * Admin: Fetch all orders for management.
+ */
 export async function GET(request: NextRequest) {
   const userId = await getAuthUserId(request)
   if (!userId) return unauthorizedResponse()
@@ -38,31 +43,49 @@ export async function GET(request: NextRequest) {
   }
 }
 
+/**
+ * DELETE /api/admin/orders?id=xxx
+ * Admin: Delete a specific order and its items.
+ */
 export async function DELETE(request: NextRequest) {
   const userId = await getAuthUserId(request)
   if (!userId) return unauthorizedResponse()
 
   try {
+    const { searchParams } = new URL(request.url)
+    const id = searchParams.get('id')
+
+    if (!id) {
+      return badRequestResponse('Order ID is required')
+    }
+
     const supabase = createAdminSupabaseClient()
 
-    // Delete all linked items first
+    // 1. Delete linked order items first
     const { error: itemsError } = await supabase
       .from('order_items')
       .delete()
-      .neq('id', '00000000-0000-0000-0000-000000000000')
+      .eq('order_id', id)
 
-    if (itemsError) throw itemsError
+    if (itemsError) {
+      console.error('[DELETE /api/admin/orders] items error:', itemsError)
+      throw itemsError
+    }
 
-    const { error: ordersError } = await supabase
+    // 2. Delete the order itself
+    const { error: orderError } = await supabase
       .from('orders')
       .delete()
-      .neq('id', '00000000-0000-0000-0000-000000000000')
+      .eq('id', id)
 
-    if (ordersError) throw ordersError
+    if (orderError) {
+      console.error('[DELETE /api/admin/orders] order error:', orderError)
+      throw orderError
+    }
 
-    return jsonResponse({ success: true })
+    return jsonResponse({ success: true, message: `Order ${id} deleted successfully` })
   } catch (err: any) {
-    console.error('[DELETE /api/admin/orders]', err)
+    console.error('[DELETE /api/admin/orders] unexpected error:', err)
     return serverErrorResponse(err.message)
   }
 }

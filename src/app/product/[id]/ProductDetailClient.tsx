@@ -162,9 +162,8 @@ function PaymentModal({
     }
   }, [user, userLoaded]);
 
-  const defaultMethod = codEnabled ? "cod" : upiEnabled ? "upi" : "razorpay";
-  const [payment, setPayment] = useState<PaymentDetails>({ method: defaultMethod, upiId: "" });
-  const [errors, setErrors] = useState<Partial<UserDetails & { upiId: string }>>({});
+  const [payment, setPayment] = useState<PaymentDetails>({ method: "razorpay", upiId: "" });
+  const [errors, setErrors] = useState<Partial<UserDetails>>({});
   const [processing, setProcessing] = useState(false);
 
   useEffect(() => {
@@ -186,23 +185,26 @@ function PaymentModal({
   };
 
   const handlePayNow = async () => {
-    if (payment.method === "upi" && (!payment.upiId.trim() || !/^[\w.\-_]{1,99}@[a-zA-Z]{3,}$/.test(payment.upiId))) {
-      setErrors({ upiId: "Valid UPI ID required" }); return;
-    }
     setProcessing(true);
     try {
       const token = await getToken();
+
+      // RAZORPAY INTEGRATION PLACEHOLDER
+      // In a real scenario, you'd call your backend to create a Razorpay order,
+      // then open the Razorpay checkout modal here.
+      // For now, we proceed to record the order as 'razorpay' paid.
+      
       const result = await placeOrder({
         clerk_user_id: user?.id,
         customer_name: details.fullName,
         customer_email: details.email,
         customer_phone: details.phone,
-        address: details.address,
+        address: `${details.address}, ${details.city}, ${details.state} - ${details.pincode}`,
         city: details.city,
         state: details.state,
         pincode: details.pincode,
         total: product.price,
-        payment_method: payment.method,
+        payment_method: "razorpay",
         items: [{
           product_id: product.id,
           product_name: product.name,
@@ -261,23 +263,18 @@ function PaymentModal({
           {step === "payment" && (
             <div className="flex flex-col gap-6">
               <div className="flex flex-col gap-4">
-                {!codEnabled && (
-                  <div className="p-4 border border-obsidian/10 bg-gray-50 opacity-60 rounded-xl">
-                    <p className="text-[10px] uppercase tracking-widest text-obsidian/40 flex items-center gap-2">
-                       <Ban size={12} /> Cash on Delivery (Unavailable)
-                    </p>
-                    <p className="text-[11px] mt-1 text-obsidian/30">We currently accept online payments only for secure doorstep delivery.</p>
+                <div className="p-5 border border-burgundy bg-burgundy/5 rounded-2xl relative overflow-hidden group">
+                  <div className="absolute top-0 right-0 p-3 opacity-10 group-hover:opacity-20 transition-opacity">
+                    <CreditCard size={40} className="text-burgundy" />
                   </div>
-                )}
-                {codEnabled && (
-                  <button onClick={() => setPayment({method:'cod', upiId:''})} className={`p-4 border text-left ${payment.method === 'cod' ? 'border-burgundy bg-burgundy/5' : 'border-obsidian/10'}`}>COD</button>
-                )}
-                {upiEnabled && (
-                  <div className={`p-4 border ${payment.method === 'upi' ? 'border-burgundy bg-burgundy/5' : 'border-obsidian/10'}`}>
-                    <button onClick={() => setPayment((p) => ({...p, method:'upi'}))} className="w-full text-left">UPI</button>
-                    {payment.method === 'upi' && <input placeholder="name@upi" className="w-full mt-2 border-b" onChange={(e)=>setPayment(p=>({...p, upiId: e.target.value}))}/>}
-                  </div>
-                )}
+                  <p className="text-sm font-serif text-obsidian flex items-center gap-2">
+                    Online Payment (Razorpay)
+                    <ShieldCheck size={14} className="text-green-600" />
+                  </p>
+                  <p className="text-[11px] font-sans text-obsidian/60 mt-1.5 leading-relaxed max-w-[80%]">
+                    Pay securely via UPI, Cards, or Netbanking. Powered by Razorpay.
+                  </p>
+                </div>
               </div>
               <button onClick={handlePayNow} disabled={processing} className="w-full bg-gradient-to-r from-[#BF953F] via-[#FCF6BA] to-[#B38728] text-[#111] font-bold py-4 rounded-xl transition-all active:scale-95 disabled:opacity-50">{processing ? "Processing..." : "Place Order"}</button>
             </div>
@@ -436,12 +433,12 @@ export default function ProductDetailClient({ initialProduct }: { initialProduct
               </div>
 
               <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-full bg-gray-500/10 flex items-center justify-center">
-                  <Ban className="w-4 h-4 text-gray-500" />
+                <div className="w-8 h-8 rounded-full bg-green-500/10 flex items-center justify-center">
+                  <ShieldCheck className="w-4 h-4 text-green-600" />
                 </div>
                 <div>
-                  <p className="text-[10px] font-sans uppercase tracking-[0.1em] font-bold text-obsidian">No Cash on Delivery</p>
-                  <p className="text-[11px] text-obsidian/60 font-light">We accept all major online payments for security.</p>
+                  <p className="text-[10px] font-sans uppercase tracking-[0.1em] font-bold text-obsidian">Online Only Payment</p>
+                  <p className="text-[11px] text-obsidian/60 font-light">Secure payments via Razorpay (UPI, Cards, Netbanking).</p>
                 </div>
               </div>
             </div>

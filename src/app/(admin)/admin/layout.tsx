@@ -13,6 +13,8 @@ import {
   Bell,
   ChevronRight,
   LogOut,
+  ExternalLink,
+  Home,
 } from "lucide-react";
 import { useUser, useClerk } from "@clerk/nextjs";
 import { LogoutModal } from "@/components/ui/LogoutModal";
@@ -28,10 +30,10 @@ const navItems = [
 ];
 
 const mobileNavItems = [
-  { label: "Home", href: "/admin", icon: LayoutDashboard },
+  { label: "Store", href: "/", icon: Home },
+  { label: "Dashboard", href: "/admin", icon: LayoutDashboard },
   { label: "Orders", href: "/admin/orders", icon: ShoppingBag },
   { label: "Products", href: "/admin/products", icon: Gem },
-  { label: "Customers", href: "/admin/customers", icon: Users },
   { label: "Settings", href: "/admin/settings", icon: Settings },
 ];
 
@@ -101,6 +103,16 @@ function DesktopSidebar({ pathname, user, onLogout }: { pathname: string; user: 
             </Link>
           );
         })}
+
+        <div className="pt-4 mt-4 border-t border-[#F0EDE8]/60">
+          <Link
+            href="/"
+            className="group flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-[#555] hover:bg-obsidian hover:text-white transition-all duration-300"
+          >
+            <ExternalLink size={16} className="text-[#aaa] group-hover:text-white" />
+            <span className="flex-1">View Store</span>
+          </Link>
+        </div>
       </nav>
 
       <div className="p-4 border-t border-[#F0EDE8]">

@@ -16,34 +16,54 @@ const ADMIN_EMAILS = ["trendyglitterzz@gmail.com", "admin@trendyglitterz.com"];
 const MENU_CATEGORIES = [
   {
     label: "Xuping Exclusive",
-    items: ["Earrings", "Neckpiece", "Bracelets", "Finger Rings"],
+    items: [
+      { label: "Earrings", param: "Xuping Earrings" },
+      { label: "Neckpiece", param: "Xuping Neckpiece" },
+      { label: "Bracelets", param: "Xuping Bracelets" },
+      { label: "Finger Rings", param: "Xuping Finger Rings" },
+    ],
   },
-  { label: "Korean Earrings", items: [] },
-  { label: "Neckpiece ", items: [] },
-  { label: "Bracelets ", items: [] },
-  { label: "Finger Rings ", items: [] },
-  { label: "Hair Accessories", items: [] },
+  { label: "Earrings", param: "Earrings" },
+  { label: "Korean Earrings", param: "Korean Earrings" },
+  { label: "Traditional Earrings", param: "Traditional Earrings" },
+  { label: "Neckpiece", param: "Neckpiece" },
+  { label: "Bracelets", param: "Bracelets" },
+  { label: "Finger Rings", param: "Finger Rings" },
+  { label: "Hair Accessories", param: "Hair Accessories" },
+  { label: "Chains", param: "Chains" },
+  { label: "Rings", param: "Rings" },
+  { label: "Bands", param: "Bands" },
   {
     label: "Price Based",
-    items: ["Under ₹99", "Under ₹299", "Under ₹499", "Premium Range"],
+    items: [
+      { label: "Under ₹99", param: "price=under-99" },
+      { label: "Under ₹299", param: "price=under-299" },
+      { label: "Under ₹499", param: "price=under-499" },
+      { label: "Premium Range", param: "price=premium-500" },
+    ],
   },
   {
     label: "Offer Zone",
-    items: [],
+    param: "offer=true",
   },
 ];
 
 // Map display names → query params for catalog navigation
 const CATEGORY_MAP: Record<string, string> = {
   "Earrings": "Earrings",
-  "Korean Earrings": "Earrings",
+  "Korean Earrings": "Korean Earrings",
+  "Traditional Earrings": "Traditional Earrings",
   "Neckpiece": "Neckpiece",
-  "Neckpiece ": "Neckpiece",
   "Bracelets": "Bracelets",
-  "Bracelets ": "Bracelets",
   "Finger Rings": "Finger Rings",
-  "Finger Rings ": "Finger Rings",
   "Hair Accessories": "Hair Accessories",
+  "Chains": "Chains",
+  "Rings": "Rings",
+  "Bands": "Bands",
+  "Xuping Earrings": "Xuping Earrings",
+  "Xuping Neckpiece": "Xuping Neckpiece",
+  "Xuping Bracelets": "Xuping Bracelets",
+  "Xuping Finger Rings": "Xuping Finger Rings",
   "Under ₹99": "under-99",
   "Under ₹299": "under-299",
   "Under ₹499": "under-499",
@@ -113,16 +133,14 @@ export default function Navbar() {
     { name: "Journal", href: "#" },
   ];
 
-  const handleCategoryNavigate = (displayName: string) => {
-    const param = CATEGORY_MAP[displayName];
-    if (param) {
-      if (param.startsWith("under-") || param.includes("premium")) {
-        router.push(`/catalog?price=${param}`);
-      } else {
-        router.push(`/catalog?category=${encodeURIComponent(param)}`);
-      }
+  const handleCategoryNavigate = (param: string) => {
+    if (param.startsWith("price=")) {
+      const priceParam = param.split("=")[1];
+      router.push(`/catalog?price=${priceParam}`);
+    } else if (param.startsWith("offer=")) {
+      router.push(`/catalog?offer=true`);
     } else {
-      router.push("/catalog");
+      router.push(`/catalog?category=${encodeURIComponent(param)}`);
     }
     closeMenu();
   };
@@ -309,14 +327,10 @@ export default function Navbar() {
 
         {/* Divider */}
         <div className="h-px bg-white/10 mx-6 my-4" />
-
-        {/* ── Categories Section ── */}
-        <div className="px-6 pb-8 space-y-1">
-          <p className="text-[9px] font-mono text-white/30 uppercase tracking-[0.3em] mb-4">Browse Categories</p>
-
+        <div className="px-6 pb-20 space-y-2">
           {MENU_CATEGORIES.map((section) => (
             <div key={section.label}>
-              {section.items.length > 0 ? (
+              {"items" in section && section.items && section.items.length > 0 ? (
                 <>
                   <button
                     className="w-full flex items-center justify-between py-2.5 text-left"
@@ -333,36 +347,33 @@ export default function Navbar() {
                       }`}
                     />
                   </button>
-
-                  {/* Accordion items */}
                   <div
                     className={`overflow-hidden transition-all duration-300 ease-in-out ${
                       expandedSection === section.label ? "max-h-64 opacity-100" : "max-h-0 opacity-0"
                     }`}
                   >
                     <div className="pl-4 pb-2 space-y-0.5 border-l border-white/10 ml-2">
-                      {section.items.map((item) => (
+                      {section.items.map((item: any) => (
                         <button
-                          key={item}
-                          onClick={() => handleCategoryNavigate(item)}
+                          key={item.label}
+                          onClick={() => handleCategoryNavigate(item.param)}
                           className="block w-full text-left text-sm text-white/50 hover:text-white/90 py-1.5 transition-colors tracking-wide"
                         >
-                          {item}
+                          {item.label}
                         </button>
                       ))}
                     </div>
                   </div>
                 </>
               ) : (
-                // Individual Category or Offer Zone
                 <button
-                  onClick={() => { 
-                    if (section.label === "Offer Zone") {
-                      router.push("/catalog?offer=true");
+                  onClick={() => {
+                    if ("param" in section && section.param) {
+                      handleCategoryNavigate(section.param);
                     } else {
-                      handleCategoryNavigate(section.label);
+                      router.push("/catalog");
                     }
-                    closeMenu(); 
+                    closeMenu();
                   }}
                   className={`w-full text-left py-2.5 text-sm font-sans font-semibold tracking-wide transition-colors ${
                     section.label === "Offer Zone" ? "text-[#D4AF37] hover:text-[#FBF5B7]" : "text-white/70 hover:text-white"

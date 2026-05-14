@@ -51,7 +51,7 @@ interface UserState {
   isLoading: boolean;
   
   // Account & Sync
-  syncUserWithClerk: (clerkUser: any, token: string) => Promise<void>;
+  syncUserWithClerk: (clerkUser: { id: string; emailAddresses: { emailAddress: string }[]; fullName: string | null; imageUrl: string }, token: string) => Promise<void>;
   logout: () => void;
   
   // Profile
@@ -59,12 +59,25 @@ interface UserState {
   
   // Orders
   fetchOrders: (token: string) => Promise<void>;
-  addOrder: (orderData: any, token: string) => Promise<{ success: boolean; orderId?: string; error?: string }>;
+  addOrder: (orderData: Partial<Order>, token: string) => Promise<{ success: boolean; orderId?: string; error?: string }>;
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-function mapDbProfileToUser(profile: any, orders: Order[] = []): User {
+function mapDbProfileToUser(profile: {
+  id: string;
+  clerk_user_id: string;
+  full_name?: string;
+  email?: string;
+  phone?: string;
+  address?: string;
+  city?: string;
+  state?: string;
+  pincode?: string;
+  avatar_url?: string;
+  created_at?: string;
+  role?: "user" | "admin";
+}, orders: Order[] = []): User {
   return {
     id: profile.id,
     clerkUserId: profile.clerk_user_id,
@@ -82,7 +95,24 @@ function mapDbProfileToUser(profile: any, orders: Order[] = []): User {
   };
 }
 
-function mapDbOrderToOrder(dbOrder: any): Order {
+function mapDbOrderToOrder(dbOrder: {
+  id: string;
+  created_at: string;
+  total: number;
+  status: string;
+  address: string;
+  city?: string;
+  state?: string;
+  pincode?: string;
+  order_items?: {
+    id: string;
+    product_id: string;
+    product_name: string;
+    product_image?: string;
+    price: number;
+    quantity: number;
+  }[];
+}): Order {
   return {
     id: dbOrder.id,
     date: dbOrder.created_at,
@@ -92,7 +122,7 @@ function mapDbOrderToOrder(dbOrder: any): Order {
     city: dbOrder.city,
     state: dbOrder.state,
     pincode: dbOrder.pincode,
-    items: (dbOrder.order_items || []).map((item: any) => ({
+    items: (dbOrder.order_items || []).map((item) => ({
       id: item.id,
       productId: item.product_id,
       name: item.product_name,

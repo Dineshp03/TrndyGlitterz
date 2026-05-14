@@ -1,6 +1,6 @@
 "use client";
 import { useAuth } from "@clerk/nextjs";
-import { useCartStore } from "@/store/useCartStore";
+import { useCartStore, Product } from "@/store/useCartStore";
 
 /**
  * Custom hook to interact with the cart store.
@@ -10,7 +10,7 @@ export function useCart() {
   const { getToken } = useAuth();
   const store = useCartStore();
 
-  const addItem = async (product: any) => {
+  const addItem = async (product: Product) => {
     const token = await getToken();
     return store.addItem(product, token);
   };

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useAuth } from "@clerk/nextjs";
 import {
   Store, Bell, Shield, CreditCard, Palette, ChevronRight, Globe, Package, Truck, X, AlertTriangle, Check
 } from "lucide-react";
@@ -49,9 +50,9 @@ const initialSettingGroups: SettingGroup[] = [
     title: "Payments",
     icon: CreditCard,
     items: [
-      { id: "upiEnabled", label: "UPI", value: "Connected", desc: "Primary payment method", type: "select", options: ["Connected", "Disconnected"] },
+      { id: "upiEnabled", label: "UPI (Legacy)", value: "Retired", desc: "No longer in use", type: "select", options: ["Connected", "Disconnected"] },
       { id: "razorpayEnabled", label: "Razorpay", value: "Connected", desc: "Online payments gateway", type: "select", options: ["Connected", "Disconnected"] },
-      { id: "codEnabled", label: "Cash on Delivery", value: "Enabled", desc: "Offline payment option", type: "select", options: ["Enabled", "Disabled"] },
+      { id: "codEnabled", label: "Cash on Delivery", value: "Disabled", desc: "Offline payment option", type: "select", options: ["Enabled", "Disabled"] },
     ],
   },
   {
@@ -73,6 +74,7 @@ const initialQuickToggles = [
 ];
 
 export default function SettingsPage() {
+  const { getToken } = useAuth();
   const { deleteAllProducts } = useProductStore();
   const { deleteAllOrders } = useOrderStore();
   const settingsStore = useSettingsStore();
@@ -185,12 +187,16 @@ export default function SettingsPage() {
     displayToast("Setting updated successfully");
   };
 
-  const executeDeleteAll = () => {
+  const executeDeleteAll = async () => {
     setIsDeleteModalOpen(false);
     setDeleteStep(1);
     setDeleteConfirmation("");
-    deleteAllProducts();
-    deleteAllOrders();
+    
+    const token = await getToken();
+    if (!token) return displayToast("Unauthorized");
+
+    deleteAllProducts(); 
+    deleteAllOrders(token);
     displayToast("All data have been deleted permanently");
   };
 

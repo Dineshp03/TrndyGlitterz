@@ -1,20 +1,21 @@
 import { MetadataRoute } from "next";
 import { siteConfig } from "@/lib/metadata-config";
+import { createClient } from "@supabase/supabase-js";
 
 export const dynamic = 'force-static';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  // Fetch products to include in sitemap
-  let products = [];
-  try {
-    const res = await fetch(`${siteConfig.url}/api/products`);
-    const data = await res.json();
-    products = data.products || [];
-  } catch (error) {
-    console.error("Sitemap fetch error:", error);
-  }
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
 
-  const productUrls = products.map((product: any) => ({
+  const { data: products } = await supabase
+    .from("products")
+    .select("id")
+    .order("created_at", { ascending: false });
+
+  const productUrls = (products || []).map((product: any) => ({
     url: `${siteConfig.url}/product/${product.id}`,
     lastModified: new Date(),
     changeFrequency: "weekly" as const,

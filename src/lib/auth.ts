@@ -25,6 +25,26 @@ export async function getAuthUserId(request: Request): Promise<string | null> {
 }
 
 /**
+ * Returns the full verified Clerk JWT payload (includes email, sub, etc.)
+ * Returns null if the token is missing or invalid.
+ */
+export async function getAuthPayload(request: Request): Promise<Record<string, any> | null> {
+  const authHeader = request.headers.get('Authorization')
+  if (!authHeader?.startsWith('Bearer ')) return null
+
+  const token = authHeader.slice(7)
+
+  try {
+    const payload = await verifyToken(token, {
+      secretKey: process.env.CLERK_SECRET_KEY!,
+    })
+    return payload as Record<string, any>
+  } catch {
+    return null
+  }
+}
+
+/**
  * Standard 401 response — call this when getAuthUserId returns null.
  */
 export function unauthorizedResponse(message = 'Unauthorized') {

@@ -67,13 +67,11 @@ export default function CartCheckoutModal({ onClose }: { onClose: () => void }) 
   const isAddressIncomplete = userLoaded && user &&
     !(user.unsafeMetadata?.address as string);
   
-  const defaultMethod = codEnabled ? "cod" : upiEnabled ? "upi" : "razorpay";
-  
   const [payment, setPayment] = useState<PaymentDetails>({
-    method: defaultMethod,
+    method: "razorpay",
     upiId: "",
   });
-  const [errors, setErrors] = useState<Partial<UserDetails & { upiId: string }>>({});
+  const [errors, setErrors] = useState<Partial<UserDetails>>({});
   const [processing, setProcessing] = useState(false);
 
   const total = getCartTotal();
@@ -106,12 +104,6 @@ export default function CartCheckoutModal({ onClose }: { onClose: () => void }) 
   };
 
   const validatePayment = () => {
-    if (payment.method === "upi") {
-      if (!payment.upiId.trim() || !/^[\w.\-_]{1,99}@[a-zA-Z]{3,}$/.test(payment.upiId)) {
-        setErrors({ upiId: "Enter a valid UPI ID (e.g. name@upi)" });
-        return false;
-      }
-    }
     setErrors({});
     return true;
   };
@@ -127,6 +119,10 @@ export default function CartCheckoutModal({ onClose }: { onClose: () => void }) 
     
     try {
       const token = await getToken();
+
+      // RAZORPAY INTEGRATION PLACEHOLDER
+      // Here you would normally initiate the Razorpay checkout flow
+      
       const payload = {
         clerk_user_id: user?.id,
         customer_name: details.fullName,
@@ -137,7 +133,7 @@ export default function CartCheckoutModal({ onClose }: { onClose: () => void }) 
         state: details.state,
         pincode: details.pincode,
         total: total,
-        payment_method: payment.method,
+        payment_method: "razorpay",
         items: items.map(item => ({
           product_id: item.productId || item.id,
           product_name: item.name,
@@ -327,87 +323,28 @@ export default function CartCheckoutModal({ onClose }: { onClose: () => void }) 
           {/* ---- Step 2: Payment ---- */}
           {step === "payment" && (
             <div className="flex flex-col gap-6">
-              <p className="text-[10px] font-sans uppercase tracking-[0.15em] text-obsidian/60 mb-2">
-                Choose Payment Method
-              </p>
-
-              {/* COD */}
-              {codEnabled && (
-                <label
-                  className={`flex items-start gap-4 p-5 border cursor-pointer transition-colors duration-200 ${
-                    payment.method === "cod"
-                      ? "border-burgundy bg-burgundy/5"
-                      : "border-obsidian/15 hover:border-obsidian/40"
-                  }`}
+              <div className="flex flex-col gap-4">
+                {/* Razorpay Option */}
+                <div 
+                  className="flex items-start gap-4 p-5 border border-burgundy bg-burgundy/5 rounded-xl relative overflow-hidden group transition-all"
                 >
-                  <input
-                    type="radio"
-                    name="paymentMethod"
-                    value="cod"
-                    checked={payment.method === "cod"}
-                    onChange={() => {
-                      setPayment({ method: "cod", upiId: "" });
-                      setErrors({});
-                    }}
-                    className="mt-1 accent-burgundy"
-                  />
-                  <div>
-                    <p className="text-sm font-serif text-obsidian">Cash on Delivery</p>
+                  <div className="absolute top-0 right-0 p-3 opacity-10 group-hover:opacity-20 transition-opacity">
+                    <CreditCard size={40} className="text-burgundy" />
+                  </div>
+                  <div className="mt-1">
+                     <div className="w-4 h-4 rounded-full border-4 border-burgundy bg-white flex items-center justify-center" />
+                  </div>
+                  <div className="w-full">
+                    <p className="text-sm font-serif text-obsidian flex items-center gap-2">
+                      Online Payment (Razorpay)
+                      <ShieldCheck size={14} className="text-green-600" />
+                    </p>
                     <p className="text-[11px] font-sans text-obsidian/50 mt-1 leading-relaxed">
-                      Pay in cash when your order arrives at your doorstep. No
-                      online transaction required.
+                      Secure checkout via UPI, Cards, Netbanking, or Wallets.
                     </p>
                   </div>
-                </label>
-              )}
-
-              {/* UPI */}
-              {upiEnabled && (
-              <label
-                className={`flex items-start gap-4 p-5 border cursor-pointer transition-colors duration-200 ${
-                  payment.method === "upi"
-                    ? "border-burgundy bg-burgundy/5"
-                    : "border-obsidian/15 hover:border-obsidian/40"
-                }`}
-              >
-                <input
-                  type="radio"
-                  name="paymentMethod"
-                  value="upi"
-                  checked={payment.method === "upi"}
-                  onChange={() => setPayment((p) => ({ ...p, method: "upi" }))}
-                  className="mt-1 accent-burgundy"
-                />
-                <div className="w-full">
-                  <p className="text-sm font-serif text-obsidian">UPI Payment</p>
-                  <p className="text-[11px] font-sans text-obsidian/50 mt-1 leading-relaxed">
-                    Pay instantly using any UPI app like GPay, PhonePe, or Paytm.
-                  </p>
-                  {payment.method === "upi" && (
-                    <div className="mt-4 flex flex-col gap-1">
-                      <label className="text-[10px] font-sans uppercase tracking-[0.15em] text-obsidian/60">
-                        UPI ID
-                      </label>
-                      <input
-                        type="text"
-                        placeholder="yourname@upi"
-                        value={payment.upiId}
-                        onChange={(e) => {
-                          setPayment((p) => ({ ...p, upiId: e.target.value }));
-                          setErrors((er) => ({ ...er, upiId: undefined }));
-                        }}
-                        className={`border-b py-2 bg-transparent text-sm font-sans text-obsidian outline-none placeholder:text-obsidian/30 transition-colors ${
-                          errors.upiId ? "border-red-400" : "border-obsidian/30 focus:border-obsidian"
-                        }`}
-                      />
-                      {errors.upiId && (
-                        <p className="text-[10px] text-red-500">{errors.upiId}</p>
-                      )}
-                    </div>
-                  )}
                 </div>
-              </label>
-              )}
+              </div>
 
               {/* Order summary */}
               <div className="mt-2 border-t border-obsidian/10 pt-4 flex flex-col gap-2 text-xs font-sans text-obsidian/70">
@@ -446,7 +383,7 @@ export default function CartCheckoutModal({ onClose }: { onClose: () => void }) 
                 <div className="flex justify-between">
                   <span>Payment Method</span>
                   <span className="uppercase font-medium text-obsidian">
-                    {payment.method === "cod" ? "Cash on Delivery" : `UPI — ${payment.upiId}`}
+                    Online Payment (Razorpay)
                   </span>
                 </div>
                 <div className="flex justify-between">

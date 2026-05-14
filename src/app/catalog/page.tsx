@@ -10,11 +10,27 @@ import { Suspense, useState, useMemo, useEffect } from "react";
 const CATEGORY_GROUPS = [
   {
     label: "Xuping Exclusive",
-    items: ["Earrings", "Neckpiece", "Bracelets", "Finger Rings"],
+    items: [
+      { label: "Earrings", param: "Xuping Earrings" },
+      { label: "Neckpiece", param: "Xuping Neckpiece" },
+      { label: "Bracelets", param: "Xuping Bracelets" },
+      { label: "Finger Rings", param: "Xuping Finger Rings" },
+    ],
   },
   {
     label: "Browse Categories",
-    items: ["Korean Earrings", "Neckpiece", "Bracelets", "Finger Rings", "Hair Accessories"],
+    items: [
+      { label: "Earrings", param: "Earrings" },
+      { label: "Korean Earrings", param: "Korean Earrings" },
+      { label: "Traditional Earrings", param: "Traditional Earrings" },
+      { label: "Neckpiece", param: "Neckpiece" },
+      { label: "Bracelets", param: "Bracelets" },
+      { label: "Finger Rings", param: "Finger Rings" },
+      { label: "Hair Accessories", param: "Hair Accessories" },
+      { label: "Chains", param: "Chains" },
+      { label: "Rings", param: "Rings" },
+      { label: "Bands", param: "Bands" },
+    ],
   },
 ];
 
@@ -75,12 +91,19 @@ function FilterBtn({
 
 function CatalogContent() {
   const searchParams = useSearchParams();
-  void useRouter();
+  const router = useRouter();
 
   const [selectedCategory, setSelectedCategory] = useState<string | null>(searchParams.get("category"));
   const [selectedPrice,    setSelectedPrice]    = useState<string | null>(searchParams.get("price"));
   const [showOfferOnly,    setShowOfferOnly]    = useState(searchParams.get("offer")    === "true");
   const [filterPanelOpen,  setFilterPanelOpen]  = useState(false);
+
+  // Sync state with URL search params
+  useEffect(() => {
+    setSelectedCategory(searchParams.get("category"));
+    setSelectedPrice(searchParams.get("price"));
+    setShowOfferOnly(searchParams.get("offer") === "true");
+  }, [searchParams]);
 
   const { products, categories, syncWithInitial } = useProductStore();
 
@@ -91,7 +114,7 @@ function CatalogContent() {
   }, [products.length, syncWithInitial]);
 
   const allCategories = useMemo(() => {
-    const known = ["Earrings","Neckpiece","Bracelets","Finger Rings","Hair Accessories","Korean Earrings"];
+    const known = ["Earrings","Neckpiece","Bracelets","Finger Rings","Hair Accessories","Korean Earrings","Traditional Earrings","Chains","Rings","Bands","Xuping Earrings","Xuping Neckpiece","Xuping Bracelets","Xuping Finger Rings"];
     return Array.from(new Set([...known, ...(categories || [])])).filter(Boolean);
   }, [categories]);
 
@@ -112,9 +135,7 @@ function CatalogContent() {
   const hasActiveFilters = selectedCategory || selectedPrice || showOfferOnly;
 
   const clearAll = () => {
-    setSelectedCategory(null);
-    setSelectedPrice(null);
-    setShowOfferOnly(false);
+    updateFilters(null, null, false);
   };
 
   const activeLabel = selectedCategory
@@ -122,6 +143,16 @@ function CatalogContent() {
     : selectedPrice
     ? (PRICE_FILTERS.find(f => f.param === selectedPrice)?.label ?? "Collection")
     : showOfferOnly ? "Offer Zone" : "All Collections";
+
+  const updateFilters = (category: string | null, price: string | null, offer: boolean) => {
+    const params = new URLSearchParams();
+    if (category) params.set("category", category);
+    if (price)    params.set("price", price);
+    if (offer)    params.set("offer", "true");
+    
+    const query = params.toString();
+    router.push(`/catalog${query ? `?${query}` : ""}`);
+  };
 
   return (
     <div style={{ minHeight: "100vh", backgroundColor: T.bg, paddingTop: "100px", paddingBottom: "100px" }}>
@@ -218,8 +249,12 @@ function CatalogContent() {
                   </p>
                   <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
                     {group.items.map(cat => (
-                      <FilterBtn key={cat} active={selectedCategory === cat} onClick={() => setSelectedCategory(selectedCategory === cat ? null : cat)}>
-                        {cat}
+                      <FilterBtn 
+                        key={cat.param} 
+                        active={selectedCategory === cat.param} 
+                        onClick={() => updateFilters(selectedCategory === cat.param ? null : cat.param, selectedPrice, showOfferOnly)}
+                      >
+                        {cat.label}
                       </FilterBtn>
                     ))}
                   </div>
@@ -227,7 +262,7 @@ function CatalogContent() {
               ))}
 
               {/* Extra categories */}
-              {allCategories.filter(c => !CATEGORY_GROUPS.flatMap(g => g.items).includes(c)).length > 0 && (
+              {allCategories.filter(c => !CATEGORY_GROUPS.flatMap(g => g.items).some(item => item.param === c)).length > 0 && (
                 <div>
                   <p style={{ 
                     fontSize: "10px", 
@@ -242,11 +277,18 @@ function CatalogContent() {
                     fontWeight: "bold"
                   }}>More</p>
                   <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
-                    {allCategories.filter(c => !CATEGORY_GROUPS.flatMap(g => g.items).includes(c)).map(cat => (
-                      <FilterBtn key={cat} active={selectedCategory === cat} onClick={() => setSelectedCategory(selectedCategory === cat ? null : cat)}>
-                        {cat}
-                      </FilterBtn>
-                    ))}
+                    {allCategories
+                      .filter(c => !CATEGORY_GROUPS.flatMap(g => g.items).some(item => item.param === c))
+                      .map(cat => (
+                        <FilterBtn 
+                          key={cat} 
+                          active={selectedCategory === cat} 
+                          onClick={() => updateFilters(selectedCategory === cat ? null : cat, selectedPrice, showOfferOnly)}
+                        >
+                          {cat}
+                        </FilterBtn>
+                      ))
+                    }
                   </div>
                 </div>
               )}
@@ -267,7 +309,7 @@ function CatalogContent() {
                 }}>Price Based</p>
                 <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
                   {PRICE_FILTERS.map(pf => (
-                    <FilterBtn key={pf.param} active={selectedPrice === pf.param} onClick={() => setSelectedPrice(selectedPrice === pf.param ? null : pf.param)} gold>
+                    <FilterBtn key={pf.param} active={selectedPrice === pf.param} onClick={() => updateFilters(selectedCategory, selectedPrice === pf.param ? null : pf.param, showOfferOnly)} gold>
                       {pf.label}
                     </FilterBtn>
                   ))}
@@ -288,7 +330,10 @@ function CatalogContent() {
                   backgroundClip: "text",
                   fontWeight: "bold"
                 }}>Offers</p>
-            </div>
+                <FilterBtn active={showOfferOnly} onClick={() => updateFilters(selectedCategory, selectedPrice, !showOfferOnly)} gold>
+                  Offer Zone
+                </FilterBtn>
+              </div>
 
               {/* Divider + View Count */}
               <div style={{ borderTop: `1px solid ${T.border}`, paddingTop: "16px" }}>
@@ -308,19 +353,19 @@ function CatalogContent() {
                 {selectedCategory && (
                   <span style={{ display: "inline-flex", alignItems: "center", gap: "6px", fontSize: "10px", letterSpacing: "0.15em", textTransform: "uppercase", background: "rgba(250,250,250,0.1)", color: T.text, padding: "5px 14px", borderRadius: "50px", border: `1px solid ${T.border}` }}>
                     {selectedCategory}
-                    <button onClick={() => setSelectedCategory(null)} style={{ background: "none", border: "none", cursor: "pointer", color: T.textMuted, padding: 0, display: "flex" }}><X style={{ width: "11px", height: "11px" }} /></button>
+                    <button onClick={() => updateFilters(null, selectedPrice, showOfferOnly)} style={{ background: "none", border: "none", cursor: "pointer", color: T.textMuted, padding: 0, display: "flex" }}><X style={{ width: "11px", height: "11px" }} /></button>
                   </span>
                 )}
                 {selectedPrice && (
                   <span style={{ display: "inline-flex", alignItems: "center", gap: "6px", fontSize: "10px", letterSpacing: "0.15em", textTransform: "uppercase", background: T.goldDim, color: T.gold, padding: "5px 14px", borderRadius: "50px", border: `1px solid ${T.borderGold}` }}>
                     {PRICE_FILTERS.find(f => f.param === selectedPrice)?.label}
-                    <button onClick={() => setSelectedPrice(null)} style={{ background: "none", border: "none", cursor: "pointer", color: T.gold, padding: 0, display: "flex" }}><X style={{ width: "11px", height: "11px" }} /></button>
+                    <button onClick={() => updateFilters(selectedCategory, null, showOfferOnly)} style={{ background: "none", border: "none", cursor: "pointer", color: T.gold, padding: 0, display: "flex" }}><X style={{ width: "11px", height: "11px" }} /></button>
                   </span>
                 )}
                 {showOfferOnly && (
                   <span style={{ display: "inline-flex", alignItems: "center", gap: "6px", fontSize: "10px", letterSpacing: "0.15em", textTransform: "uppercase", background: T.goldDim, color: T.gold, padding: "5px 14px", borderRadius: "50px", border: `1px solid ${T.borderGold}` }}>
                     Offer Zone
-                    <button onClick={() => setShowOfferOnly(false)} style={{ background: "none", border: "none", cursor: "pointer", color: T.gold, padding: 0, display: "flex" }}><X style={{ width: "11px", height: "11px" }} /></button>
+                    <button onClick={() => updateFilters(selectedCategory, selectedPrice, false)} style={{ background: "none", border: "none", cursor: "pointer", color: T.gold, padding: 0, display: "flex" }}><X style={{ width: "11px", height: "11px" }} /></button>
                   </span>
                 )}
               </div>

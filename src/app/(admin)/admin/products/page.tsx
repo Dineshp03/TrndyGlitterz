@@ -23,7 +23,23 @@ export default function ProductsPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   
-  const CATEGORIES = ["Earrings", "Neckpiece", "Bracelets", "Finger Rings", "Hair Accessories", "Korean Earrings", "Bands", "Chains", "Rings", "Uncategorized"];
+  const CATEGORIES = [
+    "Earrings", 
+    "Neckpiece", 
+    "Bracelets", 
+    "Finger Rings", 
+    "Hair Accessories", 
+    "Korean Earrings", 
+    "Traditional Earrings", 
+    "Xuping Earrings", 
+    "Xuping Neckpiece", 
+    "Xuping Bracelets", 
+    "Xuping Finger Rings", 
+    "Bands", 
+    "Chains", 
+    "Rings", 
+    "Uncategorized"
+  ];
   const FILTER_CATEGORIES = ["All", ...CATEGORIES];
 
   // Form state
@@ -112,7 +128,7 @@ export default function ProductsPage() {
     if (!token) return toast.error("Unauthorized");
     
     try {
-      await deleteProduct(product.id);
+      await deleteProduct(product.id, token);
       toast.success("Product deleted successfully");
       if (isModalOpen && editingProduct?.id === product.id) {
         setIsModalOpen(false);
@@ -210,10 +226,10 @@ export default function ProductsPage() {
 
     try {
       if (editingProduct) {
-        await updateProduct(finalProduct);
+        await updateProduct(finalProduct, token);
         toast.success("Product updated!");
       } else {
-        await addProduct(finalProduct);
+        await addProduct(finalProduct, token);
         toast.success("Product added!");
       }
       setIsModalOpen(false);

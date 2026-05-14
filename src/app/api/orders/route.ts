@@ -1,18 +1,23 @@
-import { createClient } from "@supabase/supabase-js";
-import { getAuth } from "@clerk/nextjs/server";
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
+import { createAdminSupabaseClient } from "@/lib/supabase-server";
+import {
+  getAuthUserId,
+  unauthorizedResponse,
+  badRequestResponse,
+  serverErrorResponse,
+  jsonResponse,
+} from "@/lib/auth";
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
-
+/**
+ * GET /api/orders
+ * Fetch all orders for the authenticated user.
+ */
 export async function GET(req: NextRequest) {
+  const userId = await getAuthUserId(req);
+  if (!userId) return unauthorizedResponse();
+
   try {
-    const { userId } = getAuth(req);
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const supabase = createAdminSupabaseClient();
 
     const { data: orders, error } = await supabase
       .from("orders")
@@ -25,7 +30,7 @@ export async function GET(req: NextRequest) {
 
     if (error) throw error;
 
-    const formattedOrders = orders.map((order: any) => ({
+    const formattedOrders = (orders || []).map((order: any) => ({
       id: order.id,
       created_at: order.created_at,
       status: order.status,
@@ -35,7 +40,8 @@ export async function GET(req: NextRequest) {
       city: order.city,
       state: order.state,
       pincode: order.pincode,
-      items: order.order_items.map((item: any) => ({
+      payment_method: order.payment_method,
+      items: (order.order_items || []).map((item: any) => ({
         id: item.id,
         product_name: item.product_name,
         product_image: item.product_image,
@@ -44,9 +50,98 @@ export async function GET(req: NextRequest) {
       }))
     }));
 
-    return NextResponse.json(formattedOrders);
+    return jsonResponse(formattedOrders);
   } catch (error: any) {
     console.error("API error fetching orders:", error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return serverErrorResponse(error.message);
+  }
+}
+
+/**
+ * POST /api/orders
+ * Place a new order.
+ */
+export async function POST(req: NextRequest) {
+  const userId = await getAuthUserId(req);
+  if (!userId) return unauthorizedResponse();
+
+  try {
+    const body = await req.json();
+    const {
+      customer_name,
+      customer_email,
+      customer_phone,
+      address,
+      city,
+      state,
+      pincode,
+      total,
+      notes,
+      payment_method,
+      items,
+    } = body;
+
+    // Basic validation
+    if (!customer_name || !customer_email || !address || !items || items.length === 0) {
+      return badRequestResponse("Missing required order fields");
+    }
+
+    const supabase = createAdminSupabaseClient();
+
+    // 1. Insert the order
+    const { data: order, error: orderError } = await supabase
+      .from("orders")
+      .insert({
+        clerk_user_id: userId,
+        customer_name,
+        customer_email,
+        customer_phone,
+        address,
+        city,
+        state,
+        pincode,
+        total,
+        notes,
+        payment_method: payment_method || 'cod',
+        status: "pending",
+      })
+      .select()
+      .single();
+
+    if (orderError) {
+      console.error("Order insert error:", orderError);
+      return serverErrorResponse(orderError.message);
+    }
+
+    // 2. Insert order items
+    const orderItems = items.map((item: any) => ({
+      order_id: order.id,
+      product_id: item.product_id,
+      product_name: item.product_name,
+      product_image: item.product_image,
+      price: item.price,
+      quantity: item.quantity,
+    }));
+
+    const { error: itemsError } = await supabase.from("order_items").insert(orderItems);
+
+    if (itemsError) {
+      console.error("Order items insert error:", itemsError);
+      // We don't roll back the order here to keep the record, 
+      // but in a production app you might want a transaction.
+      return serverErrorResponse("Order created but items failed to save.");
+    }
+
+    // 3. Clear the user's cart (optional but recommended)
+    try {
+      await supabase.from("cart_items").delete().eq("clerk_user_id", userId);
+    } catch (cartError) {
+      console.error("Failed to clear cart after order:", cartError);
+    }
+
+    return jsonResponse({ success: true, orderId: order.id }, 201);
+  } catch (error: any) {
+    console.error("API error placing order:", error);
+    return serverErrorResponse(error.message);
   }
 }

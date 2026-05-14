@@ -8,9 +8,9 @@ interface ProductState {
   isLoading: boolean;
   
   fetchProducts: (params?: { category?: string; featured?: boolean; search?: string }) => Promise<void>;
-  addProduct: (product: any) => Promise<void>;
-  updateProduct: (product: any) => Promise<void>;
-  deleteProduct: (id: string) => Promise<void>;
+  addProduct: (product: Partial<Product>, token: string) => Promise<void>;
+  updateProduct: (product: Product, token: string) => Promise<void>;
+  deleteProduct: (id: string, token: string) => Promise<void>;
   deleteAllProducts: () => Promise<void>;
   setProducts: (products: Product[]) => void;
   syncWithInitial: () => Promise<void>;
@@ -35,7 +35,20 @@ export const useProductStore = create<ProductState>((set, get) => ({
       
       if (error) throw error;
 
-      const mappedProducts: Product[] = (data || []).map((p: any) => ({
+      const mappedProducts: Product[] = (data || []).map((p: {
+        id: string;
+        name: string;
+        price: number;
+        category: string;
+        image: string;
+        images?: string[];
+        description?: string;
+        stock?: number;
+        featured?: boolean;
+        is_imported?: boolean;
+        old_price?: number;
+        created_at: string;
+      }) => ({
         id: p.id,
         name: p.name,
         price: p.price,
@@ -61,11 +74,14 @@ export const useProductStore = create<ProductState>((set, get) => ({
     }
   },
 
-  addProduct: async (product) => {
+  addProduct: async (product, token) => {
     try {
       const response = await fetch('/api/products', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
         body: JSON.stringify(product),
       });
       const result = await response.json();
@@ -77,11 +93,14 @@ export const useProductStore = create<ProductState>((set, get) => ({
     }
   },
 
-  updateProduct: async (product) => {
+  updateProduct: async (product, token) => {
     try {
       const response = await fetch('/api/products', {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
         body: JSON.stringify(product),
       });
       const result = await response.json();
@@ -93,16 +112,20 @@ export const useProductStore = create<ProductState>((set, get) => ({
     }
   },
 
-  deleteProduct: async (id) => {
+  deleteProduct: async (id, token) => {
     try {
       const response = await fetch(`/api/products?id=${id}`, {
         method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        },
       });
       const result = await response.json();
       if (!response.ok) throw new Error(result.error || 'Failed to delete product');
       await get().fetchProducts();
     } catch (error) {
       console.error("deleteProduct error:", error);
+      throw error;
     }
   },
 

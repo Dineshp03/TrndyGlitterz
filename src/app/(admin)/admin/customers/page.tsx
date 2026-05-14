@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useOrderStore, GlobalOrder } from "@/store/useOrderStore";
+import { useAuth } from "@clerk/nextjs";
 import {
   Search, Phone, MapPin, X, Package, CheckCircle2,
   CreditCard, ChevronDown, ChevronUp, ShoppingBag
@@ -35,14 +36,23 @@ type CustomerRow = {
 };
 
 export default function CustomersPage() {
+  const { getToken, isLoaded, isSignedIn } = useAuth();
   const { orders, fetchOrders, isLoading } = useOrderStore();
   const [search, setSearch] = useState("");
   const [selectedCustomer, setSelectedCustomer] = useState<CustomerRow | null>(null);
   const [expandedOrder, setExpandedOrder] = useState<string | null>(null);
 
   useEffect(() => {
-    fetchOrders();
-  }, [fetchOrders]);
+    async function loadOrders() {
+      if (isLoaded && isSignedIn) {
+        const token = await getToken();
+        if (token) {
+          fetchOrders(token);
+        }
+      }
+    }
+    loadOrders();
+  }, [isLoaded, isSignedIn, getToken, fetchOrders]);
 
   // Only Razorpay-paid orders
   const razorpayOrders = useMemo(

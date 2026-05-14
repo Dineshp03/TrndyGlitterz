@@ -26,9 +26,9 @@ export const useSettingsStore = create<SettingsState>()(
     (set) => ({
       shippingDetails: "Free shipping on orders above ₹999",
       updateShippingDetails: (details) => set({ shippingDetails: details }),
-      upiEnabled: true,
+      upiEnabled: false,
       razorpayEnabled: true,
-      codEnabled: true,
+      codEnabled: false,
       updatePaymentSetting: (key, value) => set({ [key]: value }),
       newOrdersNotif: true,
       lowStockNotif: true,
