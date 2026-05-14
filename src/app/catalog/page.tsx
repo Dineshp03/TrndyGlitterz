@@ -132,6 +132,16 @@ function CatalogContent() {
     return items;
   }, [selectedCategory, showOfferOnly, selectedPrice, products]);
 
+  // Scroll lock for mobile filter drawer
+  useEffect(() => {
+    if (filterPanelOpen && window.innerWidth < 768) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "unset";
+    }
+    return () => { document.body.style.overflow = "unset"; };
+  }, [filterPanelOpen]);
+
   const hasActiveFilters = selectedCategory || selectedPrice || showOfferOnly;
 
   const clearAll = () => {
@@ -214,55 +224,120 @@ function CatalogContent() {
 
         <div style={{ display: "flex", gap: "48px", alignItems: "flex-start" }}>
 
-          {/* ── Sidebar ── */}
-          <aside
-            className={filterPanelOpen ? "block" : "hidden md:block"}
-            style={{ width: "210px", flexShrink: 0, position: "sticky", top: "112px" }}
-          >
-            <div style={{ display: "flex", flexDirection: "column", gap: "28px" }}>
+          {/* ── Filter Drawer / Sidebar ── */}
+          <>
+            {/* Mobile Backdrop */}
+            <div 
+              className={`fixed inset-0 bg-black/70 backdrop-blur-md z-[100] transition-opacity duration-500 md:hidden ${
+                filterPanelOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
+              }`}
+              onClick={() => setFilterPanelOpen(false)}
+            />
 
-              {hasActiveFilters && (
-                <button
-                  onClick={clearAll}
-                  style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "10px", letterSpacing: "0.15em", textTransform: "uppercase", color: T.textDim, background: "none", border: "none", cursor: "pointer", padding: 0 }}
-                >
-                  <X style={{ width: "12px", height: "12px" }} /> Clear All
-                </button>
-              )}
+            <aside
+              className={`
+                fixed top-0 right-0 h-full w-[300px] bg-[#0A0A0A] z-[101] shadow-2xl p-8
+                transform transition-transform duration-500 ease-[cubic-bezier(0.23,1,0.32,1)]
+                md:relative md:top-0 md:right-0 md:h-auto md:w-[210px] md:z-0 md:shadow-none md:transform-none md:p-0 md:block
+                ${filterPanelOpen ? "translate-x-0" : "translate-x-full md:translate-x-0"}
+                ${filterPanelOpen ? "block" : "hidden md:block"}
+              `}
+              style={{ 
+                flexShrink: 0, 
+                position: filterPanelOpen ? "fixed" : "sticky", 
+                top: filterPanelOpen ? "0" : "112px",
+                overflowY: filterPanelOpen ? "auto" : "visible"
+              }}
+            >
+              <div style={{ display: "flex", flexDirection: "column", gap: "28px" }}>
 
-              {/* Category groups */}
-              {CATEGORY_GROUPS.map((group) => (
-                <div key={group.label}>
-                  <p style={{ 
-                    fontSize: "10px", 
-                    fontFamily: "monospace", 
-                    letterSpacing: "0.35em", 
-                    textTransform: "uppercase", 
-                    margin: "0 0 12px 0",
-                    background: "linear-gradient(to right, #BF953F 0%, #B38728 50%, #BF953F 100%)",
-                    WebkitBackgroundClip: "text",
-                    WebkitTextFillColor: "transparent",
-                    backgroundClip: "text",
-                    fontWeight: "bold"
-                  }}>
-                    {group.label}
-                  </p>
-                  <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
-                    {group.items.map(cat => (
-                      <FilterBtn 
-                        key={cat.param} 
-                        active={selectedCategory === cat.param} 
-                        onClick={() => updateFilters(selectedCategory === cat.param ? null : cat.param, selectedPrice, showOfferOnly)}
-                      >
-                        {cat.label}
-                      </FilterBtn>
-                    ))}
-                  </div>
+                {/* Mobile Header for Filter Panel */}
+                <div className="flex justify-between items-center mb-4 md:hidden">
+                  <span className="text-xs font-serif text-white/90 tracking-[0.3em] uppercase">Filters</span>
+                  <button onClick={() => setFilterPanelOpen(false)} className="p-2 -mr-2 text-white/40 hover:text-white transition-colors">
+                    <X className="w-5 h-5" strokeWidth={1.5} />
+                  </button>
                 </div>
-              ))}
 
-              {/* Extra categories */}
-              {allCategories.filter(c => !CATEGORY_GROUPS.flatMap(g => g.items).some(item => item.param === c)).length > 0 && (
+                {hasActiveFilters && (
+                  <button
+                    onClick={clearAll}
+                    style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "10px", letterSpacing: "0.15em", textTransform: "uppercase", color: T.gold, background: "rgba(212,175,55,0.1)", border: `1px solid ${T.borderGold}`, cursor: "pointer", padding: "8px 12px", borderRadius: "4px", width: "fit-content" }}
+                  >
+                    <X style={{ width: "12px", height: "12px" }} /> Clear All
+                  </button>
+                )}
+
+                {/* Category groups */}
+                {CATEGORY_GROUPS.map((group) => (
+                  <div key={group.label}>
+                    <p style={{ 
+                      fontSize: "10px", 
+                      fontFamily: "monospace", 
+                      letterSpacing: "0.35em", 
+                      textTransform: "uppercase", 
+                      margin: "0 0 12px 0",
+                      background: "linear-gradient(to right, #BF953F 0%, #B38728 50%, #BF953F 100%)",
+                      WebkitBackgroundClip: "text",
+                      WebkitTextFillColor: "transparent",
+                      backgroundClip: "text",
+                      fontWeight: "bold"
+                    }}>
+                      {group.label}
+                    </p>
+                    <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
+                      {group.items.map(cat => (
+                        <FilterBtn 
+                          key={cat.param} 
+                          active={selectedCategory === cat.param} 
+                          onClick={() => {
+                            updateFilters(selectedCategory === cat.param ? null : cat.param, selectedPrice, showOfferOnly);
+                            if (window.innerWidth < 768) setFilterPanelOpen(false);
+                          }}
+                        >
+                          {cat.label}
+                        </FilterBtn>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+
+                {/* Extra categories */}
+                {allCategories.filter(c => !CATEGORY_GROUPS.flatMap(g => g.items).some(item => item.param === c)).length > 0 && (
+                  <div>
+                    <p style={{ 
+                      fontSize: "10px", 
+                      fontFamily: "monospace", 
+                      letterSpacing: "0.35em", 
+                      textTransform: "uppercase", 
+                      margin: "0 0 12px 0",
+                      background: "linear-gradient(to right, #BF953F 0%, #B38728 50%, #BF953F 100%)",
+                      WebkitBackgroundClip: "text",
+                      WebkitTextFillColor: "transparent",
+                      backgroundClip: "text",
+                      fontWeight: "bold"
+                    }}>More</p>
+                    <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
+                      {allCategories
+                        .filter(c => !CATEGORY_GROUPS.flatMap(g => g.items).some(item => item.param === c))
+                        .map(cat => (
+                          <FilterBtn 
+                            key={cat} 
+                            active={selectedCategory === cat} 
+                            onClick={() => {
+                              updateFilters(selectedCategory === cat ? null : cat, selectedPrice, showOfferOnly);
+                              if (window.innerWidth < 768) setFilterPanelOpen(false);
+                            }}
+                          >
+                            {cat}
+                          </FilterBtn>
+                        ))
+                      }
+                    </div>
+                  </div>
+                )}
+
+                {/* Price */}
                 <div>
                   <p style={{ 
                     fontSize: "10px", 
@@ -275,74 +350,59 @@ function CatalogContent() {
                     WebkitTextFillColor: "transparent",
                     backgroundClip: "text",
                     fontWeight: "bold"
-                  }}>More</p>
+                  }}>Price Based</p>
                   <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
-                    {allCategories
-                      .filter(c => !CATEGORY_GROUPS.flatMap(g => g.items).some(item => item.param === c))
-                      .map(cat => (
-                        <FilterBtn 
-                          key={cat} 
-                          active={selectedCategory === cat} 
-                          onClick={() => updateFilters(selectedCategory === cat ? null : cat, selectedPrice, showOfferOnly)}
-                        >
-                          {cat}
-                        </FilterBtn>
-                      ))
-                    }
+                    {PRICE_FILTERS.map(pf => (
+                      <FilterBtn 
+                        key={pf.param} 
+                        active={selectedPrice === pf.param} 
+                        onClick={() => {
+                          updateFilters(selectedCategory, selectedPrice === pf.param ? null : pf.param, showOfferOnly);
+                          if (window.innerWidth < 768) setFilterPanelOpen(false);
+                        }} 
+                        gold
+                      >
+                        {pf.label}
+                      </FilterBtn>
+                    ))}
                   </div>
                 </div>
-              )}
 
-              {/* Price */}
-              <div>
-                <p style={{ 
-                  fontSize: "10px", 
-                  fontFamily: "monospace", 
-                  letterSpacing: "0.35em", 
-                  textTransform: "uppercase", 
-                  margin: "0 0 12px 0",
-                  background: "linear-gradient(to right, #BF953F 0%, #B38728 50%, #BF953F 100%)",
-                  WebkitBackgroundClip: "text",
-                  WebkitTextFillColor: "transparent",
-                  backgroundClip: "text",
-                  fontWeight: "bold"
-                }}>Price Based</p>
-                <div style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
-                  {PRICE_FILTERS.map(pf => (
-                    <FilterBtn key={pf.param} active={selectedPrice === pf.param} onClick={() => updateFilters(selectedCategory, selectedPrice === pf.param ? null : pf.param, showOfferOnly)} gold>
-                      {pf.label}
-                    </FilterBtn>
-                  ))}
+                {/* Offers */}
+                <div>
+                  <p style={{ 
+                    fontSize: "10px", 
+                    fontFamily: "monospace", 
+                    letterSpacing: "0.35em", 
+                    textTransform: "uppercase", 
+                    margin: "0 0 12px 0",
+                    background: "linear-gradient(to right, #BF953F 0%, #B38728 50%, #BF953F 100%)",
+                    WebkitBackgroundClip: "text",
+                    WebkitTextFillColor: "transparent",
+                    backgroundClip: "text",
+                    fontWeight: "bold"
+                  }}>Offers</p>
+                  <FilterBtn 
+                    active={showOfferOnly} 
+                    onClick={() => {
+                      updateFilters(selectedCategory, selectedPrice, !showOfferOnly);
+                      if (window.innerWidth < 768) setFilterPanelOpen(false);
+                    }} 
+                    gold
+                  >
+                    Offer Zone
+                  </FilterBtn>
+                </div>
+
+                {/* Divider + View Count */}
+                <div style={{ borderTop: `1px solid ${T.border}`, paddingTop: "16px" }}>
+                  <p style={{ fontSize: "10px", color: T.textDim, letterSpacing: "0.1em" }}>
+                    {filteredProducts.length} results
+                  </p>
                 </div>
               </div>
-
-              {/* Offers */}
-              <div>
-                <p style={{ 
-                  fontSize: "10px", 
-                  fontFamily: "monospace", 
-                  letterSpacing: "0.35em", 
-                  textTransform: "uppercase", 
-                  margin: "0 0 12px 0",
-                  background: "linear-gradient(to right, #BF953F 0%, #B38728 50%, #BF953F 100%)",
-                  WebkitBackgroundClip: "text",
-                  WebkitTextFillColor: "transparent",
-                  backgroundClip: "text",
-                  fontWeight: "bold"
-                }}>Offers</p>
-                <FilterBtn active={showOfferOnly} onClick={() => updateFilters(selectedCategory, selectedPrice, !showOfferOnly)} gold>
-                  Offer Zone
-                </FilterBtn>
-              </div>
-
-              {/* Divider + View Count */}
-              <div style={{ borderTop: `1px solid ${T.border}`, paddingTop: "16px" }}>
-                <p style={{ fontSize: "10px", color: T.textDim, letterSpacing: "0.1em" }}>
-                  {filteredProducts.length} results
-                </p>
-              </div>
-            </div>
-          </aside>
+            </aside>
+          </>
 
           {/* ── Products Grid ── */}
           <div style={{ flex: 1, minWidth: 0 }}>
