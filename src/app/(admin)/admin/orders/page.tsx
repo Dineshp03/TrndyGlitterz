@@ -116,12 +116,12 @@ export default function OrdersPage() {
       </div>
 
       {/* Orders Table - Desktop */}
-      <div className="hidden md:block bg-white rounded-2xl border border-[#F0EDE8] overflow-hidden">
-        <table className="w-full">
+      <div className="hidden md:block bg-white rounded-2xl border border-[#F0EDE8] overflow-hidden overflow-x-auto">
+        <table className="w-full min-w-[900px]">
           <thead>
             <tr className="border-b border-[#F0EDE8]">
-              {["Order ID", "Customer", "Product", "Qty", "Amount", "Status", "Date"].map((h) => (
-                <th key={h} className="text-left text-[9px] font-mono text-[#bbb] uppercase tracking-[0.15em] px-5 py-3.5">
+              {["Order ID", "Customer Details", "Contact", "Product", "Amount", "Status", "Date"].map((h) => (
+                <th key={h} className="text-left text-[9px] font-mono text-[#bbb] uppercase tracking-[0.15em] px-4 py-3.5">
                   {h}
                 </th>
               ))}
@@ -131,27 +131,45 @@ export default function OrdersPage() {
             {filteredOrders.length > 0 ? filteredOrders.map((order) => {
               const s = statusConfig[order.status];
               const StatusIcon = s?.icon || Package;
+              const shortId = order.id?.split("-")[0]?.toUpperCase() || order.id;
               return (
                 <tr key={order.id} onClick={() => handleRowClick(order)} className="border-b border-[#F0EDE8]/60 hover:bg-[#FAFAF8] transition-colors cursor-pointer">
-                  <td className="px-5 py-3.5 text-xs font-mono text-[#E8809A]">{order.id}</td>
-                  <td className="px-5 py-3.5">
-                    <div className="flex items-center gap-2">
-                      <div className="w-7 h-7 rounded-full bg-gradient-to-br from-[#F5B8C8]/60 to-[#E8809A]/60 flex items-center justify-center text-white text-[10px] font-bold flex-shrink-0">
-                        {(order.customer || "?")[0]}
+                  <td className="px-4 py-3.5 text-[10px] font-mono text-[#E8809A] whitespace-nowrap">#{shortId}</td>
+                  <td className="px-4 py-3.5">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#F5B8C8]/60 to-[#E8809A]/60 flex items-center justify-center text-white text-[10px] font-bold flex-shrink-0">
+                        {(order.customer_name || order.customer || "?")[0].toUpperCase()}
                       </div>
-                      <span className="text-xs text-[#2C2C2C] font-medium">{order.customer}</span>
+                      <div className="min-w-0">
+                        <p className="text-xs text-[#2C2C2C] font-semibold truncate">{order.customer_name || order.customer}</p>
+                        {order.address && (
+                          <p className="text-[10px] text-[#aaa] truncate max-w-[200px]" title={order.address}>{order.address}</p>
+                        )}
+                      </div>
                     </div>
                   </td>
-                  <td className="px-5 py-3.5 text-xs text-[#888]">{order.product}</td>
-                  <td className="px-5 py-3.5 text-xs text-[#555]">{order.qty}</td>
-                  <td className="px-5 py-3.5 text-xs font-bold text-[#2C2C2C]">{order.amount}</td>
-                  <td className="px-5 py-3.5">
+                  <td className="px-4 py-3.5">
+                    <div className="space-y-0.5">
+                      {order.customer_email && <p className="text-[10px] text-[#888] truncate max-w-[180px]">{order.customer_email}</p>}
+                      {order.customer_phone && (
+                        <a href={`https://wa.me/91${order.customer_phone.replace(/\D/g,"")}`} target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()} className="text-[10px] text-[#25D366] font-medium hover:underline block">
+                          📞 {order.customer_phone}
+                        </a>
+                      )}
+                    </div>
+                  </td>
+                  <td className="px-4 py-3.5">
+                    <p className="text-xs text-[#555] truncate max-w-[150px]">{order.product}</p>
+                    <p className="text-[10px] text-[#ccc]">x{order.qty}</p>
+                  </td>
+                  <td className="px-4 py-3.5 text-xs font-bold text-[#2C2C2C] whitespace-nowrap">{order.amount}</td>
+                  <td className="px-4 py-3.5">
                     <span className={`inline-flex items-center gap-1 text-[10px] font-medium px-2 py-1 rounded-full border ${s.bg} ${s.color}`}>
                       <StatusIcon size={10} />
                       {s.label}
                     </span>
                   </td>
-                  <td className="px-5 py-3.5 text-[10px] text-[#bbb]">{order.date}</td>
+                  <td className="px-4 py-3.5 text-[10px] text-[#bbb] whitespace-nowrap">{order.date ? new Date(order.date).toLocaleDateString("en-IN", { day: "numeric", month: "short" }) : "—"}</td>
                 </tr>
               );
             }) : (
@@ -173,17 +191,27 @@ export default function OrdersPage() {
               <div className="flex items-start justify-between mb-2">
                 <div className="flex items-center gap-2">
                   <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#F5B8C8]/60 to-[#E8809A]/60 flex items-center justify-center text-white text-[10px] font-bold">
-                    {(order.customer || "?")[0]}
+                    {(order.customer_name || order.customer || "?")[0].toUpperCase()}
                   </div>
                   <div>
-                    <p className="text-xs font-medium text-[#2C2C2C]">{order.customer}</p>
-                    <p className="text-[10px] font-mono text-[#E8809A]">{order.id}</p>
+                    <p className="text-xs font-semibold text-[#2C2C2C]">{order.customer_name || order.customer}</p>
+                    <p className="text-[10px] font-mono text-[#E8809A]">#{order.id?.split("-")[0]?.toUpperCase()}</p>
                   </div>
                 </div>
                 <span className={`inline-flex items-center gap-1 text-[9px] font-medium px-2 py-1 rounded-full border ${s.bg} ${s.color}`}>
                   <StatusIcon size={9} />
                   {s.label}
                 </span>
+              </div>
+              {/* Contact Info */}
+              <div className="space-y-1 mb-3 pl-10">
+                {order.customer_email && <p className="text-[10px] text-[#888] truncate">{order.customer_email}</p>}
+                {order.customer_phone && (
+                  <a href={`https://wa.me/91${order.customer_phone.replace(/\D/g,"")}`} target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()} className="text-[10px] text-[#25D366] font-medium hover:underline block">
+                    📞 {order.customer_phone}
+                  </a>
+                )}
+                {order.address && <p className="text-[10px] text-[#aaa] truncate">📍 {order.address}</p>}
               </div>
               <div className="flex items-end justify-between mt-3 pt-3 border-t border-[#F0EDE8]">
                 <p className="text-[11px] text-[#888]">{order.product} <span className="text-[#ccc] ml-1">x{order.qty}</span></p>
