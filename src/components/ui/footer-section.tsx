@@ -174,7 +174,7 @@ function Footerdemo() {
             &copy; {new Date().getFullYear()} TRENDY GLITTERZ. All rights reserved.
           </p>
           <nav className="flex gap-6 text-[10px] font-sans uppercase tracking-[0.1em] text-obsidian/40">
-            <Link href="/privacy" className="transition-colors hover:text-dustyrose">Privacy Policy</Link>
+            <Link href="/privacy-policy" className="transition-colors hover:text-dustyrose">Privacy Policy</Link>
             <Link href="/terms" className="transition-colors hover:text-dustyrose">Terms of Service</Link>
             <Link href="/cookies" className="transition-colors hover:text-dustyrose">Cookie Settings</Link>
           </nav>

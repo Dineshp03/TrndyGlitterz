@@ -107,8 +107,9 @@ export default function ProductCard({ product }: { product: Product }) {
       
       {/* Details Container - Centered to match Image 3 */}
       <div className="flex flex-col items-center text-center px-1">
-        <h3 className="text-[11px] md:text-xs font-sans text-obsidian/70 mb-1 group-hover:text-obsidian transition-colors truncate w-full tracking-tight">
+                  <h3 className="text-[14px] md:text-sm font-sans text-obsidian/70 mb-1 group-hover:text-obsidian transition-colors truncate w-full tracking-tight">
           {product.name}
+            
         </h3>
         
         <div className="flex items-center gap-2 font-sans">

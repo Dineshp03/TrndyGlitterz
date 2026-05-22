@@ -80,6 +80,16 @@ export default function Footer() {
               <li><a href="#" className="hover:text-burgundy transition-colors block">TikTok</a></li>
             </ul>
           </div>
+            {/* Important Links */}
+            <div className="space-y-8">
+              <h4 className="text-[10px] font-sans uppercase tracking-[0.2em] text-obsidian/40">Important Links</h4>
+              <ul className="space-y-4 text-sm font-sans font-light">
+                <li><Link href="/privacy-policy" className="hover:text-burgundy transition-colors">Privacy Policy</Link></li>
+                <li><Link href="/terms-of-service" className="hover:text-burgundy transition-colors">Terms of Service</Link></li>
+                <li><Link href="/contact" className="hover:text-burgundy transition-colors">Contact Us</Link></li>
+                <li><Link href="/about" className="hover:text-burgundy transition-colors">About Us</Link></li>
+              </ul>
+            </div>
 
         </div>
       </div>
