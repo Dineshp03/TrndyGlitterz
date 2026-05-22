@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState, useEffect } from "react";
 import { useProductStore } from "@/store/useProductStore";
 import ProductSlider from "@/components/ProductSlider";
+import ProductCard from "@/components/ProductCard";
 import { Search, ShoppingBag, X, Menu, Gem, ArrowUpRight, Instagram } from "lucide-react";
 import HeroSection from "@/components/HeroSection";
 import SmoothScroll from "@/components/SmoothScroll";
@@ -18,7 +19,7 @@ export default function Home() {
 
   // Fixed category filters matching the menu structure
   const CATEGORY_FILTERS = [
-    { label: "Xuping Exclusive", categories: ["Earrings", "Neckpiece", "Bracelets", "Finger Rings"] },
+    { label: "Xuping Exclusive", categories: ["Xuping Earrings", "Xuping Neckpiece", "Xuping Bracelets", "Xuping Finger Rings"] },
     { label: "Korean Earrings",  categories: ["Korean Earrings"] },
     { label: "Neckpiece",        categories: ["Neckpiece"] },
     { label: "Bracelets",        categories: ["Bracelets"] },
@@ -44,18 +45,15 @@ export default function Home() {
     return 0;
   });
 
-  // For section-by-section display below the slider, derive unique categories from products
-  const sortedCategories = Array.from(new Set(filteredProducts.map(p => p.category).filter(Boolean))).sort((a, b) => {
-    if (a.toLowerCase() === "earrings") return -1;
-    if (b.toLowerCase() === "earrings") return 1;
-    return a.localeCompare(b);
-  });
 
   // Products for the ALL COLLECTIONS slider — filter by selected category group
   const displayProducts = selectedCategory
     ? (() => {
         const filter = CATEGORY_FILTERS.find(f => f.label === selectedCategory);
-        if (filter) return sortedProducts.filter(p => filter.categories.includes(p.category ?? ""));
+        if (filter) {
+          const lowerFilterCategories = filter.categories.map(c => c.toLowerCase());
+          return sortedProducts.filter(p => lowerFilterCategories.includes((p.category ?? "").toLowerCase()));
+        }
         return sortedProducts;
       })()
     : sortedProducts;
@@ -162,44 +160,24 @@ export default function Home() {
             </p>
           </div>
 
-          <ProductSlider products={displayProducts} />
+          {selectedCategory ? (
+            <div className="grid grid-cols-2 sm:grid-cols-[repeat(auto-fill,minmax(175px,1fr))] gap-x-4 md:gap-x-4 gap-y-8 md:gap-y-7 px-0">
+              {displayProducts.map((product, index) => (
+                <div
+                  key={product.id}
+                  className="animate-reveal"
+                  style={{ animationDelay: `${index * 40}ms` }}
+                >
+                  <ProductCard product={product} />
+                </div>
+              ))}
+            </div>
+          ) : (
+            <ProductSlider products={displayProducts} />
+          )}
         </div>
       </section>
 
-      {/* Category Wise Sections - Dynamic from Admin */}
-      {sortedCategories.map((category) => (
-        <section key={category} className="py-8 md:py-16 px-6 md:px-12 bg-[#0A0A0A] border-t border-white/5">
-          <div className="container mx-auto">
-              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-8 md:mb-16 gap-6">
-                <div>
-                  <h2 className="text-2xl md:text-3xl font-sans font-bold tracking-tighter uppercase" style={{
-                    background: "linear-gradient(to right, #BF953F 0%, #FCF6BA 30%, #B38728 55%, #FBF5B7 80%, #BF953F 100%)",
-                    WebkitBackgroundClip: "text",
-                    WebkitTextFillColor: "transparent",
-                    backgroundClip: "text",
-                  }}>{category}</h2>
-                  <div className="h-0.5 w-12 bg-obsidian/20 mt-4"></div>
-                </div>
-                
-                <div className="flex items-center gap-6">
-                  <Link 
-                    href={`/catalog?category=${encodeURIComponent(category)}`}
-                    className="group flex flex-col items-center gap-1.5 text-[10px] md:text-xs font-sans font-bold uppercase tracking-[0.2em] text-obsidian/60 hover:text-obsidian transition-colors"
-                  >
-                    <div className="w-10 h-10 rounded-full border border-obsidian/20 flex items-center justify-center group-hover:bg-obsidian group-hover:text-white transition-colors">
-                      <ArrowUpRight className="w-4 h-4 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
-                    </div>
-                    <span>View All</span>
-                  </Link>
-                </div>
-              </div>
-
-            <ProductSlider 
-              products={filteredProducts.filter(p => p.category === category)} 
-            />
-          </div>
-        </section>
-      ))}
 
       {/* Brand Journal Section - Premium Dark Theme */}
       <section id="about" className="bg-[#121212] text-[#FAFAFA] py-16 md:py-24 overflow-hidden mt-12 border-t border-white/5">
