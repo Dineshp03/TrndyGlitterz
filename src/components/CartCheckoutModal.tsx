@@ -120,51 +120,132 @@ export default function CartCheckoutModal({ onClose }: { onClose: () => void }) 
     try {
       const token = await getToken();
 
-      // RAZORPAY INTEGRATION PLACEHOLDER
-      // Here you would normally initiate the Razorpay checkout flow
-      
-      const payload = {
-        clerk_user_id: user?.id,
-        customer_name: details.fullName,
-        customer_email: details.email,
-        customer_phone: details.phone,
-        address: `${details.address}, ${details.city}, ${details.state} - ${details.pincode}`,
-        city: details.city,
-        state: details.state,
-        pincode: details.pincode,
-        total: total,
-        payment_method: "razorpay",
-        items: items.map(item => ({
-          product_id: item.productId || item.id,
-          product_name: item.name,
-          product_image: item.image,
-          price: item.price,
-          quantity: item.quantity
-        }))
+      // Step 1: Create Razorpay order via backend
+      const orderRes = await fetch("/api/create-order", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({
+          amount: total,
+          receipt: `cart_${Date.now()}`,
+        }),
+      });
+
+      if (!orderRes.ok) {
+        const err = await orderRes.json();
+        throw new Error(err.error || "Failed to create order");
+      }
+
+      const { order_id, amount: amountPaise, currency } = await orderRes.json();
+
+      // Step 2: Open Razorpay checkout modal
+      const options = {
+        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
+        amount: amountPaise,
+        currency,
+        name: "Trendy Glitterz",
+        description: `Order for ${items.length} item(s)`,
+        order_id,
+        prefill: {
+          name: details.fullName,
+          email: details.email,
+          contact: details.phone,
+        },
+        theme: {
+          color: "#8B2252",
+        },
+        handler: async (response: {
+          razorpay_payment_id: string;
+          razorpay_order_id: string;
+          razorpay_signature: string;
+        }) => {
+          try {
+            // Step 3: Verify payment signature
+            const verifyRes = await fetch("/api/verify-payment", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                ...(token ? { Authorization: `Bearer ${token}` } : {}),
+              },
+              body: JSON.stringify({
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_signature: response.razorpay_signature,
+              }),
+            });
+
+            if (!verifyRes.ok) {
+              const err = await verifyRes.json();
+              throw new Error(err.error || "Payment verification failed");
+            }
+
+            // Step 4: Place order in database after verification
+            const payload = {
+              clerk_user_id: user?.id,
+              customer_name: details.fullName,
+              customer_email: details.email,
+              customer_phone: details.phone,
+              address: `${details.address}, ${details.city}, ${details.state} - ${details.pincode}`,
+              city: details.city,
+              state: details.state,
+              pincode: details.pincode,
+              total: total,
+              payment_method: "razorpay",
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_order_id: response.razorpay_order_id,
+              items: items.map(item => ({
+                product_id: item.productId || item.id,
+                product_name: item.name,
+                product_image: item.image,
+                price: item.price,
+                quantity: item.quantity
+              }))
+            };
+
+            const result = await placeOrder(payload, token);
+
+            if (result.success) {
+              const { newOrdersNotif } = useSettingsStore.getState();
+              if (newOrdersNotif) {
+                useNotificationStore.getState().addNotification({
+                  title: "New Order Received",
+                  message: `${details.fullName} placed an order for ${items.length} item(s)`,
+                  type: "order"
+                });
+              }
+              setStep("success");
+              clearCart();
+            } else {
+              alert(result.error || "Failed to place order. Please try again.");
+            }
+          } catch (verifyError: any) {
+            console.error("Verification error:", verifyError);
+            alert(verifyError.message || "Payment verification failed. Please contact support.");
+          } finally {
+            setProcessing(false);
+          }
+        },
+        modal: {
+          ondismiss: () => {
+            setProcessing(false);
+          },
+        },
       };
 
-      const result = await placeOrder(payload, token);
+      const rzp = new (window as any).Razorpay(options);
 
-      if (result.success) {
-        // Notification
-        const { newOrdersNotif } = useSettingsStore.getState();
-        if (newOrdersNotif) {
-          useNotificationStore.getState().addNotification({
-            title: "New Order Received",
-            message: `${details.fullName} placed an order for ${items.length} item(s)`,
-            type: "order"
-          });
-        }
+      rzp.on("payment.failed", (response: any) => {
+        console.error("Payment failed:", response.error);
+        alert(`Payment failed: ${response.error.description || "Please try again."}`);
+        setProcessing(false);
+      });
 
-        setStep("success");
-        clearCart();
-      } else {
-        alert(result.error || "Failed to place order. Please try again.");
-      }
-    } catch (error) {
+      rzp.open();
+    } catch (error: any) {
       console.error("Checkout error:", error);
-      alert("Something went wrong. Please try again.");
-    } finally {
+      alert(error.message || "Something went wrong. Please try again.");
       setProcessing(false);
     }
   };

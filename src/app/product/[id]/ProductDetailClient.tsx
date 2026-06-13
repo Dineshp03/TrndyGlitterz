@@ -189,40 +189,119 @@ function PaymentModal({
     try {
       const token = await getToken();
 
-      // RAZORPAY INTEGRATION PLACEHOLDER
-      // In a real scenario, you'd call your backend to create a Razorpay order,
-      // then open the Razorpay checkout modal here.
-      // For now, we proceed to record the order as 'razorpay' paid.
-      
-      const result = await placeOrder({
-        clerk_user_id: user?.id,
-        customer_name: details.fullName,
-        customer_email: details.email,
-        customer_phone: details.phone,
-        address: `${details.address}, ${details.city}, ${details.state} - ${details.pincode}`,
-        city: details.city,
-        state: details.state,
-        pincode: details.pincode,
-        total: product.price,
-        payment_method: "razorpay",
-        items: [{
-          product_id: product.id,
-          product_name: product.name,
-          product_image: product.image,
-          price: product.price,
-          quantity: 1
-        }]
-      }, token);
+      // Step 1: Create Razorpay order via backend
+      const orderRes = await fetch("/api/create-order", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({
+          amount: product.price,
+          receipt: `buynow_${product.id || Date.now()}`,
+        }),
+      });
 
-      if (result.success) {
-        setStep("success");
-      } else {
-        alert(result.error || "Failed to place order.");
+      if (!orderRes.ok) {
+        const err = await orderRes.json();
+        throw new Error(err.error || "Failed to create order");
       }
-    } catch (err) {
+
+      const { order_id, amount: amountPaise, currency } = await orderRes.json();
+
+      // Step 2: Open Razorpay checkout modal
+      const options = {
+        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
+        amount: amountPaise,
+        currency,
+        name: "Trendy Glitterz",
+        description: product.name,
+        order_id,
+        prefill: {
+          name: details.fullName,
+          email: details.email,
+          contact: details.phone,
+        },
+        theme: {
+          color: "#8B2252",
+        },
+        handler: async (response: {
+          razorpay_payment_id: string;
+          razorpay_order_id: string;
+          razorpay_signature: string;
+        }) => {
+          try {
+            // Step 3: Verify payment signature
+            const verifyRes = await fetch("/api/verify-payment", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                ...(token ? { Authorization: `Bearer ${token}` } : {}),
+              },
+              body: JSON.stringify({
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_signature: response.razorpay_signature,
+              }),
+            });
+
+            if (!verifyRes.ok) {
+              const err = await verifyRes.json();
+              throw new Error(err.error || "Payment verification failed");
+            }
+
+            // Step 4: Place order in database after verification
+            const result = await placeOrder({
+              clerk_user_id: user?.id,
+              customer_name: details.fullName,
+              customer_email: details.email,
+              customer_phone: details.phone,
+              address: `${details.address}, ${details.city}, ${details.state} - ${details.pincode}`,
+              city: details.city,
+              state: details.state,
+              pincode: details.pincode,
+              total: product.price,
+              payment_method: "razorpay",
+              items: [{
+                product_id: product.id,
+                product_name: product.name,
+                product_image: product.image,
+                price: product.price,
+                quantity: 1
+              }]
+            }, token);
+
+            if (result.success) {
+              setStep("success");
+            } else {
+              alert(result.error || "Failed to place order.");
+            }
+          } catch (verifyError: any) {
+            console.error("Verification error:", verifyError);
+            alert(verifyError.message || "Payment verification failed. Please contact support.");
+          } finally {
+            setProcessing(false);
+          }
+        },
+        modal: {
+          ondismiss: () => {
+            setProcessing(false);
+          },
+        },
+      };
+
+      const rzp = new (window as any).Razorpay(options);
+
+      rzp.on("payment.failed", (response: any) => {
+        console.error("Payment failed:", response.error);
+        alert(`Payment failed: ${response.error.description || "Please try again."}`);
+        setProcessing(false);
+      });
+
+      rzp.open();
+    } catch (err: any) {
       console.error(err);
-      alert("Something went wrong.");
-    } finally {
+      alert(err.message || "Something went wrong.");
       setProcessing(false);
     }
   };

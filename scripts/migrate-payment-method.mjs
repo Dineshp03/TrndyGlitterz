@@ -3,18 +3,32 @@
  * Run: node scripts/migrate-payment-method.mjs
  */
 import { createClient } from '@supabase/supabase-js';
-import dotenv from 'dotenv';
+import { readFileSync } from 'fs';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-dotenv.config({ path: join(__dirname, '..', '.env.local') });
+const envPath = join(__dirname, '..', '.env.local');
+
+// Parse .env.local manually
+const envContent = readFileSync(envPath, 'utf8');
+const processEnv = {};
+envContent.split(/\r?\n/).forEach(line => {
+  const trimmed = line.trim();
+  if (trimmed && !trimmed.startsWith('#')) {
+    const parts = trimmed.split('=');
+    const key = parts[0].trim();
+    const val = parts.slice(1).join('=').trim().replace(/^['"]|['"]$/g, '');
+    processEnv[key] = val;
+  }
+});
 
 const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY,
+  processEnv.NEXT_PUBLIC_SUPABASE_URL,
+  processEnv.SUPABASE_SERVICE_ROLE_KEY,
   { auth: { autoRefreshToken: false, persistSession: false } }
 );
+
 
 async function migrate() {
   console.log('Running migration: add payment_method column to orders...');
