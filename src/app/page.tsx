@@ -58,12 +58,21 @@ export default function Home() {
       })()
     : sortedProducts;
 
-  const newArrivals = sortedProducts.filter(p => {
+  let newArrivals = sortedProducts.filter(p => {
     if (!p.createdAt) return false;
     const diffTime = Math.abs(new Date().getTime() - new Date(p.createdAt).getTime());
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
     return diffDays <= 30; // Increased to 30 days
   });
+
+  // Fallback: If no products were added in the last 30 days, show the 8 most recently created products
+  if (newArrivals.length === 0 && sortedProducts.length > 0) {
+    newArrivals = [...sortedProducts]
+      .filter(p => p.createdAt)
+      .sort((a, b) => new Date(b.createdAt!).getTime() - new Date(a.createdAt!).getTime())
+      .slice(0, 8);
+  }
+
   const showNewArrivals = newArrivals.length > 0 && settings.newBadgeEnabled;
 
 
