@@ -198,7 +198,7 @@ function PaymentModal({
         },
         body: JSON.stringify({
           amount: product.price,
-          receipt: `buynow_${product.id || Date.now()}`,
+          receipt: `bn_${Date.now()}`,
         }),
       });
 
