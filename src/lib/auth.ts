@@ -19,7 +19,8 @@ export async function getAuthUserId(request: Request): Promise<string | null> {
       secretKey: process.env.CLERK_SECRET_KEY!,
     })
     return payload.sub ?? null
-  } catch {
+  } catch (error) {
+    console.error("getAuthUserId: Clerk token verification failed:", error);
     return null
   }
 }
@@ -39,7 +40,8 @@ export async function getAuthPayload(request: Request): Promise<Record<string, a
       secretKey: process.env.CLERK_SECRET_KEY!,
     })
     return payload as Record<string, any>
-  } catch {
+  } catch (error) {
+    console.error("getAuthPayload: Clerk token verification failed:", error);
     return null
   }
 }
