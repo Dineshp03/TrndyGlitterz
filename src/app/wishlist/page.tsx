@@ -17,6 +17,12 @@ export default function WishlistPage() {
   useEffect(() => {
     setMounted(true);
     syncWithInitial();
+    // Force scroll to top to prevent mobile browsers from opening from the footer due to initial layout height changes
+    window.scrollTo(0, 0);
+    const timer = setTimeout(() => {
+      window.scrollTo(0, 0);
+    }, 100);
+    return () => clearTimeout(timer);
   }, [syncWithInitial]);
 
   useEffect(() => {
@@ -29,7 +35,9 @@ export default function WishlistPage() {
     return products.filter((p) => items.includes(p.id));
   }, [products, items]);
 
-  if (!mounted) return null;
+  if (!mounted) {
+    return <div className="min-h-screen bg-[#0A0A0A]" />;
+  }
 
   return (
     <div className="min-h-screen bg-[#0A0A0A] text-white selection:bg-dustyrose/30">

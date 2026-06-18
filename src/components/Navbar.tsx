@@ -30,9 +30,6 @@ const MENU_CATEGORIES = [
   { label: "Bracelets", param: "Bracelets" },
   { label: "Finger Rings", param: "Finger Rings" },
   { label: "Hair Accessories", param: "Hair Accessories" },
-  { label: "Chains", param: "Chains" },
-  { label: "Rings", param: "Rings" },
-  { label: "Bands", param: "Bands" },
   {
     label: "Price Based",
     items: [
@@ -57,9 +54,6 @@ const CATEGORY_MAP: Record<string, string> = {
   "Bracelets": "Bracelets",
   "Finger Rings": "Finger Rings",
   "Hair Accessories": "Hair Accessories",
-  "Chains": "Chains",
-  "Rings": "Rings",
-  "Bands": "Bands",
   "Xuping Earrings": "Xuping Earrings",
   "Xuping Neckpiece": "Xuping Neckpiece",
   "Xuping Bracelets": "Xuping Bracelets",

@@ -17,6 +17,7 @@ export async function getAuthUserId(request: Request): Promise<string | null> {
   try {
     const payload = await verifyToken(token, {
       secretKey: process.env.CLERK_SECRET_KEY!,
+      clockSkewInMs: 60000,
     })
     return payload.sub ?? null
   } catch (error) {
@@ -38,6 +39,7 @@ export async function getAuthPayload(request: Request): Promise<Record<string, a
   try {
     const payload = await verifyToken(token, {
       secretKey: process.env.CLERK_SECRET_KEY!,
+      clockSkewInMs: 60000,
     })
     return payload as Record<string, any>
   } catch (error) {

@@ -637,9 +637,9 @@ export const Testimonials = () => {
         </motion.div>
 
         <div className="flex justify-center gap-6 mt-16 [mask-image:linear-gradient(to_bottom,transparent,black_25%,black_75%,transparent)] h-[650px] overflow-hidden">
-          <TestimonialsColumn testimonials={firstColumn} duration={20} />
-          <TestimonialsColumn testimonials={secondColumn} className="hidden md:block" duration={25} />
-          <TestimonialsColumn testimonials={thirdColumn} className="hidden lg:block" duration={22} />
+          <TestimonialsColumn testimonials={firstColumn} duration={50} />
+          <TestimonialsColumn testimonials={secondColumn} className="hidden md:block" duration={60} />
+          <TestimonialsColumn testimonials={thirdColumn} className="hidden lg:block" duration={55} />
         </div>
       </div>
     </section>

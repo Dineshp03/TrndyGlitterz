@@ -92,6 +92,32 @@ export default function RootLayout({
           src="https://checkout.razorpay.com/v1/checkout.js"
           strategy="beforeInteractive"
         />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              // Suppress browser extension errors (e.g. MetaMask, password managers, adblockers) 
+              // from triggering Next.js runtime error overlays in development mode.
+              if (typeof window !== 'undefined') {
+                window.addEventListener('error', (event) => {
+                  if (event.filename && (event.filename.includes('chrome-extension') || event.filename.includes('moz-extension'))) {
+                    event.stopImmediatePropagation();
+                  }
+                }, true);
+                window.addEventListener('unhandledrejection', (event) => {
+                  const reason = event.reason;
+                  const stack = reason && typeof reason === 'object' && 'stack' in reason ? reason.stack : '';
+                  const message = reason && typeof reason === 'object' && 'message' in reason ? reason.message : '';
+                  if (
+                    (typeof stack === 'string' && (stack.includes('chrome-extension') || stack.includes('moz-extension'))) ||
+                    (typeof message === 'string' && (message.includes('MetaMask') || message.includes('metamask')))
+                  ) {
+                    event.stopImmediatePropagation();
+                  }
+                }, true);
+              }
+            `
+          }}
+        />
       </head>
       <body
         className={`${outfit.variable} ${cormorant.variable} ${bebas.variable} font-sans antialiased bg-alabaster text-obsidian min-h-screen flex flex-col relative transition-colors duration-500`}

@@ -79,10 +79,18 @@ export default function Home() {
   useEffect(() => {
     setMounted(true);
     syncWithInitial();
+    // Force scroll to top to prevent mobile browsers from opening from the footer due to initial layout height changes
+    window.scrollTo(0, 0);
+    const timer = setTimeout(() => {
+      window.scrollTo(0, 0);
+    }, 100);
+    return () => clearTimeout(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   
-  if (!mounted) return null;
+  if (!mounted) {
+    return <div className="min-h-screen bg-alabaster" />;
+  }
 
   return (
     <div className="flex flex-col min-h-screen bg-alabaster">

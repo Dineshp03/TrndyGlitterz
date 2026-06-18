@@ -10,7 +10,7 @@ import MobileProductGallery from "@/components/MobileProductGallery";
 import { useCart } from "@/hooks/useCart";
 import { useOrderStore } from "@/store/useOrderStore";
 import { useSettingsStore } from "@/store/useSettingsStore";
-import { CheckCircle, X, ChevronRight, ChevronLeft, Loader2, ShoppingBag, CreditCard, ShieldCheck, RotateCcw, Ban, Truck, Sparkles, Smile, Shield } from "lucide-react";
+import { CheckCircle, X, ChevronRight, ChevronLeft, Loader2, ShoppingBag, CreditCard, ShieldCheck, RotateCcw, Ban, Truck, Sparkles, Smile, Shield, MessageSquare } from "lucide-react";
 
 /* ------------------------------------------------------------------ */
 /*  MagneticButton — cursor-tracking magnetic CTA button               */
@@ -384,7 +384,80 @@ export default function ProductDetailClient({ initialProduct }: { initialProduct
   const { products } = useProductStore();
   const product = initialProduct || products.find((p) => p.id === id);
   const router = useRouter();
-  const { isSignedIn } = useUser();
+  const { isSignedIn, user } = useUser();
+  const { getToken } = useAuth();
+
+  // Reviews state
+  const [reviews, setReviews] = useState<any[]>([]);
+  const [summary, setSummary] = useState<any>({
+    count: 0,
+    average: 0,
+    breakdown: { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 }
+  });
+  const [loadingReviews, setLoadingReviews] = useState(true);
+  const [rating, setRating] = useState(5);
+  const [comment, setComment] = useState("");
+  const [submittingReview, setSubmittingReview] = useState(false);
+  const [hoverRating, setHoverRating] = useState<number | null>(null);
+
+  const fetchReviews = useCallback(async () => {
+    if (!product?.id) return;
+    try {
+      const res = await fetch(`/api/products/${product.id}/reviews`);
+      if (res.ok) {
+        const data = await res.json();
+        setReviews(data.reviews || []);
+        setSummary(data.summary || { count: 0, average: 0, breakdown: { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 } });
+      }
+    } catch (err) {
+      console.error("Error fetching reviews:", err);
+    } finally {
+      setLoadingReviews(false);
+    }
+  }, [product?.id]);
+
+  useEffect(() => {
+    fetchReviews();
+  }, [fetchReviews]);
+
+  const handleSubmitReview = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!comment.trim() || !product?.id) return;
+
+    setSubmittingReview(true);
+    try {
+      const token = await getToken();
+      const response = await fetch(`/api/products/${product.id}/reviews`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({
+          rating,
+          comment: comment.trim(),
+          user_name: user?.fullName || user?.primaryEmailAddress?.emailAddress?.split("@")[0] || "Verified Customer",
+          user_email: user?.primaryEmailAddress?.emailAddress || "",
+          clerk_id: user?.id,
+        }),
+      });
+
+      if (!response.ok) {
+        const err = await response.json();
+        alert(err.error || "Failed to submit review");
+        return;
+      }
+
+      setComment("");
+      setRating(5);
+      fetchReviews();
+    } catch (err) {
+      console.error("Error submitting review:", err);
+      alert("Something went wrong. Please try again.");
+    } finally {
+      setSubmittingReview(false);
+    }
+  };
 
   const images = (product?.images && product.images.length > 0) 
     ? product.images 
@@ -453,7 +526,7 @@ export default function ProductDetailClient({ initialProduct }: { initialProduct
         {/* Image Section */}
         <div className="w-full md:w-[50%] flex flex-col gap-6">
           <div 
-            className="w-full aspect-[4/5] max-h-[600px] relative overflow-hidden rounded-3xl bg-[#F7F7F7] cursor-zoom-in group shadow-sm ring-1 ring-black/10 transition-all duration-500 hover:ring-obsidian/20"
+            className="w-full aspect-square md:aspect-[4/5] max-h-[340px] md:max-h-[600px] max-w-[340px] md:max-w-none mx-auto relative overflow-hidden rounded-3xl bg-[#F7F7F7] cursor-zoom-in group shadow-sm ring-1 ring-black/10 transition-all duration-500 hover:ring-obsidian/20"
             onClick={() => setShowLightbox(true)}
           >
             <Image 
@@ -472,7 +545,7 @@ export default function ProductDetailClient({ initialProduct }: { initialProduct
 
           {/* Thumbnails */}
           {images.length > 1 && (
-            <div className="flex gap-4 px-2 overflow-x-auto no-scrollbar">
+            <div className="flex gap-4 px-2 overflow-x-auto no-scrollbar max-w-[340px] md:max-w-none mx-auto w-full">
               {images.map((img, idx) => (
                 <button 
                   key={idx}
@@ -558,6 +631,202 @@ export default function ProductDetailClient({ initialProduct }: { initialProduct
               </div>
             </div>
           </div>
+        </div>
+      </div>
+
+      {/* ── Reviews Section ── */}
+      <div className="h-px bg-obsidian/10 my-16 container mx-auto" />
+      
+      <div className="container mx-auto max-w-5xl pb-16 px-2">
+        <h2 className="text-3xl font-serif text-obsidian mb-8 flex items-center gap-3">
+          <MessageSquare className="w-6 h-6 text-dustyrose" strokeWidth={1.5} />
+          Customer Reviews
+        </h2>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 items-start">
+          
+          {/* Summary Column */}
+          <div className="lg:col-span-1 bg-[#111111]/5 border border-obsidian/10 rounded-3xl p-8 space-y-6">
+            <div>
+              <p className="text-[10px] font-sans uppercase tracking-[0.2em] text-dustyrose mb-2">Rating Summary</p>
+              <div className="flex items-baseline gap-2">
+                <span className="text-5xl font-sans font-bold text-obsidian">{summary.average}</span>
+                <span className="text-sm font-sans text-obsidian/40">/ 5</span>
+              </div>
+              <div className="flex items-center gap-2 mt-2">
+                <div className="flex items-center gap-0.5">
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <span 
+                      key={star} 
+                      className={`text-lg ${star <= Math.round(summary.average) ? 'text-[#D4AF37]' : 'text-obsidian/20'}`}
+                    >
+                      ★
+                    </span>
+                  ))}
+                </div>
+                <span className="text-xs text-obsidian/50">({summary.count} {summary.count === 1 ? 'review' : 'reviews'})</span>
+              </div>
+            </div>
+
+            {/* Breakdown bars */}
+            <div className="space-y-3 pt-4 border-t border-obsidian/10">
+              {[5, 4, 3, 2, 1].map((stars) => {
+                const count = summary.breakdown?.[stars] || 0;
+                const pct = summary.count > 0 ? Math.round((count / summary.count) * 100) : 0;
+                return (
+                  <div key={stars} className="flex items-center gap-3 text-xs">
+                    <span className="w-10 text-obsidian/60 text-[11px] font-sans shrink-0 font-medium">{stars} Star</span>
+                    <div className="flex-1 h-1.5 bg-obsidian/5 rounded-full overflow-hidden">
+                      <div 
+                        className="h-full bg-gradient-to-r from-[#BF953F] to-[#FCF6BA] rounded-full transition-all duration-500"
+                        style={{ width: `${pct}%` }}
+                      />
+                    </div>
+                    <span className="w-8 text-right text-obsidian/40 font-mono text-[10px] shrink-0">{pct}%</span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Reviews List & Write Form Column */}
+          <div className="lg:col-span-2 space-y-8">
+            
+            {/* Submit review form */}
+            <div className="bg-[#111111]/5 border border-obsidian/10 rounded-3xl p-8">
+              <h3 className="text-lg font-serif text-obsidian mb-4">Share Your Thoughts</h3>
+              
+              {isSignedIn ? (
+                <form onSubmit={handleSubmitReview} className="space-y-5">
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-[10px] font-sans uppercase tracking-widest text-obsidian/50">Your Rating</label>
+                    <div className="flex items-center gap-1.5">
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <button
+                          key={star}
+                          type="button"
+                          onClick={() => setRating(star)}
+                          onMouseEnter={() => setHoverRating(star)}
+                          onMouseLeave={() => setHoverRating(null)}
+                          className="text-2xl transition-all duration-150 transform hover:scale-110 active:scale-90"
+                        >
+                          <span 
+                            className={star <= (hoverRating ?? rating) ? "text-[#D4AF37]" : "text-obsidian/20"}
+                          >
+                            ★
+                          </span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col gap-1.5">
+                    <label htmlFor="review-comment" className="text-[10px] font-sans uppercase tracking-widest text-obsidian/50">Your Review</label>
+                    <textarea
+                      id="review-comment"
+                      value={comment}
+                      onChange={(e) => setComment(e.target.value)}
+                      placeholder="What did you like or dislike about this product? How is the quality?"
+                      rows={4}
+                      className="w-full bg-transparent border border-obsidian/10 focus:border-obsidian rounded-2xl p-4 text-sm font-sans outline-none resize-none transition-colors"
+                      required
+                    ></textarea>
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={submittingReview || !comment.trim()}
+                    className="bg-gradient-to-r from-[#BF953F] via-[#FCF6BA] to-[#B38728] text-[#111] font-bold py-3.5 px-8 rounded-xl font-sans uppercase text-[11px] tracking-widest hover:scale-[1.02] active:scale-98 transition-all disabled:opacity-40 disabled:pointer-events-none shadow-md shadow-[#D4AF37]/10"
+                  >
+                    {submittingReview ? "Submitting..." : "Submit Review"}
+                  </button>
+                </form>
+              ) : (
+                <div className="text-center py-6 px-4 bg-obsidian/5 rounded-2xl border border-obsidian/5 flex flex-col items-center justify-center space-y-4">
+                  <p className="text-sm text-obsidian/60 font-sans font-light">
+                    Only registered customers can leave a review.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => router.push("/login")}
+                    className="px-6 py-2.5 bg-obsidian text-alabaster text-xs font-mono uppercase tracking-widest hover:bg-dustyrose transition-colors rounded-full"
+                  >
+                    Login to Write a Review
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {/* List of reviews */}
+            <div className="space-y-6">
+              <h3 className="text-lg font-serif text-obsidian border-b border-obsidian/10 pb-4">
+                User Reviews ({reviews.length})
+              </h3>
+
+              {loadingReviews ? (
+                <div className="flex items-center gap-2 text-obsidian/50 py-4 font-sans text-sm font-light">
+                  <Loader2 className="w-4 h-4 animate-spin text-dustyrose" /> Loading reviews...
+                </div>
+              ) : reviews.length === 0 ? (
+                <p className="text-sm font-light text-obsidian/50 italic py-4">
+                  No reviews yet. Be the first to review this product!
+                </p>
+              ) : (
+                <div className="divide-y divide-obsidian/10">
+                  {reviews.map((rev) => {
+                    const initials = rev.user_name
+                      ? rev.user_name.split(" ").map((n: string) => n[0]).join("").toUpperCase().slice(0, 2)
+                      : "U";
+                    const formattedDate = new Date(rev.created_at).toLocaleDateString("en-US", {
+                      year: "numeric",
+                      month: "long",
+                      day: "numeric",
+                    });
+
+                    return (
+                      <div key={rev.id} className="py-6 first:pt-0 last:pb-0 flex gap-4 items-start">
+                        {/* Avatar */}
+                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#BF953F]/20 to-[#B38728]/10 border border-[#D4AF37]/20 flex items-center justify-center text-xs font-sans font-bold text-dustyrose uppercase shrink-0">
+                          {initials}
+                        </div>
+
+                        {/* Review Content */}
+                        <div className="flex-1 space-y-1.5">
+                          <div className="flex flex-wrap items-center justify-between gap-2">
+                            <div className="flex items-center gap-2">
+                              <span className="font-sans font-semibold text-sm text-obsidian">{rev.user_name}</span>
+                              <span className="text-[9px] font-mono uppercase bg-green-500/10 text-green-700 px-2 py-0.5 rounded-full border border-green-500/20 font-semibold tracking-wider">
+                                Verified Buyer
+                              </span>
+                            </div>
+                            <span className="text-[10px] font-mono text-obsidian/40">{formattedDate}</span>
+                          </div>
+
+                          {/* Stars */}
+                          <div className="flex items-center gap-0.5">
+                            {[1, 2, 3, 4, 5].map((star) => (
+                              <span 
+                                key={star} 
+                                className={`text-sm ${star <= rev.rating ? 'text-[#D4AF37]' : 'text-obsidian/20'}`}
+                              >
+                                ★
+                              </span>
+                            ))}
+                          </div>
+
+                          <p className="text-sm font-sans font-light text-obsidian/80 leading-relaxed pt-1">
+                            {rev.comment}
+                          </p>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
+          </div>
+
         </div>
       </div>
     </div>
