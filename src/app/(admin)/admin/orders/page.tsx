@@ -297,6 +297,25 @@ export default function OrdersPage() {
                 </div>
               </div>
 
+              {/* Razorpay Details if payment method is razorpay */}
+              {selectedOrder.payment_method === "razorpay" && (selectedOrder.razorpay_payment_id || selectedOrder.razorpay_order_id) && (
+                <div className="bg-[#FAFAF8] rounded-xl border border-[#F0EDE8] p-4 space-y-2">
+                  <p className="text-[9px] font-mono text-[#bbb] uppercase tracking-widest mb-1">Razorpay Transaction Details</p>
+                  {selectedOrder.razorpay_order_id && (
+                    <div className="flex justify-between text-xs">
+                      <span className="text-[#888] font-light">Order ID:</span>
+                      <span className="font-mono text-[#2C2C2C] select-all font-medium">{selectedOrder.razorpay_order_id}</span>
+                    </div>
+                  )}
+                  {selectedOrder.razorpay_payment_id && (
+                    <div className="flex justify-between text-xs">
+                      <span className="text-[#888] font-light">Payment ID:</span>
+                      <span className="font-mono text-[#2C2C2C] select-all font-medium">{selectedOrder.razorpay_payment_id}</span>
+                    </div>
+                  )}
+                </div>
+              )}
+
               {/* Items */}
               {selectedOrder.items && selectedOrder.items.length > 0 && (
                 <div className="border border-[#F0EDE8] rounded-xl overflow-hidden">

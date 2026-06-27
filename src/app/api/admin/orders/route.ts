@@ -55,35 +55,47 @@ export async function DELETE(request: NextRequest) {
     const { searchParams } = new URL(request.url)
     const id = searchParams.get('id')
 
-    if (!id) {
-      return badRequestResponse('Order ID is required')
-    }
-
     const supabase = createAdminSupabaseClient()
 
-    // 1. Delete linked order items first
-    const { error: itemsError } = await supabase
-      .from('order_items')
-      .delete()
-      .eq('order_id', id)
+    if (id) {
+      // 1. Delete linked order items first
+      const { error: itemsError } = await supabase
+        .from('order_items')
+        .delete()
+        .eq('order_id', id)
 
-    if (itemsError) {
-      console.error('[DELETE /api/admin/orders] items error:', itemsError)
-      throw itemsError
+      if (itemsError) {
+        console.error('[DELETE /api/admin/orders] items error:', itemsError)
+        throw itemsError
+      }
+
+      // 2. Delete the order itself
+      const { error: orderError } = await supabase
+        .from('orders')
+        .delete()
+        .eq('id', id)
+
+      if (orderError) {
+        console.error('[DELETE /api/admin/orders] order error:', orderError)
+        throw orderError
+      }
+
+      return jsonResponse({ success: true, message: `Order ${id} deleted successfully` })
+    } else {
+      // Delete all orders. Supabase requires a filter, so we filter by id not equaling a dummy value.
+      // Cascading delete is set up in Supabase on order_items table, so items are deleted automatically.
+      const { error: orderError } = await supabase
+        .from('orders')
+        .delete()
+        .neq('id', '00000000-0000-0000-0000-000000000000')
+
+      if (orderError) {
+        console.error('[DELETE /api/admin/orders] all orders error:', orderError)
+        throw orderError
+      }
+
+      return jsonResponse({ success: true, message: 'All orders deleted successfully' })
     }
-
-    // 2. Delete the order itself
-    const { error: orderError } = await supabase
-      .from('orders')
-      .delete()
-      .eq('id', id)
-
-    if (orderError) {
-      console.error('[DELETE /api/admin/orders] order error:', orderError)
-      throw orderError
-    }
-
-    return jsonResponse({ success: true, message: `Order ${id} deleted successfully` })
   } catch (err: any) {
     console.error('[DELETE /api/admin/orders] unexpected error:', err)
     return serverErrorResponse(err.message)

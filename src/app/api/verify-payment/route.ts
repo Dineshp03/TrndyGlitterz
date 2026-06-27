@@ -43,7 +43,11 @@ export async function POST(req: NextRequest) {
       .update(`${razorpay_order_id}|${razorpay_payment_id}`)
       .digest("hex");
 
-    // Compare signatures
+    // Compare signatures safely without throwing if lengths differ
+    if (!razorpay_signature || generatedSignature.length !== razorpay_signature.length) {
+      return badRequestResponse("Payment verification failed — invalid signature length");
+    }
+
     const isValid = crypto.timingSafeEqual(
       Buffer.from(generatedSignature),
       Buffer.from(razorpay_signature)

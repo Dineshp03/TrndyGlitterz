@@ -262,6 +262,8 @@ function PaymentModal({
               pincode: details.pincode,
               total: product.price,
               payment_method: "razorpay",
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_order_id: response.razorpay_order_id,
               items: [{
                 product_id: product.id,
                 product_name: product.name,

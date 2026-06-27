@@ -41,6 +41,8 @@ export async function GET(req: NextRequest) {
       state: order.state,
       pincode: order.pincode,
       payment_method: order.payment_method,
+      razorpay_payment_id: order.razorpay_payment_id,
+      razorpay_order_id: order.razorpay_order_id,
       items: (order.order_items || []).map((item: any) => ({
         id: item.id,
         product_name: item.product_name,
@@ -78,6 +80,8 @@ export async function POST(req: NextRequest) {
       total,
       notes,
       payment_method,
+      razorpay_payment_id,
+      razorpay_order_id,
       items,
     } = body;
 
@@ -103,6 +107,8 @@ export async function POST(req: NextRequest) {
         total,
         notes,
         payment_method: payment_method || 'cod',
+        razorpay_payment_id,
+        razorpay_order_id,
         status: "pending",
       })
       .select()

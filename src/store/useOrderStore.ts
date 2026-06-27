@@ -25,6 +25,8 @@ export interface GlobalOrder {
   pincode?: string;
   total: number;
   payment_method?: string;
+  razorpay_payment_id?: string;
+  razorpay_order_id?: string;
   status: "pending" | "processing" | "shipped" | "delivered" | "cancelled";
   notes?: string;
   created_at: string;
@@ -50,6 +52,8 @@ export interface PlaceOrderPayload {
   total: number;
   notes?: string;
   payment_method?: string;
+  razorpay_payment_id?: string;
+  razorpay_order_id?: string;
   items: Omit<OrderItem, "id">[];
 }
 
