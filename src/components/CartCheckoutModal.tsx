@@ -162,12 +162,15 @@ export default function CartCheckoutModal({ onClose }: { onClose: () => void }) 
           razorpay_signature: string;
         }) => {
           try {
+            // Get a fresh Clerk token since the previous one may have expired during the payment process
+            const freshToken = await getToken();
+
             // Step 3: Verify payment signature
             const verifyRes = await fetch("/api/verify-payment", {
               method: "POST",
               headers: {
                 "Content-Type": "application/json",
-                ...(token ? { Authorization: `Bearer ${token}` } : {}),
+                ...(freshToken ? { Authorization: `Bearer ${freshToken}` } : {}),
               },
               body: JSON.stringify({
                 razorpay_order_id: response.razorpay_order_id,
@@ -204,7 +207,7 @@ export default function CartCheckoutModal({ onClose }: { onClose: () => void }) 
               }))
             };
 
-            const result = await placeOrder(payload, token);
+            const result = await placeOrder(payload, freshToken);
 
             if (result.success) {
               const { newOrdersNotif } = useSettingsStore.getState();

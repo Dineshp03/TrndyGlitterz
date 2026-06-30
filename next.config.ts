@@ -14,9 +14,7 @@ const nextConfig: NextConfig = {
       }
     ],
   },
-  devIndicators: {
-    appIsrStatus: false,
-  },
+  devIndicators: false,
 };
 
 export default nextConfig;
