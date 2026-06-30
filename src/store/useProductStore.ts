@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { Product } from "@/data/products";
+import { Product, products as initialProducts } from "@/data/products";
 import { getSupabaseClient } from "@/lib/supabase";
 
 interface ProductState {
@@ -17,7 +17,7 @@ interface ProductState {
 }
 
 export const useProductStore = create<ProductState>((set, get) => ({
-  products: [],
+  products: initialProducts,
   categories: [],
   isLoading: false,
 
