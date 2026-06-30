@@ -115,7 +115,7 @@ export async function POST(req: NextRequest) {
     let finalOrderId: string;
 
     if (orderError) {
-      // Fallback: direct insert via PostgREST (schema cache may have refreshed by now)
+      // Fallback: direct insert WITHOUT razorpay columns (bypasses schema cache issue)
       console.warn("RPC failed, falling back to direct insert:", orderError.message);
       const { data: fallbackOrder, error: fallbackError } = await supabase
         .from("orders")
@@ -131,8 +131,6 @@ export async function POST(req: NextRequest) {
           total,
           notes,
           payment_method: payment_method || "cod",
-          razorpay_payment_id,
-          razorpay_order_id,
           status: "pending",
         })
         .select("id")
@@ -143,6 +141,15 @@ export async function POST(req: NextRequest) {
         return serverErrorResponse(fallbackError.message);
       }
       finalOrderId = fallbackOrder.id;
+
+      // Now update the razorpay fields via raw SQL (bypasses schema cache)
+      if (razorpay_payment_id || razorpay_order_id) {
+        await supabase.rpc("update_order_razorpay", {
+          p_order_id: finalOrderId,
+          p_razorpay_payment_id: razorpay_payment_id ?? null,
+          p_razorpay_order_id: razorpay_order_id ?? null,
+        });
+      }
     } else {
       finalOrderId = orderId;
     }
