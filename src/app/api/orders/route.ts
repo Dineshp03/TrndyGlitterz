@@ -92,36 +92,64 @@ export async function POST(req: NextRequest) {
 
     const supabase = createAdminSupabaseClient();
 
-    // 1. Insert the order
-    const { data: order, error: orderError } = await supabase
-      .from("orders")
-      .insert({
-        clerk_user_id: userId,
-        customer_name,
-        customer_email,
-        customer_phone,
-        address,
-        city,
-        state,
-        pincode,
-        total,
-        notes,
-        payment_method: payment_method || 'cod',
-        razorpay_payment_id,
-        razorpay_order_id,
-        status: "pending",
-      })
-      .select()
-      .single();
+    // 1. Insert the order using raw SQL to bypass PostgREST schema cache
+    const { data: orderId, error: orderError } = await supabase.rpc(
+      "create_order_with_razorpay",
+      {
+        p_clerk_user_id: userId,
+        p_customer_name: customer_name,
+        p_customer_email: customer_email,
+        p_customer_phone: customer_phone ?? null,
+        p_address: address,
+        p_city: city ?? null,
+        p_state: state ?? null,
+        p_pincode: pincode ?? null,
+        p_total: total,
+        p_notes: notes ?? null,
+        p_payment_method: payment_method ?? "cod",
+        p_razorpay_payment_id: razorpay_payment_id ?? null,
+        p_razorpay_order_id: razorpay_order_id ?? null,
+      }
+    );
+
+    let finalOrderId: string;
 
     if (orderError) {
-      console.error("Order insert error:", orderError);
-      return serverErrorResponse(orderError.message);
+      // Fallback: direct insert via PostgREST (schema cache may have refreshed by now)
+      console.warn("RPC failed, falling back to direct insert:", orderError.message);
+      const { data: fallbackOrder, error: fallbackError } = await supabase
+        .from("orders")
+        .insert({
+          clerk_user_id: userId,
+          customer_name,
+          customer_email,
+          customer_phone,
+          address,
+          city,
+          state,
+          pincode,
+          total,
+          notes,
+          payment_method: payment_method || "cod",
+          razorpay_payment_id,
+          razorpay_order_id,
+          status: "pending",
+        })
+        .select("id")
+        .single();
+
+      if (fallbackError) {
+        console.error("Order insert error:", fallbackError);
+        return serverErrorResponse(fallbackError.message);
+      }
+      finalOrderId = fallbackOrder.id;
+    } else {
+      finalOrderId = orderId;
     }
 
     // 2. Insert order items
     const orderItems = items.map((item: any) => ({
-      order_id: order.id,
+      order_id: finalOrderId,
       product_id: item.product_id,
       product_name: item.product_name,
       product_image: item.product_image,
@@ -133,19 +161,17 @@ export async function POST(req: NextRequest) {
 
     if (itemsError) {
       console.error("Order items insert error:", itemsError);
-      // We don't roll back the order here to keep the record, 
-      // but in a production app you might want a transaction.
       return serverErrorResponse("Order created but items failed to save.");
     }
 
-    // 3. Clear the user's cart (optional but recommended)
+    // 3. Clear the user's cart
     try {
       await supabase.from("cart_items").delete().eq("clerk_user_id", userId);
     } catch (cartError) {
       console.error("Failed to clear cart after order:", cartError);
     }
 
-    return jsonResponse({ success: true, orderId: order.id }, 201);
+    return jsonResponse({ success: true, orderId: finalOrderId }, 201);
   } catch (error: any) {
     console.error("API error placing order:", error);
     return serverErrorResponse(error.message);
