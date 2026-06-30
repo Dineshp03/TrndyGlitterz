@@ -298,7 +298,7 @@ export default function ProductsPage() {
         {filtered.map((product) => (
           <div
             key={product.id}
-            className="bg-white rounded-2xl border border-[#F0EDE8] overflow-hidden group hover:shadow-md hover:border-[#F5B8C8]/60 transition-all duration-300"
+            className="bg-white rounded-2xl border border-[#F0EDE8] overflow-hidden group hover:shadow-md hover:border-[#F5B8C8]/60 transition-all duration-300 flex flex-col"
           >
             <div className="aspect-square relative overflow-hidden bg-[#FAFAF8]">
               {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -307,26 +307,12 @@ export default function ProductsPage() {
                 alt={product.name}
                 className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
               />
-              <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-2">
-                <button 
-                  onClick={() => handleEdit(product)}
-                  className="w-9 h-9 rounded-full bg-white flex items-center justify-center hover:bg-[#F5B8C8] hover:text-white transition-colors shadow-sm"
-                >
-                  <Edit2 size={14} className="text-[#555]" />
-                </button>
-                <button 
-                  onClick={() => handleDelete(product)}
-                  className="w-9 h-9 rounded-full bg-white flex items-center justify-center hover:bg-red-500 hover:text-white transition-colors shadow-sm group/delete"
-                >
-                  <Trash2 size={14} className="text-red-500 group-hover/delete:text-white" />
-                </button>
-              </div>
             </div>
 
-            <div className="p-3">
+            <div className="p-3 flex flex-col flex-1">
               <p className="text-[9px] font-mono text-[#E8809A] uppercase tracking-wider mb-1">{product.category}</p>
               <p className="text-xs font-medium text-[#2C2C2C] truncate leading-tight">{product.name}</p>
-              <div className="flex items-center justify-between mt-2">
+              <div className="flex items-center justify-between mt-2 mb-3">
                 <div>
                    <span className="text-sm font-bold text-[#2C2C2C]">₹{product.price.toFixed(0)}</span>
                    <p className="text-[9px] text-[#bbb] mt-0.5">Stock: {product.stock || 0}</p>
@@ -338,6 +324,21 @@ export default function ProductsPage() {
                 }`}>
                   {(product.stock ?? 0) > 0 ? "Active" : "Inactive"}
                 </span>
+              </div>
+              
+              <div className="mt-auto pt-3 border-t border-[#F0EDE8] flex items-center justify-between gap-2">
+                <button 
+                  onClick={() => handleEdit(product)}
+                  className="flex-1 flex items-center justify-center gap-1.5 py-1.5 text-xs font-medium text-[#555] bg-gray-50 hover:bg-[#F5B8C8] hover:text-white rounded-lg transition-colors"
+                >
+                  <Edit2 size={12} /> Edit
+                </button>
+                <button 
+                  onClick={() => handleDelete(product)}
+                  className="flex-1 flex items-center justify-center gap-1.5 py-1.5 text-xs font-medium text-[#555] bg-gray-50 hover:bg-red-500 hover:text-white rounded-lg transition-colors"
+                >
+                  <Trash2 size={12} /> Delete
+                </button>
               </div>
             </div>
           </div>

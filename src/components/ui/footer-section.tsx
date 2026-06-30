@@ -80,26 +80,15 @@ function Footerdemo() {
             </nav>
           </div>
 
-          {/* ── Support ───────────────────────────────────── */}
+          {/* ── Important Links ────────────────────────────── */}
           <div>
-            <h4 className="text-[10px] font-sans uppercase tracking-[0.2em] text-obsidian/40 mb-6">Support</h4>
-            <address className="space-y-3 text-sm font-sans font-light not-italic text-obsidian/80">
-              <p>Concierge Service</p>
-              <p>Shipping &amp; Returns</p>
-              <p>Care Guide</p>
-              <p>FAQ</p>
-              <div className="pt-2 space-y-1">
-                <a 
-                  href="https://wa.me/919884110778?text=Hi%20Trendy%20Glitterz!%20I'm%20reaching%20out%20from%20the%20website%20regarding%20some%20of%20your%20jewelry%20products." 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="block text-[#25D366] hover:text-[#128C7E] transition-colors font-medium"
-                >
-                  WhatsApp: +91 9884110778
-                </a>
-                <p className="text-obsidian/50 text-[11px]">trendyglitterzz@gmail.com</p>
-              </div>
-            </address>
+            <h4 className="text-[10px] font-sans uppercase tracking-[0.2em] text-obsidian/40 mb-6">Important Links</h4>
+            <nav className="space-y-3 text-sm font-sans font-light">
+              <Link href="/terms" className="block transition-colors hover:text-dustyrose">Terms and Conditions</Link>
+              <Link href="/privacy-policy" className="block transition-colors hover:text-dustyrose">Privacy Policy</Link>
+              <Link href="/shipping-policy" className="block transition-colors hover:text-dustyrose">Shipping Policy</Link>
+              <Link href="/return-and-refund" className="block transition-colors hover:text-dustyrose">Return &amp; Refund Policy</Link>
+            </nav>
           </div>
 
           {/* ── Social + Theme Toggle ─────────────────────── */}
@@ -150,6 +139,19 @@ function Footerdemo() {
                   <TooltipContent><p>Connect with us on LinkedIn</p></TooltipContent>
                 </Tooltip>
               </TooltipProvider>
+            </div>
+
+            {/* Contact details */}
+            <div className="mb-6 space-y-1 text-sm font-sans font-light">
+              <a 
+                href="https://wa.me/919884110778?text=Hi%20Trendy%20Glitterz!%20I'm%20reaching%20out%20from%20the%20website%20regarding%20some%20of%20your%20jewelry%20products." 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="block text-[#25D366] hover:text-[#128C7E] transition-colors font-medium"
+              >
+                WhatsApp: +91 9884110778
+              </a>
+              <p className="text-obsidian/50 text-[11px]">trendyglitterzz@gmail.com</p>
             </div>
 
             {/* Dark / Light toggle — now drives site-wide theme */}

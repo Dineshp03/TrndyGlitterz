@@ -22,6 +22,7 @@ import {
   ChevronRight,
   Download,
   Trash2,
+  Edit2,
 } from "lucide-react";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -167,7 +168,7 @@ export default function AdminDashboard() {
     doc.line(14, 45, 196, 45);
     
     doc.setFont("helvetica", "bold");
-    doc.text(`Total Revenue: ₹${stats.totalRevenue.toLocaleString('en-IN')}`, 14, 55);
+    doc.text(`Total Revenue: Rs. ${stats.totalRevenue.toLocaleString('en-IN')}`, 14, 55);
     doc.text(`Total Orders: ${stats.totalOrders}`, 80, 55);
     doc.text(`Total Customers: ${stats.customers}`, 140, 55);
 
@@ -175,7 +176,7 @@ export default function AdminDashboard() {
     const tableData = orders.map(o => [
       o.id.substring(0, 8).toUpperCase(),
       o.customer_name || o.customer || 'Guest',
-      `₹${Number(o.total).toLocaleString('en-IN')}`,
+      `Rs. ${Number(o.total).toLocaleString('en-IN')}`,
       (o.status || 'pending').toUpperCase(),
       new Date(o.created_at || Date.now()).toLocaleDateString()
     ]);
@@ -441,10 +442,13 @@ export default function AdminDashboard() {
                     <p className="text-xs font-medium text-[#2C2C2C] truncate">{product.name}</p>
                     <p className="text-[10px] text-[#aaa]">{product.category}</p>
                   </div>
-                  <div className="text-right flex-shrink-0">
+                  <div className="text-right flex-shrink-0 mr-2">
                     <p className="text-xs font-bold text-[#2C2C2C]">{product.revenue}</p>
                     <p className="text-[10px] text-[#aaa]">{product.sold} sold</p>
                   </div>
+                  <Link href="/admin/products" className="p-1.5 text-[#aaa] hover:text-[#E8809A] hover:bg-[#F5B8C8]/10 rounded-lg transition-colors flex-shrink-0" title="Manage Product">
+                     <Edit2 size={14} />
+                  </Link>
                 </div>
               ))}
             </div>
