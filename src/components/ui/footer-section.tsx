@@ -172,9 +172,14 @@ function Footerdemo() {
 
         {/* ── Bottom bar ──────────────────────────────────── */}
         <div className="mt-16 flex flex-col items-center justify-between gap-4 border-t border-obsidian/10 pt-8 text-center md:flex-row">
-          <p className="text-[10px] font-sans uppercase tracking-[0.15em] text-obsidian/40">
-            &copy; {new Date().getFullYear()} TRENDY GLITTERZ. All rights reserved.
-          </p>
+          <div className="flex flex-col items-center md:items-start gap-1">
+            <p className="text-[10px] font-sans uppercase tracking-[0.15em] text-obsidian/40">
+              &copy; {new Date().getFullYear()} TRENDY GLITTERZ. All rights reserved.
+            </p>
+            <p className="text-[10px] font-sans uppercase tracking-[0.15em] text-obsidian/40">
+              Designed & Built by Dinesh | <a href="https://dinzi.dev" target="_blank" rel="noopener noreferrer" className="text-obsidian/60 hover:text-dustyrose transition-colors font-medium">DINZI.dev</a>
+            </p>
+          </div>
           <nav className="flex gap-6 text-[10px] font-sans uppercase tracking-[0.1em] text-obsidian/40">
             <Link href="/privacy-policy" className="transition-colors hover:text-dustyrose">Privacy Policy</Link>
             <Link href="/terms" className="transition-colors hover:text-dustyrose">Terms of Service</Link>
