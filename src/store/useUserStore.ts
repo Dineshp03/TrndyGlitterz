@@ -205,10 +205,11 @@ export const useUserStore = create<UserState>()(
         if (!user) return;
 
         try {
-          const { orders } = await fetchApi(`/api/orders/${user.clerkUserId}`, {}, token);
-          const mappedOrders = orders.map(mapDbOrderToOrder);
+          // /api/orders GET filters by the token's clerk_user_id automatically
+          const data = await fetchApi(`/api/orders`, {}, token);
+          const orders = (Array.isArray(data) ? data : []).map(mapDbOrderToOrder);
           set((state) => ({
-            user: state.user ? { ...state.user, orders: mappedOrders } : null,
+            user: state.user ? { ...state.user, orders } : null,
           }));
         } catch (error) {
           console.error("fetchOrders error:", error);

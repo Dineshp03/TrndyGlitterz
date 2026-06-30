@@ -1,11 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
-
-// Service role client — bypasses RLS
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+import { createAdminSupabaseClient } from "@/lib/supabase-server";
 
 // GET /api/wishlist?userId=xxx — Load wishlist
 export async function GET(request: NextRequest) {
@@ -17,10 +11,12 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "User ID is required" }, { status: 400 });
     }
 
-    const { data, error } = await supabaseAdmin
+    const supabase = createAdminSupabaseClient();
+
+    const { data, error } = await supabase
       .from("wishlist")
       .select("product_id")
-      .eq("clerk_id", userId);
+      .eq("clerk_user_id", userId);
 
     if (error) {
       console.error("loadWishlist API error:", error);
@@ -44,20 +40,25 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "User ID and Product ID are required" }, { status: 400 });
     }
 
+    const supabase = createAdminSupabaseClient();
+
     if (action === 'remove') {
-      const { error } = await supabaseAdmin
+      const { error } = await supabase
         .from("wishlist")
         .delete()
-        .eq("clerk_id", userId)
+        .eq("clerk_user_id", userId)
         .eq("product_id", productId);
 
       if (error) throw error;
       return NextResponse.json({ success: true, action: 'removed' });
     } else {
       // action === 'add'
-      const { error } = await supabaseAdmin
+      const { error } = await supabase
         .from("wishlist")
-        .upsert([{ clerk_id: userId, product_id: productId }], { onConflict: 'clerk_id,product_id' });
+        .upsert(
+          [{ clerk_user_id: userId, product_id: productId }],
+          { onConflict: 'clerk_user_id,product_id' }
+        );
 
       if (error) throw error;
       return NextResponse.json({ success: true, action: 'added' });

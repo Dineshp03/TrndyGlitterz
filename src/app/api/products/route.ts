@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 import { createAdminSupabaseClient } from "@/lib/supabase-server";
 import {
   getAuthPayload,
@@ -71,7 +71,7 @@ const isAdmin = async (request: NextRequest): Promise<boolean> => {
     return true;
   }
 
-  // 3. Fallback: check DB profiles table
+  // 4. Fallback: check DB profiles table
   try {
     const supabaseAdmin = createAdminSupabaseClient();
     const { data: profile } = await supabaseAdmin
@@ -89,6 +89,37 @@ const isAdmin = async (request: NextRequest): Promise<boolean> => {
   console.log(`[AUTH] Admin check failed — userId: ${userId}, email: ${tokenEmail}`);
   return false;
 };
+
+// GET /api/products — Fetch products (public, no auth required)
+export async function GET(request: NextRequest) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const category = searchParams.get("category");
+    const featured = searchParams.get("featured");
+    const search = searchParams.get("search");
+    const limit = searchParams.get("limit");
+
+    const supabase = createAdminSupabaseClient();
+    let query = supabase.from("products").select("*").order("created_at", { ascending: false });
+
+    if (category) query = query.eq("category", category);
+    if (featured === "true") query = query.eq("featured", true);
+    if (search) query = query.ilike("name", `%${search}%`);
+    if (limit) query = query.limit(parseInt(limit));
+
+    const { data, error } = await query;
+
+    if (error) {
+      console.error("GET /api/products error:", error);
+      return serverErrorResponse(error.message);
+    }
+
+    return jsonResponse({ products: data || [] });
+  } catch (err: any) {
+    console.error("GET /api/products route error:", err);
+    return serverErrorResponse(err.message || "Internal server error");
+  }
+}
 
 // POST /api/products — Add a new product
 export async function POST(request: NextRequest) {
