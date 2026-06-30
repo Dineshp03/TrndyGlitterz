@@ -143,7 +143,7 @@ export default function OrdersPage() {
                       <div className="min-w-0">
                         <p className="text-xs text-[#2C2C2C] font-semibold truncate">{order.customer_name || order.customer}</p>
                         {order.address && (
-                          <p className="text-[10px] text-[#aaa] truncate max-w-[200px]" title={order.address}>{order.address}</p>
+                          <p className="text-[10px] text-[#aaa] truncate max-w-[200px]" title={`${order.address}${order.city ? `, ${order.city}` : ""}${order.pincode ? ` - ${order.pincode}` : ""}`}>{order.address}{order.city ? `, ${order.city}` : ""}{order.pincode ? ` - ${order.pincode}` : ""}</p>
                         )}
                       </div>
                     </div>
@@ -211,7 +211,7 @@ export default function OrdersPage() {
                     📞 {order.customer_phone}
                   </a>
                 )}
-                {order.address && <p className="text-[10px] text-[#aaa] truncate">📍 {order.address}</p>}
+                {order.address && <p className="text-[10px] text-[#aaa] truncate">📍 {order.address}{order.city ? `, ${order.city}` : ""}{order.pincode ? ` - ${order.pincode}` : ""}</p>}
               </div>
               <div className="flex items-end justify-between mt-3 pt-3 border-t border-[#F0EDE8]">
                 <p className="text-[11px] text-[#888]">{order.product} <span className="text-[#ccc] ml-1">x{order.qty}</span></p>
@@ -275,7 +275,16 @@ export default function OrdersPage() {
               <div className="bg-[#FAFAF8] rounded-xl border border-[#F0EDE8] p-4">
                 <p className="text-[9px] font-mono text-[#bbb] uppercase tracking-widest mb-2">Delivery Address</p>
                 <p className="text-sm text-[#2C2C2C] leading-relaxed">
-                  {selectedOrder.address || <span className="text-[#ccc] italic">No address provided</span>}
+                  {selectedOrder.address ? (
+                    <>
+                      {selectedOrder.address}
+                      {selectedOrder.city ? `, ${selectedOrder.city}` : ""}
+                      {selectedOrder.state ? `, ${selectedOrder.state}` : ""}
+                      {selectedOrder.pincode ? ` - ${selectedOrder.pincode}` : ""}
+                    </>
+                  ) : (
+                    <span className="text-[#ccc] italic">No address provided</span>
+                  )}
                 </p>
               </div>
 
