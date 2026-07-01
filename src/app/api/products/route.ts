@@ -8,6 +8,7 @@ import {
   jsonResponse,
 } from "@/lib/auth";
 import { auth, clerkClient } from "@clerk/nextjs/server";
+import { revalidatePath } from "next/cache";
 
 // Hardcoded admin emails — must match layout.tsx
 const ADMIN_EMAILS = ["trendyglitterzz@gmail.com", "admin@trendyglitterz.com"];
@@ -153,6 +154,8 @@ export async function POST(request: NextRequest) {
       return serverErrorResponse(error.message);
     }
 
+    revalidatePath("/", "layout"); // Revalidate all pages to show new product instantly
+
     return jsonResponse({ product: data }, 201);
   } catch (err: any) {
     console.error("addProduct route error:", err);
@@ -196,6 +199,8 @@ export async function PUT(request: NextRequest) {
       console.error("updateProduct API error:", error);
       return serverErrorResponse(error.message);
     }
+
+    revalidatePath("/", "layout"); // Revalidate all pages to show updated price/details instantly
 
     return jsonResponse({ product: data });
   } catch (err: any) {
@@ -269,6 +274,8 @@ export async function DELETE(request: NextRequest) {
       console.error("deleteProduct API error:", error);
       return serverErrorResponse(error.message);
     }
+
+    revalidatePath("/", "layout"); // Revalidate all pages to remove deleted product instantly
 
     return jsonResponse({ success: true });
   } catch (err: any) {
