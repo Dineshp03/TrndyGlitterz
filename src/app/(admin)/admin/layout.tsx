@@ -24,6 +24,8 @@ import {
 import { useNotificationStore } from "@/store/useNotificationStore";
 import { useUser, useClerk } from "@clerk/nextjs";
 import { LogoutModal } from "@/components/ui/LogoutModal";
+import { getSupabaseClient } from "@/lib/supabase";
+import { toast } from "sonner";
 
 // ─── Nav Items ───────────────────────────────────────────────────────────────
 
@@ -350,6 +352,51 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
   const [isAuthorizing, setIsAuthorizing] = useState(true);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const { addNotification } = useNotificationStore();
+
+  // Handle Notifications and Realtime Orders
+  useEffect(() => {
+    if (!isSignedIn || !checkIsAdmin(user)) return;
+
+    // 1. Request Browser Notification Permission
+    if ("Notification" in window && Notification.permission !== "denied") {
+      Notification.requestPermission();
+    }
+
+    // 2. Setup Supabase Realtime for New Orders
+    const supabase = getSupabaseClient();
+    const channel = supabase
+      .channel("admin-orders")
+      .on(
+        "postgres_changes",
+        { event: "INSERT", schema: "public", table: "orders" },
+        (payload) => {
+          const newOrder = payload.new;
+          
+          // Add to internal store for bell dropdown
+          addNotification({
+            title: "New Order Received! 🛍️",
+            message: `${newOrder.customer_name} placed an order for ₹${newOrder.total}`,
+            type: "order",
+          });
+
+          // Show browser popup if allowed
+          if ("Notification" in window && Notification.permission === "granted") {
+            new Notification("New Order! 🛍️", {
+              body: `${newOrder.customer_name} placed an order for ₹${newOrder.total}`,
+              icon: "/favicon.png",
+            });
+          } else {
+             toast.success(`New order from ${newOrder.customer_name}!`);
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [isSignedIn, user, addNotification]);
 
   useEffect(() => {
     if (isLoaded) {

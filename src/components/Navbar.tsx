@@ -114,7 +114,7 @@ export default function Navbar() {
     setExpandedSection(null);
   }, []);
 
-  if (pathname === "/login" || pathname === "/signup") return null;
+  if (pathname === "/login" || pathname === "/signup" || pathname?.startsWith("/admin")) return null;
 
   const isAdmin =
     isSignedIn &&
