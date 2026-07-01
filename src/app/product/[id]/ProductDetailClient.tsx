@@ -231,12 +231,15 @@ function PaymentModal({
           razorpay_signature: string;
         }) => {
           try {
+            // Get a fresh token — the original may have expired during payment
+            const freshToken = await getToken();
+
             // Step 3: Verify payment signature
             const verifyRes = await fetch("/api/verify-payment", {
               method: "POST",
               headers: {
                 "Content-Type": "application/json",
-                ...(token ? { Authorization: `Bearer ${token}` } : {}),
+                ...(freshToken ? { Authorization: `Bearer ${freshToken}` } : {}),
               },
               body: JSON.stringify({
                 razorpay_order_id: response.razorpay_order_id,
@@ -271,7 +274,7 @@ function PaymentModal({
                 price: product.price,
                 quantity: 1
               }]
-            }, token);
+            }, freshToken);
 
             if (result.success) {
               setStep("success");
@@ -279,7 +282,7 @@ function PaymentModal({
               alert(result.error || "Failed to place order.");
             }
           } catch (verifyError: any) {
-            console.error("Verification error:", verifyError);
+            console.warn("Verification error:", verifyError);
             alert(verifyError.message || "Payment verification failed. Please contact support.");
           } finally {
             setProcessing(false);
@@ -295,8 +298,9 @@ function PaymentModal({
       const rzp = new (window as any).Razorpay(options);
 
       rzp.on("payment.failed", (response: any) => {
-        console.error("Payment failed:", response.error);
-        alert(`Payment failed: ${response.error.description || "Please try again."}`);
+        const err = response?.error || {};
+        console.warn("Payment failed:", err);
+        alert(`Payment failed: ${err.description || err.reason || "Please try again."}`);
         setProcessing(false);
       });
 
