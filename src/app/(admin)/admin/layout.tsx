@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { ReactNode, useEffect, useState } from "react";
+import { ReactNode, useEffect, useRef, useState } from "react";
 import {
   LayoutDashboard,
   ShoppingBag,
@@ -15,7 +15,13 @@ import {
   LogOut,
   ExternalLink,
   Home,
+  CheckCheck,
+  Trash2,
+  Info,
+  Package,
+  AlertTriangle,
 } from "lucide-react";
+import { useNotificationStore } from "@/store/useNotificationStore";
 import { useUser, useClerk } from "@clerk/nextjs";
 import { LogoutModal } from "@/components/ui/LogoutModal";
 
@@ -137,10 +143,57 @@ function DesktopSidebar({ pathname, user, onLogout }: { pathname: string; user: 
   );
 }
 
+// ─── Notification icon map ────────────────────────────────────────────────────
+
+const notifIconMap = {
+  order: Package,
+  stock: AlertTriangle,
+  message: Info,
+  system: Info,
+};
+
 // ─── Top Header ───────────────────────────────────────────────────────────────
 
 function TopHeader({ pathname }: { pathname: string }) {
   const breadcrumbs = useBreadcrumbs(pathname);
+  const router = useRouter();
+  const { notifications, markAllAsRead, clearNotifications } = useNotificationStore();
+
+  const [searchQuery, setSearchQuery] = useState("");
+  const [bellOpen, setBellOpen] = useState(false);
+  const bellRef = useRef<HTMLDivElement>(null);
+
+  const unreadCount = notifications.filter((n) => !n.read).length;
+
+  // Close bell dropdown on outside click
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (bellRef.current && !bellRef.current.contains(e.target as Node)) {
+        setBellOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  const handleSearch = (q: string) => {
+    const query = q.trim().toLowerCase();
+    if (!query) return;
+    if (["order", "orders"].some((k) => query.includes(k))) {
+      router.push("/admin/orders");
+    } else if (["product", "products", "item"].some((k) => query.includes(k))) {
+      router.push("/admin/products");
+    } else if (["customer", "customers", "user", "users"].some((k) => query.includes(k))) {
+      router.push("/admin/customers");
+    } else if (["setting", "settings"].some((k) => query.includes(k))) {
+      router.push("/admin/settings");
+    } else {
+      // Default: go to orders and let page-level search handle it
+      router.push(`/admin/orders`);
+    }
+    setSearchQuery("");
+  };
+
   return (
     <header className="hidden md:flex fixed top-0 left-64 right-0 h-16 bg-white/80 backdrop-blur-md border-b border-[#F0EDE8] z-30 items-center px-6 gap-4">
       <nav className="flex items-center gap-1.5 flex-1 min-w-0">
@@ -158,19 +211,101 @@ function TopHeader({ pathname }: { pathname: string }) {
           </span>
         ))}
       </nav>
+
+      {/* Search */}
       <div className="relative w-64">
         <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-[#ccc]" />
         <input
           type="text"
-          placeholder="Search..."
-          className="w-full bg-[#FAFAF8] border border-[#F0EDE8] rounded-full pl-8 pr-4 py-2 text-xs text-[#555] focus:outline-none focus:ring-2 focus:ring-[#F5B8C8]/20 transition-all"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          onKeyDown={(e) => { if (e.key === "Enter") handleSearch(searchQuery); }}
+          placeholder="Search orders, products…"
+          className="w-full bg-[#FAFAF8] border border-[#F0EDE8] rounded-full pl-8 pr-9 py-2 text-xs text-[#555] focus:outline-none focus:ring-2 focus:ring-[#F5B8C8]/30 transition-all"
         />
+        {searchQuery && (
+          <button
+            onClick={() => handleSearch(searchQuery)}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-[#E8809A] hover:text-[#d4607a] transition-colors"
+          >
+            <ChevronRight size={13} />
+          </button>
+        )}
       </div>
-      <div className="flex items-center gap-2">
-        <button className="w-8 h-8 rounded-full bg-[#FAFAF8] border border-[#F0EDE8] flex items-center justify-center relative">
+
+      {/* Bell */}
+      <div className="flex items-center gap-2" ref={bellRef}>
+        <button
+          onClick={() => { setBellOpen((v) => !v); if (!bellOpen) markAllAsRead(); }}
+          className="w-8 h-8 rounded-full bg-[#FAFAF8] border border-[#F0EDE8] flex items-center justify-center relative hover:bg-[#F5B8C8]/20 transition-colors"
+        >
           <Bell size={14} className="text-[#888]" />
-          <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-[#E8809A] rounded-full" />
+          {unreadCount > 0 && (
+            <span className="absolute -top-0.5 -right-0.5 min-w-[14px] h-3.5 bg-[#E8809A] rounded-full flex items-center justify-center text-[8px] text-white font-bold px-0.5">
+              {unreadCount > 9 ? "9+" : unreadCount}
+            </span>
+          )}
         </button>
+
+        {/* Dropdown panel */}
+        {bellOpen && (
+          <div className="absolute top-14 right-6 w-80 bg-white rounded-2xl border border-[#F0EDE8] shadow-xl z-50 overflow-hidden">
+            {/* Header */}
+            <div className="flex items-center justify-between px-4 py-3 border-b border-[#F0EDE8]">
+              <p className="text-xs font-semibold text-[#2C2C2C] font-mono uppercase tracking-widest">Notifications</p>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={markAllAsRead}
+                  title="Mark all as read"
+                  className="text-[#aaa] hover:text-[#E8809A] transition-colors"
+                >
+                  <CheckCheck size={13} />
+                </button>
+                <button
+                  onClick={clearNotifications}
+                  title="Clear all"
+                  className="text-[#aaa] hover:text-red-400 transition-colors"
+                >
+                  <Trash2 size={13} />
+                </button>
+              </div>
+            </div>
+
+            {/* List */}
+            <div className="max-h-72 overflow-y-auto divide-y divide-[#F0EDE8]">
+              {notifications.length === 0 ? (
+                <div className="py-8 flex flex-col items-center gap-2 text-[#ccc]">
+                  <Bell size={20} />
+                  <p className="text-xs font-mono">No notifications yet</p>
+                </div>
+              ) : (
+                notifications.slice(0, 20).map((n) => {
+                  const Icon = notifIconMap[n.type] || Info;
+                  return (
+                    <div
+                      key={n.id}
+                      className={`flex items-start gap-3 px-4 py-3 transition-colors ${
+                        n.read ? "bg-white" : "bg-[#FFF5F8]"
+                      }`}
+                    >
+                      <div className="w-7 h-7 rounded-full bg-[#F5B8C8]/20 flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <Icon size={13} className="text-[#E8809A]" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-semibold text-[#2C2C2C] leading-tight">{n.title}</p>
+                        <p className="text-[11px] text-[#888] mt-0.5 leading-snug">{n.message}</p>
+                        <p className="text-[10px] text-[#ccc] mt-1">
+                          {new Date(n.timestamp).toLocaleString("en-IN", { hour: "2-digit", minute: "2-digit", day: "numeric", month: "short" })}
+                        </p>
+                      </div>
+                      {!n.read && <div className="w-1.5 h-1.5 rounded-full bg-[#E8809A] flex-shrink-0 mt-1.5" />}
+                    </div>
+                  );
+                })
+              )}
+            </div>
+          </div>
+        )}
       </div>
     </header>
   );
