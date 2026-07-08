@@ -10,6 +10,6 @@ ALTER TABLE public.wishlist
 CREATE INDEX IF NOT EXISTS idx_wishlist_clerk_id ON public.wishlist(clerk_id);
 
 -- Simple RLS for client-side SELECT (if we want to keep it simple, but API is better)
-ALTER TABLE public.wishlist DISABLE ROW LEVEL SECURITY;
--- For now, disabling RLS on wishlist to allow the app to function while we transition to API-only.
--- In a production environment, we would use a service-role API route.
+ALTER TABLE public.wishlist ENABLE ROW LEVEL SECURITY;
+-- For now, enabling RLS on wishlist to secure the database.
+-- In a production environment, we use a service-role API route which bypasses RLS.
