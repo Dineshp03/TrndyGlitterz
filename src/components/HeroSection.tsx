@@ -27,7 +27,10 @@ export default function HeroSection({ onStartShopping, hasNewArrivals }: HeroSec
   const [mounted, setMounted] = useState(false);
   const [activeBtn, setActiveBtn] = useState<'shop' | 'new'>('shop');
 
-  useEffect(() => { setMounted(true); }, []);
+  useEffect(() => {
+    const frame = requestAnimationFrame(() => setMounted(true));
+    return () => cancelAnimationFrame(frame);
+  }, []);
 
   const handleShop = () => {
     if (onStartShopping) {

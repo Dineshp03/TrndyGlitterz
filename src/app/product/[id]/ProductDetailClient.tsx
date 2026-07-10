@@ -379,6 +379,75 @@ function PaymentModal({
 
 import { Product } from "@/data/products";
 
+// Helper to parse description text into styled HTML elements (bullet points, section headers, etc.)
+const renderDescription = (desc?: string) => {
+  if (!desc) return null;
+  const lines = desc.split("\n");
+  const elements: React.ReactNode[] = [];
+  let currentList: string[] = [];
+
+  lines.forEach((line, index) => {
+    const trimmed = line.trim();
+    if (!trimmed) {
+      if (currentList.length > 0) {
+        elements.push(
+          <ul key={`list-${index}`} className="list-disc pl-5 mb-3 space-y-1.5 text-xs md:text-sm font-light text-obsidian/70">
+            {currentList.map((item, i) => (
+              <li key={i}>{item}</li>
+            ))}
+          </ul>
+        );
+        currentList = [];
+      }
+      return;
+    }
+
+    const isBullet = trimmed.startsWith("-") || trimmed.startsWith("*") || trimmed.startsWith("•") || trimmed.startsWith("+");
+
+    if (isBullet) {
+      const bulletText = trimmed.replace(/^[-*•+]\s*/, "");
+      currentList.push(bulletText);
+    } else {
+      if (currentList.length > 0) {
+        elements.push(
+          <ul key={`list-${index}`} className="list-disc pl-5 mb-3 space-y-1.5 text-xs md:text-sm font-light text-obsidian/70">
+            {currentList.map((item, i) => (
+              <li key={i}>{item}</li>
+            ))}
+          </ul>
+        );
+        currentList = [];
+      }
+
+      if (trimmed.endsWith(":")) {
+        elements.push(
+          <h4 key={`header-${index}`} className="font-semibold text-obsidian text-xs md:text-sm mt-4 mb-1.5">
+            {trimmed}
+          </h4>
+        );
+      } else {
+        elements.push(
+          <p key={`p-${index}`} className="text-xs md:text-sm font-light text-obsidian/70 leading-relaxed mb-2.5">
+            {trimmed}
+          </p>
+        );
+      }
+    }
+  });
+
+  if (currentList.length > 0) {
+    elements.push(
+      <ul key="list-final" className="list-disc pl-5 mb-3 space-y-1.5 text-xs md:text-sm font-light text-obsidian/70">
+        {currentList.map((item, i) => (
+          <li key={i}>{item}</li>
+        ))}
+      </ul>
+    );
+  }
+
+  return <div className="space-y-1">{elements}</div>;
+};
+
 export default function ProductDetailClient({ initialProduct }: { initialProduct?: Product }) {
   const params = useParams();
   const id = Array.isArray(params?.id) ? params.id[0] : params?.id;
@@ -570,7 +639,9 @@ export default function ProductDetailClient({ initialProduct }: { initialProduct
           <h1 className="text-3xl md:text-5xl font-serif text-obsidian mb-4 leading-tight">{product.name}</h1>
           <p className="text-xl md:text-2xl font-sans mb-8">₹{product.price.toFixed(2)}</p>
           <div className="h-px w-12 bg-dustyrose/30 mb-8" />
-          <p className="text-sm font-light text-obsidian/70 leading-relaxed mb-10 max-w-lg">{product.description}</p>
+          <div className="mb-10 max-w-lg">
+            {renderDescription(product.description)}
+          </div>
           <div className="flex flex-col sm:flex-row gap-4 mb-8">
             <MagneticButton onClick={() => isSignedIn ? addItem(product) : router.push("/login")} className="sm:w-1/2">Add to Cart</MagneticButton>
             <MagneticButton onClick={() => isSignedIn ? setShowPayment(true) : router.push("/login")} className="sm:w-1/2" variant="secondary">Buy Now</MagneticButton>

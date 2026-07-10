@@ -74,7 +74,7 @@ function useBreadcrumbs(pathname: string) {
 
 function DesktopSidebar({ pathname, user, onLogout }: { pathname: string; user: any; onLogout: () => void }) {
   return (
-    <aside className="hidden md:flex flex-col fixed left-0 top-0 bottom-0 w-64 bg-white border-r border-[#F0EDE8] z-40 shadow-sm">
+    <aside className="hidden lg:flex flex-col fixed left-0 top-0 bottom-0 w-64 bg-white border-r border-[#F0EDE8] z-40 shadow-sm">
       <div className="h-16 flex items-center px-6 border-b border-[#F0EDE8]">
         <div className="flex items-center gap-2">
           <div className="w-7 h-7 rounded-full bg-gradient-to-br from-[#F5B8C8] to-[#E8809A] flex items-center justify-center shadow-sm">
@@ -197,7 +197,7 @@ function TopHeader({ pathname }: { pathname: string }) {
   };
 
   return (
-    <header className="hidden md:flex fixed top-0 left-64 right-0 h-16 bg-white/80 backdrop-blur-md border-b border-[#F0EDE8] z-30 items-center px-6 gap-4">
+    <header className="hidden lg:flex fixed top-0 left-64 right-0 h-16 bg-white/80 backdrop-blur-md border-b border-[#F0EDE8] z-30 items-center px-6 gap-4">
       <nav className="flex items-center gap-1.5 flex-1 min-w-0">
         {breadcrumbs.map((crumb, i) => (
           <span key={crumb.href} className="flex items-center gap-1.5">
@@ -313,11 +313,151 @@ function TopHeader({ pathname }: { pathname: string }) {
   );
 }
 
+// ─── Mobile Top Header ────────────────────────────────────────────────────────
+
+function MobileTopHeader({ pathname, user, onLogout }: { pathname: string; user: any; onLogout: () => void }) {
+  const router = useRouter();
+  const { notifications, markAllAsRead, clearNotifications } = useNotificationStore();
+  const [bellOpen, setBellOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const bellRef = useRef<HTMLDivElement>(null);
+  const unreadCount = notifications.filter((n) => !n.read).length;
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (bellRef.current && !bellRef.current.contains(e.target as Node)) {
+        setBellOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  const handleSearch = (q: string) => {
+    const query = q.trim().toLowerCase();
+    if (!query) return;
+    if (["order", "orders"].some((k) => query.includes(k))) {
+      router.push("/admin/orders");
+    } else if (["product", "products", "item"].some((k) => query.includes(k))) {
+      router.push("/admin/products");
+    } else if (["customer", "customers", "user", "users"].some((k) => query.includes(k))) {
+      router.push("/admin/customers");
+    } else if (["setting", "settings"].some((k) => query.includes(k))) {
+      router.push("/admin/settings");
+    } else {
+      router.push(`/admin/orders`);
+    }
+    setSearchQuery("");
+    setSearchOpen(false);
+  };
+
+  return (
+    <header className="lg:hidden fixed top-0 left-0 right-0 h-16 bg-white/95 backdrop-blur-md border-b border-[#F0EDE8] z-30 flex items-center justify-between px-4">
+      <div className="flex items-center gap-2">
+        <div className="w-6 h-6 rounded-full bg-gradient-to-br from-[#F5B8C8] to-[#E8809A] flex items-center justify-center shadow-sm">
+          <Gem size={11} className="text-white" />
+        </div>
+        <span className="font-serif text-[#2C2C2C] text-xs font-bold leading-tight uppercase tracking-wider">
+          Trendy<span className="text-[#E8809A]">G</span>
+        </span>
+      </div>
+
+      {searchOpen && (
+        <div className="absolute inset-x-0 inset-y-0 bg-white px-4 flex items-center gap-2 z-40">
+          <Search size={14} className="text-[#ccc]" />
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            onKeyDown={(e) => { if (e.key === "Enter") handleSearch(searchQuery); }}
+            placeholder="Search..."
+            autoFocus
+            className="flex-1 bg-transparent text-sm text-[#2C2C2C] focus:outline-none"
+          />
+          <button 
+            onClick={() => setSearchOpen(false)}
+            className="text-xs font-mono uppercase text-[#E8809A] px-2 py-1"
+          >
+            Cancel
+          </button>
+        </div>
+      )}
+
+      <div className="flex items-center gap-3">
+        <button
+          onClick={() => setSearchOpen(true)}
+          className="w-8 h-8 rounded-full flex items-center justify-center text-[#888] active:bg-gray-100"
+        >
+          <Search size={16} />
+        </button>
+
+        <div className="relative" ref={bellRef}>
+          <button
+            onClick={() => { setBellOpen((v) => !v); if (!bellOpen) markAllAsRead(); }}
+            className="w-8 h-8 rounded-full bg-[#FAFAF8] border border-[#F0EDE8] flex items-center justify-center relative hover:bg-[#F5B8C8]/20 transition-colors"
+          >
+            <Bell size={14} className="text-[#888]" />
+            {unreadCount > 0 && (
+              <span className="absolute -top-0.5 -right-0.5 min-w-[12px] h-3 bg-[#E8809A] rounded-full flex items-center justify-center text-[7px] text-white font-bold px-0.5">
+                {unreadCount > 9 ? "9+" : unreadCount}
+              </span>
+            )}
+          </button>
+
+          {bellOpen && (
+            <div className="absolute top-10 right-0 w-72 bg-white rounded-2xl border border-[#F0EDE8] shadow-xl z-50 overflow-hidden">
+              <div className="flex items-center justify-between px-3 py-2 border-b border-[#F0EDE8]">
+                <p className="text-[10px] font-semibold text-[#2C2C2C] font-mono uppercase tracking-wider">Notifications</p>
+                <div className="flex items-center gap-2">
+                  <button onClick={markAllAsRead} className="text-[#aaa] hover:text-[#E8809A]"><CheckCheck size={11} /></button>
+                  <button onClick={clearNotifications} className="text-[#aaa] hover:text-red-400"><Trash2 size={11} /></button>
+                </div>
+              </div>
+              <div className="max-h-60 overflow-y-auto divide-y divide-[#F0EDE8]">
+                {notifications.length === 0 ? (
+                  <div className="py-6 flex flex-col items-center gap-1 text-[#ccc]">
+                    <Bell size={16} />
+                    <p className="text-[10px] font-mono">No notifications</p>
+                  </div>
+                ) : (
+                  notifications.slice(0, 10).map((n) => {
+                    const Icon = notifIconMap[n.type] || Info;
+                    return (
+                      <div key={n.id} className={`flex items-start gap-2.5 px-3 py-2.5 transition-colors ${n.read ? "bg-white" : "bg-[#FFF5F8]"}`}>
+                        <div className="w-6 h-6 rounded-full bg-[#F5B8C8]/15 flex items-center justify-center flex-shrink-0 mt-0.5">
+                          <Icon size={11} className="text-[#E8809A]" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-[11px] font-semibold text-[#2C2C2C] leading-tight">{n.title}</p>
+                          <p className="text-[10px] text-[#888] mt-0.5 leading-snug">{n.message}</p>
+                        </div>
+                        {!n.read && <div className="w-1 h-1 rounded-full bg-[#E8809A] flex-shrink-0 mt-1.5" />}
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+
+        <button
+          onClick={onLogout}
+          className="w-8 h-8 rounded-full border border-[#F0EDE8] overflow-hidden bg-gradient-to-br from-[#F5B8C8] to-[#E8809A] flex items-center justify-center text-white text-[10px] font-bold"
+        >
+          {user?.imageUrl ? <img src={user.imageUrl} alt="" className="w-full h-full object-cover" /> : user?.firstName?.[0] || 'A'}
+        </button>
+      </div>
+    </header>
+  );
+}
+
 // ─── Mobile Bottom Bar ────────────────────────────────────────────────────────
 
 function MobileBottomBar({ pathname }: { pathname: string }) {
   return (
-    <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-xl border-t border-[#F0EDE8] pb-safe">
+    <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-xl border-t border-[#F0EDE8] pb-safe">
       <div className="flex items-stretch">
         {mobileNavItems.map((item) => {
           const isActive = item.href === "/admin" ? pathname === "/admin" : pathname.startsWith(item.href);
@@ -433,7 +573,8 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
     <div className="min-h-screen bg-[#FAFAF8] admin-theme text-obsidian">
       <DesktopSidebar pathname={pathname} user={user} onLogout={() => setShowLogoutConfirm(true)} />
       <TopHeader pathname={pathname} />
-      <main className="pt-0 pb-20 md:ml-64 md:pt-16 md:pb-0">
+      <MobileTopHeader pathname={pathname} user={user} onLogout={() => setShowLogoutConfirm(true)} />
+      <main className="pt-16 pb-20 lg:ml-64 lg:pt-16 lg:pb-0">
         {children}
       </main>
       <MobileBottomBar pathname={pathname} />

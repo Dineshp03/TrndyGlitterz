@@ -15,14 +15,17 @@ export default function WishlistPage() {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    setMounted(true);
+    const frame = requestAnimationFrame(() => setMounted(true));
     syncWithInitial();
     // Force scroll to top to prevent mobile browsers from opening from the footer due to initial layout height changes
     window.scrollTo(0, 0);
     const timer = setTimeout(() => {
       window.scrollTo(0, 0);
     }, 100);
-    return () => clearTimeout(timer);
+    return () => {
+      cancelAnimationFrame(frame);
+      clearTimeout(timer);
+    };
   }, [syncWithInitial]);
 
   useEffect(() => {

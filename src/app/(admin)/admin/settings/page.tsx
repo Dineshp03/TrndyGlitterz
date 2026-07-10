@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useAuth } from "@clerk/nextjs";
 import {
-  Store, Bell, Shield, CreditCard, Palette, ChevronRight, Globe, Package, Truck, X, AlertTriangle, Check
+  Store, Bell, Shield, CreditCard, Palette, ChevronRight, Globe, Package, Truck, X, AlertTriangle, Check, LucideIcon
 } from "lucide-react";
 import { useProductStore } from "@/store/useProductStore";
 import { useOrderStore } from "@/store/useOrderStore";
@@ -23,7 +23,7 @@ interface SettingItem {
 
 interface SettingGroup {
   title: string;
-  icon: any;
+  icon: LucideIcon;
   items: SettingItem[];
 }
 

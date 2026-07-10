@@ -116,7 +116,7 @@ export default function OrdersPage() {
       </div>
 
       {/* Orders Table - Desktop */}
-      <div className="hidden md:block bg-white rounded-2xl border border-[#F0EDE8] overflow-hidden overflow-x-auto">
+      <div className="hidden lg:block bg-white rounded-2xl border border-[#F0EDE8] overflow-hidden overflow-x-auto">
         <table className="w-full min-w-[900px]">
           <thead>
             <tr className="border-b border-[#F0EDE8]">
@@ -182,7 +182,7 @@ export default function OrdersPage() {
       </div>
 
       {/* Orders Cards - Mobile */}
-      <div className="md:hidden space-y-3">
+      <div className="lg:hidden space-y-3">
         {filteredOrders.length > 0 ? filteredOrders.map((order) => {
           const s = statusConfig[order.status];
           const StatusIcon = s?.icon || Package;

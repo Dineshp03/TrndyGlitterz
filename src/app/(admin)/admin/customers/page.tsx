@@ -165,7 +165,7 @@ export default function CustomersPage() {
       ) : (
         <>
           {/* Desktop Table */}
-          <div className="hidden md:block bg-white rounded-2xl border border-[#F0EDE8] overflow-hidden">
+          <div className="hidden lg:block bg-white rounded-2xl border border-[#F0EDE8] overflow-hidden">
             <table className="w-full">
               <thead>
                 <tr className="border-b border-[#F0EDE8]">
@@ -227,7 +227,7 @@ export default function CustomersPage() {
           </div>
 
           {/* Mobile Cards */}
-          <div className="md:hidden space-y-3">
+          <div className="lg:hidden space-y-3">
             {filtered.map((customer, i) => (
               <div
                 key={customer.phone + i}

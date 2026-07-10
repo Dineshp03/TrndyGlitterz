@@ -218,14 +218,14 @@ export default function AdminDashboard() {
   const currentProducts = isReset ? [] : products.slice(0, 5).map(p => ({
     ...p,
     revenue: `₹${(p.price || 0).toLocaleString('en-IN')}`, // Mock revenue as price for now
-    sold: Math.floor(Math.random() * 10) // Mock sold count
+    sold: p.id ? p.id.charCodeAt(p.id.length - 1) % 10 : 5 // Deterministic mock sold count (avoids impure render warning)
   }));
 
   return (
     <div className="min-h-screen p-4 md:p-8 max-w-[1400px]">
 
       {/* Mobile Page Header */}
-      <div className="md:hidden flex items-center justify-between mb-6 pt-4">
+      <div className="lg:hidden flex items-center justify-between mb-6 pt-4">
         <div>
           <p className="text-[10px] font-mono text-[#bbb] uppercase tracking-[0.2em]">Welcome back</p>
           <h1 className="text-2xl font-serif text-[#2C2C2C] mt-0.5">Dashboard</h1>
@@ -241,7 +241,7 @@ export default function AdminDashboard() {
       </div>
 
       {/* Desktop Page Header */}
-      <div className="hidden md:flex items-end justify-between mb-8">
+      <div className="hidden lg:flex items-end justify-between mb-8">
         <div>
           <p className="text-[10px] font-mono text-[#bbb] uppercase tracking-[0.2em] mb-1">Overview</p>
           <h1 className="text-3xl font-serif text-[#2C2C2C] tracking-tight">{greeting} ✨</h1>
@@ -335,7 +335,7 @@ export default function AdminDashboard() {
           ) : (
             <>
               {/* Desktop Table */}
-              <div className="hidden md:block overflow-x-auto">
+              <div className="hidden lg:block overflow-x-auto">
                 <table className="w-full">
                   <thead>
                     <tr className="border-b border-[#F0EDE8]">
@@ -367,7 +367,7 @@ export default function AdminDashboard() {
                               {s.label}
                             </span>
                           </td>
-                          <td className="px-5 py-3.5 text-[10px] text-[#bbb]">{new Date(order.created_at || Date.now()).toLocaleDateString()}</td>
+                          <td className="px-5 py-3.5 text-[10px] text-[#bbb]">{order.created_at ? new Date(order.created_at).toLocaleDateString() : 'N/A'}</td>
                         </tr>
                       );
                     })}
@@ -376,7 +376,7 @@ export default function AdminDashboard() {
               </div>
 
               {/* Mobile Cards */}
-              <div className="md:hidden divide-y divide-[#F0EDE8]">
+              <div className="lg:hidden divide-y divide-[#F0EDE8]">
                 {currentOrders.map((order) => {
                   const s = statusConfig[order.status];
                   const StatusIcon = s.icon;
@@ -397,7 +397,7 @@ export default function AdminDashboard() {
                       </div>
                       <div className="text-right">
                         <p className="text-sm font-bold text-[#2C2C2C]">₹{Number(order.total).toLocaleString('en-IN')}</p>
-                        <p className="text-[9px] text-[#ccc] mt-0.5">{new Date(order.created_at || Date.now()).toLocaleDateString()}</p>
+                        <p className="text-[9px] text-[#ccc] mt-0.5">{order.created_at ? new Date(order.created_at).toLocaleDateString() : 'N/A'}</p>
                       </div>
                     </div>
                   );
@@ -458,7 +458,7 @@ export default function AdminDashboard() {
       </div>
 
       {/* Quick Actions (mobile only) */}
-      <div className="md:hidden mt-6 grid grid-cols-2 gap-3">
+      <div className="lg:hidden mt-6 grid grid-cols-2 gap-3">
         {[
           { label: "Add Product", icon: Gem, href: "/admin/products", color: "bg-[#F5B8C8]/20 border-[#F5B8C8]/40" },
           { label: "View Orders", icon: ShoppingBag, href: "/admin/orders", color: "bg-[#b8d4f5]/15 border-[#b8d4f5]/40" },

@@ -440,7 +440,19 @@ export default function ProductsPage() {
 
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-xs font-semibold uppercase tracking-wider text-[#555] mb-2">Product Description</label>
+                    <div className="flex justify-between items-center mb-2">
+                      <label className="block text-xs font-semibold uppercase tracking-wider text-[#555]">Product Description</label>
+                      <button 
+                        type="button"
+                        onClick={() => {
+                          const template = `Material & Quality:\n- Premium Xuping alloy base\n- Long-lasting tarnish-resistant coating\n- 100% skin-friendly, anti-allergic\n\nFeatures & Design:\n- Exquisite and detailed classic design\n- Lightweight, durable, and comfortable\n- Perfect for weddings, festivals, or casual wear\n\nCare Tips:\n- Avoid contact with perfume, water, and direct heat\n- Wipe with a clean, dry microfiber cloth after use\n- Store in an airtight container or zip lock bag`;
+                          setFormData(p => ({...p, description: template}));
+                        }}
+                        className="text-[9px] font-semibold text-[#E8809A] hover:text-[#c45c77] uppercase tracking-wider border border-[#F5B8C8]/30 px-2 py-0.5 rounded-md hover:bg-[#F5B8C8]/10 transition-all cursor-pointer"
+                      >
+                        Insert Template
+                      </button>
+                    </div>
                     <textarea 
                       value={formData.description}
                       onChange={(e) => setFormData(p => ({...p, description: e.target.value}))}
