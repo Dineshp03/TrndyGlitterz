@@ -8,12 +8,22 @@ import { useWishlistStore } from "@/store/useWishlistStore";
 import { usePathname, useRouter } from "next/navigation";
 import { useState, useEffect, useCallback } from "react";
 import { useUser, Show } from "@clerk/nextjs";
-import Image from "next/image";
 
 const ADMIN_EMAILS = ["trendyglitterzz@gmail.com", "admin@trendyglitterz.com"];
 
+interface MenuCategoryItem {
+  label: string;
+  param: string;
+}
+
+interface MenuCategorySection {
+  label: string;
+  items?: MenuCategoryItem[];
+  param?: string;
+}
+
 // ── Categories configuration (matching image 3) ──────────────────────────────
-const MENU_CATEGORIES = [
+const MENU_CATEGORIES: MenuCategorySection[] = [
   {
     label: "Xuping Exclusive",
     items: [
@@ -44,25 +54,6 @@ const MENU_CATEGORIES = [
     param: "offer=true",
   },
 ];
-
-// Map display names → query params for catalog navigation
-const CATEGORY_MAP: Record<string, string> = {
-  "Earrings": "Earrings",
-  "Korean Earrings": "Korean Earrings",
-  "Traditional Earrings": "Traditional Earrings",
-  "Neckpiece": "Neckpiece",
-  "Bracelets": "Bracelets",
-  "Finger Rings": "Finger Rings",
-  "Hair Accessories": "Hair Accessories",
-  "Xuping Earrings": "Xuping Earrings",
-  "Xuping Neckpiece": "Xuping Neckpiece",
-  "Xuping Bracelets": "Xuping Bracelets",
-  "Xuping Finger Rings": "Xuping Finger Rings",
-  "Under ₹99": "under-99",
-  "Under ₹299": "under-299",
-  "Under ₹499": "under-499",
-  "Premium Range": "premium-500",
-};
 
 export default function Navbar() {
   const pathname = usePathname();
@@ -126,18 +117,6 @@ export default function Navbar() {
     { name: "Editorial", href: "/#about" },
     { name: "Journal", href: "#" },
   ];
-
-  const handleCategoryNavigate = (param: string) => {
-    if (param.startsWith("price=")) {
-      const priceParam = param.split("=")[1];
-      router.push(`/catalog?price=${priceParam}`);
-    } else if (param.startsWith("offer=")) {
-      router.push(`/catalog?offer=true`);
-    } else {
-      router.push(`/catalog?category=${encodeURIComponent(param)}`);
-    }
-    closeMenu();
-  };
 
   return (
     <>
@@ -347,7 +326,7 @@ export default function Navbar() {
                     }`}
                   >
                     <div className="pl-4 pb-2 space-y-0.5 border-l border-white/10 ml-2">
-                      {section.items.map((item: any) => {
+                      {section.items.map((item) => {
                         let href = "/catalog";
                         if (item.param.startsWith("price=")) href = `/catalog?price=${item.param.split("=")[1]}`;
                         else if (item.param.startsWith("offer=")) href = `/catalog?offer=true`;

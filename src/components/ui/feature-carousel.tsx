@@ -1,5 +1,6 @@
 "use client";
 import React from 'react';
+import Image from 'next/image';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -20,9 +21,9 @@ export const HeroSection = React.forwardRef<HTMLDivElement, HeroProps>(
       setCurrentIndex((prevIndex) => (prevIndex + 1) % images.length);
     }, [images.length]);
 
-    const handlePrev = () => {
+    const handlePrev = React.useCallback(() => {
       setCurrentIndex((prevIndex) => (prevIndex - 1 + images.length) % images.length);
-    };
+    }, [images.length]);
     
     React.useEffect(() => {
         const timer = setInterval(() => {
@@ -77,7 +78,7 @@ export const HeroSection = React.forwardRef<HTMLDivElement, HeroProps>(
                   <div
                     key={index}
                     className={cn(
-                      'absolute w-48 h-96 md:w-64 md:h-[450px] transition-all duration-500 ease-in-out',
+                       'absolute w-48 h-96 md:w-64 md:h-[450px] transition-all duration-500 ease-in-out',
                       'flex items-center justify-center'
                     )}
                     style={{
@@ -92,11 +93,15 @@ export const HeroSection = React.forwardRef<HTMLDivElement, HeroProps>(
                       visibility: Math.abs(pos) > 1 ? 'hidden' : 'visible',
                     }}
                   >
-                    <img
-                      src={image.src}
-                      alt={image.alt}
-                      className="object-cover w-full h-full rounded-3xl border-2 border-foreground/10 shadow-2xl"
-                    />
+                    <div className="relative w-full h-full">
+                      <Image
+                        src={image.src}
+                        alt={image.alt}
+                        fill
+                        className="object-cover rounded-3xl border-2 border-foreground/10 shadow-2xl"
+                        sizes="(max-width: 768px) 192px, 256px"
+                      />
+                    </div>
                   </div>
                 );
               })}

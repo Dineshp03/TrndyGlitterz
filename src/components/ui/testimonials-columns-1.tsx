@@ -1,5 +1,6 @@
 "use client";
 import React from "react";
+import Image from "next/image";
 import { motion } from "motion/react";
 
 export const TestimonialsColumn = (props: {
@@ -26,9 +27,9 @@ export const TestimonialsColumn = (props: {
             <React.Fragment key={index}>
               {props.testimonials.map(({ text, image, name, role }, i) => (
                 <div className="p-10 rounded-3xl border border-obsidian/10 shadow-lg shadow-obsidian/5 bg-card/50 backdrop-blur-sm max-w-xs w-full" key={i}>
-                  <div className="text-sm font-sans font-light leading-relaxed text-obsidian/80">"{text}"</div>
+                  <div className="text-sm font-sans font-light leading-relaxed text-obsidian/80">&ldquo;{text}&rdquo;</div>
                   <div className="flex items-center gap-3 mt-6">
-                    <img
+                    <Image
                       width={40}
                       height={40}
                       src={image}

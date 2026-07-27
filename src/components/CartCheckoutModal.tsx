@@ -27,6 +27,29 @@ interface PaymentDetails {
   upiId: string;
 }
 
+interface RazorpayFailedResponse {
+  error: {
+    code: string;
+    description: string;
+    source: string;
+    step: string;
+    reason: string;
+    metadata: {
+      order_id: string;
+      payment_id: string;
+    };
+  };
+}
+
+interface RazorpayInstance {
+  on: (event: "payment.failed", callback: (response: RazorpayFailedResponse) => void) => void;
+  open: () => void;
+}
+
+interface RazorpayConstructor {
+  new (options: unknown): RazorpayInstance;
+}
+
 const emptyDetails: UserDetails = {
   fullName: "",
   email: "",
@@ -40,7 +63,6 @@ const emptyDetails: UserDetails = {
 export default function CartCheckoutModal({ onClose }: { onClose: () => void }) {
   const { items, getCartTotal, clearCart } = useCart();
   const { placeOrder } = useOrderStore();
-  const { codEnabled, upiEnabled } = useSettingsStore();
   const { user, isLoaded: userLoaded } = useUser();
   const { getToken } = useAuth();
   
@@ -67,7 +89,7 @@ export default function CartCheckoutModal({ onClose }: { onClose: () => void }) 
   const isAddressIncomplete = userLoaded && user &&
     !(user.unsafeMetadata?.address as string);
   
-  const [payment, setPayment] = useState<PaymentDetails>({
+  const [payment] = useState<PaymentDetails>({
     method: "razorpay",
     upiId: "",
   });
@@ -223,9 +245,10 @@ export default function CartCheckoutModal({ onClose }: { onClose: () => void }) 
             } else {
               alert(result.error || "Failed to place order. Please try again.");
             }
-          } catch (verifyError: any) {
-            console.error("Verification error:", verifyError);
-            alert(verifyError.message || "Payment verification failed. Please contact support.");
+          } catch (verifyError) {
+            const err = verifyError as Error;
+            console.error("Verification error:", err);
+            alert(err.message || "Payment verification failed. Please contact support.");
           } finally {
             setProcessing(false);
           }
@@ -237,18 +260,19 @@ export default function CartCheckoutModal({ onClose }: { onClose: () => void }) 
         },
       };
 
-      const rzp = new (window as any).Razorpay(options);
+      const rzp = new (window as Window & { Razorpay?: RazorpayConstructor }).Razorpay!(options);
 
-      rzp.on("payment.failed", (response: any) => {
+      rzp.on("payment.failed", (response) => {
         console.error("Payment failed:", response.error);
         alert(`Payment failed: ${response.error.description || "Please try again."}`);
         setProcessing(false);
       });
 
       rzp.open();
-    } catch (error: any) {
-      console.error("Checkout error:", error);
-      alert(error.message || "Something went wrong. Please try again.");
+    } catch (error) {
+      const err = error as Error;
+      console.error("Checkout error:", err);
+      alert(err.message || "Something went wrong. Please try again.");
       setProcessing(false);
     }
   };

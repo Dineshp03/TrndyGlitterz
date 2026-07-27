@@ -7,7 +7,6 @@ import ProductSlider from "@/components/ProductSlider";
 import ProductCard from "@/components/ProductCard";
 import { Search, ShoppingBag, X, Menu, Gem, ArrowUpRight, Instagram } from "lucide-react";
 import HeroSection from "@/components/HeroSection";
-import SmoothScroll from "@/components/SmoothScroll";
 import { Testimonials } from "@/components/ui/demo";
 import { useSettingsStore } from "@/store/useSettingsStore";
 
@@ -94,8 +93,6 @@ export default function Home() {
 
   return (
     <div className="flex flex-col min-h-screen bg-alabaster">
-      <SmoothScroll />
-      
       <HeroSection 
         onStartShopping={scrollToProducts} 
         hasNewArrivals={showNewArrivals} 

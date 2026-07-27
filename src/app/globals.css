@@ -48,6 +48,16 @@
   }
 }
 
+/* Product image gallery slide transitions */
+@keyframes slideInLeft {
+  from { opacity: 0; transform: translateX(40px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+@keyframes slideInRight {
+  from { opacity: 0; transform: translateX(-40px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
 .animate-glow-pink {
   animation: glowing-border 3s infinite ease-in-out;
   border-width: 2px;

@@ -3,14 +3,35 @@
 import Image from "next/image";
 import { useParams, notFound, useRouter } from "next/navigation";
 import { useUser, useAuth } from "@clerk/nextjs";
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, TouchEvent } from "react";
 import { useProductStore } from "@/store/useProductStore";
-import ProductCard from "@/components/ProductCard";
-import MobileProductGallery from "@/components/MobileProductGallery";
 import { useCart } from "@/hooks/useCart";
 import { useOrderStore } from "@/store/useOrderStore";
 import { useSettingsStore } from "@/store/useSettingsStore";
-import { CheckCircle, X, ChevronRight, ChevronLeft, Loader2, ShoppingBag, CreditCard, ShieldCheck, RotateCcw, Ban, Truck, Sparkles, Smile, Shield, MessageSquare } from "lucide-react";
+import { CheckCircle, X, ChevronRight, ChevronLeft, Loader2, ShoppingBag, CreditCard, ShieldCheck, RotateCcw, Sparkles, Smile, Shield, MessageSquare } from "lucide-react";
+
+/* ------------------------------------------------------------------ */
+/*  useSwipe — reusable touch-swipe hook                               */
+/* ------------------------------------------------------------------ */
+function useSwipe(onSwipeLeft: () => void, onSwipeRight: () => void, threshold = 40) {
+  const startX = useRef<number | null>(null);
+
+  const onTouchStart = useCallback((e: TouchEvent) => {
+    startX.current = e.touches[0].clientX;
+  }, []);
+
+  const onTouchEnd = useCallback((e: TouchEvent) => {
+    if (startX.current === null) return;
+    const diff = startX.current - e.changedTouches[0].clientX;
+    if (Math.abs(diff) >= threshold) {
+      if (diff > 0) onSwipeLeft();
+      else onSwipeRight();
+    }
+    startX.current = null;
+  }, [onSwipeLeft, onSwipeRight, threshold]);
+
+  return { onTouchStart, onTouchEnd };
+}
 
 /* ------------------------------------------------------------------ */
 /*  MagneticButton — cursor-tracking magnetic CTA button               */
@@ -124,6 +145,43 @@ interface PaymentDetails {
   method: "cod" | "upi" | "razorpay"; upiId: string;
 }
 
+interface Review {
+  id: string;
+  user_name: string;
+  rating: number;
+  comment?: string;
+  created_at: string;
+}
+
+interface ReviewSummary {
+  count: number;
+  average: number;
+  breakdown: Record<number, number>;
+}
+
+interface RazorpayFailedResponse {
+  error: {
+    code: string;
+    description: string;
+    source: string;
+    step: string;
+    reason: string;
+    metadata: {
+      order_id: string;
+      payment_id: string;
+    };
+  };
+}
+
+interface RazorpayInstance {
+  on: (event: "payment.failed", callback: (response: RazorpayFailedResponse) => void) => void;
+  open: () => void;
+}
+
+interface RazorpayConstructor {
+  new (options: unknown): RazorpayInstance;
+}
+
 const emptyDetails: UserDetails = {
   fullName: "", email: "", phone: "", address: "", city: "", state: "", pincode: "",
 };
@@ -139,7 +197,6 @@ function PaymentModal({
   onClose: () => void;
 }) {
   const { placeOrder } = useOrderStore();
-  const { codEnabled, upiEnabled } = useSettingsStore();
   const { user, isLoaded: userLoaded } = useUser();
   const { getToken } = useAuth();
   
@@ -162,7 +219,6 @@ function PaymentModal({
     }
   }, [user, userLoaded]);
 
-  const [payment, setPayment] = useState<PaymentDetails>({ method: "razorpay", upiId: "" });
   const [errors, setErrors] = useState<Partial<UserDetails>>({});
   const [processing, setProcessing] = useState(false);
 
@@ -281,9 +337,10 @@ function PaymentModal({
             } else {
               alert(result.error || "Failed to place order.");
             }
-          } catch (verifyError: any) {
-            console.warn("Verification error:", verifyError);
-            alert(verifyError.message || "Payment verification failed. Please contact support.");
+          } catch (verifyError) {
+            const err = verifyError as Error;
+            console.warn("Verification error:", err);
+            alert(err.message || "Payment verification failed. Please contact support.");
           } finally {
             setProcessing(false);
           }
@@ -295,9 +352,9 @@ function PaymentModal({
         },
       };
 
-      const rzp = new (window as any).Razorpay(options);
+      const rzp = new (window as Window & { Razorpay?: RazorpayConstructor }).Razorpay!(options);
 
-      rzp.on("payment.failed", (response: any) => {
+      rzp.on("payment.failed", (response) => {
         const err = response?.error || {};
         console.warn("Payment failed:", err);
         alert(`Payment failed: ${err.description || err.reason || "Please try again."}`);
@@ -305,9 +362,10 @@ function PaymentModal({
       });
 
       rzp.open();
-    } catch (err: any) {
-      console.error(err);
-      alert(err.message || "Something went wrong.");
+    } catch (err) {
+      const error = err as Error;
+      console.error(error);
+      alert(error.message || "Something went wrong.");
       setProcessing(false);
     }
   };
@@ -456,6 +514,7 @@ export default function ProductDetailClient({ initialProduct }: { initialProduct
   const [showLightbox, setShowLightbox] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [mounted, setMounted] = useState(false);
+  const [slideDir, setSlideDir] = useState<"left" | "right" | null>(null);
   const { products } = useProductStore();
   const product = initialProduct || products.find((p) => p.id === id);
   const router = useRouter();
@@ -463,8 +522,8 @@ export default function ProductDetailClient({ initialProduct }: { initialProduct
   const { getToken } = useAuth();
 
   // Reviews state
-  const [reviews, setReviews] = useState<any[]>([]);
-  const [summary, setSummary] = useState<any>({
+  const [reviews, setReviews] = useState<Review[]>([]);
+  const [summary, setSummary] = useState<ReviewSummary>({
     count: 0,
     average: 0,
     breakdown: { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 }
@@ -534,45 +593,69 @@ export default function ProductDetailClient({ initialProduct }: { initialProduct
     }
   };
 
-  const images = (product?.images && product.images.length > 0) 
-    ? product.images 
+  const images = (product?.images && product.images.length > 0)
+    ? [product.image, ...product.images].filter(Boolean) as string[]
     : [product?.image || ""];
 
   useEffect(() => { setMounted(true); window.scrollTo(0, 0); }, [id]);
 
+  /* Swipe navigation helpers */
+  const goNext = useCallback(() => {
+    if (images.length <= 1) return;
+    setSlideDir("left");
+    setCurrentImageIndex((p) => (p + 1) % images.length);
+  }, [images.length]);
+
+  const goPrev = useCallback(() => {
+    if (images.length <= 1) return;
+    setSlideDir("right");
+    setCurrentImageIndex((p) => (p - 1 + images.length) % images.length);
+  }, [images.length]);
+
+  /* Swipe hook for main viewer & lightbox */
+  const mainSwipe = useSwipe(goNext, goPrev);
+  const lightboxSwipe = useSwipe(goNext, goPrev);
+
+  /* Reset slide animation after it plays */
+  useEffect(() => {
+    if (slideDir) {
+      const t = setTimeout(() => setSlideDir(null), 320);
+      return () => clearTimeout(t);
+    }
+  }, [slideDir]);
+
   if (!product) return notFound();
   if (!mounted) return <div className="min-h-screen bg-alabaster animate-pulse" />;
-
-  const allImages = (product.images && product.images.length > 0) ? product.images : [product.image];
 
   return (
     <div className="flex flex-col min-h-screen bg-alabaster pt-32 pb-16 px-4 md:px-12">
       {showPayment && <PaymentModal product={product} onClose={() => setShowPayment(false)} />}
       
-      {/* Lightbox Modal */}
+      {/* ── Lightbox Modal ── */}
       {showLightbox && (
-        <div 
+        <div
           className="fixed inset-0 z-[300] bg-black/98 backdrop-blur-xl flex items-center justify-center p-4 md:p-12 animate-in fade-in zoom-in duration-300"
           onClick={() => setShowLightbox(false)}
+          {...lightboxSwipe}
         >
-          <button 
-            className="absolute top-8 right-8 text-white/50 hover:text-white transition-all hover:scale-110 p-2 z-[310]"
+          <button
+            className="absolute top-6 right-6 md:top-8 md:right-8 text-white/50 hover:text-white transition-all hover:scale-110 p-2 z-[310]"
             onClick={() => setShowLightbox(false)}
           >
-            <X size={40} strokeWidth={1.5} />
+            <X size={36} strokeWidth={1.5} />
           </button>
-          
+
           {images.length > 1 && (
             <>
-              <button 
-                className="absolute left-8 top-1/2 -translate-y-1/2 text-white/50 hover:text-white transition-all hover:scale-110 p-4 z-[310]"
-                onClick={(e) => { e.stopPropagation(); setCurrentImageIndex((prev) => (prev - 1 + images.length) % images.length); }}
+              <button
+                className="absolute left-4 md:left-8 top-1/2 -translate-y-1/2 text-white/50 hover:text-white transition-all hover:scale-110 p-3 z-[310] hidden md:flex"
+                onClick={(e) => { e.stopPropagation(); goPrev(); }}
               >
                 <ChevronLeft size={48} strokeWidth={1} />
               </button>
-              <button 
-                className="absolute right-8 top-1/2 -translate-y-1/2 text-white/50 hover:text-white transition-all hover:scale-110 p-4 z-[310]"
-                onClick={(e) => { e.stopPropagation(); setCurrentImageIndex((prev) => (prev + 1) % images.length); }}
+              <button
+                className="absolute right-4 md:right-8 top-1/2 -translate-y-1/2 text-white/50 hover:text-white transition-all hover:scale-110 p-3 z-[310] hidden md:flex"
+                onClick={(e) => { e.stopPropagation(); goNext(); }}
               >
                 <ChevronRight size={48} strokeWidth={1} />
               </button>
@@ -580,54 +663,137 @@ export default function ProductDetailClient({ initialProduct }: { initialProduct
           )}
 
           <div className="relative w-full h-full flex items-center justify-center pointer-events-none">
-            <Image 
-              src={images[currentImageIndex]} 
-              alt={product.name} 
-              fill 
-              className="object-contain" 
-              priority 
+            <Image
+              src={images[currentImageIndex]}
+              alt={product.name}
+              fill
+              className="object-contain"
+              priority
             />
           </div>
 
-          <div className="absolute bottom-8 left-0 right-0 flex justify-center gap-4 pointer-events-none">
-             <p className="text-white/40 font-mono text-[10px] tracking-[0.3em] uppercase">
-                {currentImageIndex + 1} / {images.length} — {product.name}
-             </p>
+          {/* Counter + dots */}
+          <div className="absolute bottom-6 left-0 right-0 flex flex-col items-center gap-3 pointer-events-none">
+            {images.length > 1 && (
+              <div className="flex items-center gap-1.5">
+                {images.map((_, di) => (
+                  <div
+                    key={di}
+                    className={`rounded-full transition-all duration-300 ${di === currentImageIndex ? "w-4 h-1.5 bg-white" : "w-1.5 h-1.5 bg-white/30"}`}
+                  />
+                ))}
+              </div>
+            )}
+            <p className="text-white/40 font-mono text-[10px] tracking-[0.3em] uppercase">
+              {currentImageIndex + 1} / {images.length} — {product.name}
+            </p>
           </div>
         </div>
       )}
 
       <div className="container mx-auto flex flex-col md:flex-row gap-8 lg:gap-16">
-        {/* Image Section */}
-        <div className="w-full md:w-[50%] flex flex-col gap-6">
-          <div 
-            className="w-full aspect-square md:aspect-[4/5] max-h-[340px] md:max-h-[600px] max-w-[340px] md:max-w-none mx-auto relative overflow-hidden rounded-3xl bg-[#F7F7F7] cursor-zoom-in group shadow-sm ring-1 ring-black/10 transition-all duration-500 hover:ring-obsidian/20"
+        {/* ── Image Section ── */}
+        <div className="w-full md:w-[50%] flex flex-col gap-4">
+
+          {/* Main viewer */}
+          <div
+            className="w-full aspect-square md:aspect-[4/5] max-h-[380px] md:max-h-[600px] max-w-[380px] md:max-w-none mx-auto relative overflow-hidden rounded-3xl bg-[#F7F7F7] cursor-zoom-in group shadow-sm ring-1 ring-black/10 transition-all duration-500 hover:ring-obsidian/20 select-none"
             onClick={() => setShowLightbox(true)}
+            {...mainSwipe}
           >
-            <Image 
-              src={images[currentImageIndex]} 
-              alt={product.name} 
-              fill 
-              className="object-cover transition-all duration-1000 ease-out group-hover:scale-105 rounded-3xl" 
-              priority 
-            />
-            <div className="absolute inset-0 ring-1 ring-inset ring-black/5 rounded-3xl pointer-events-none" />
-            <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-            <div className="absolute top-6 right-6 bg-white/20 backdrop-blur-md w-10 h-10 rounded-full flex items-center justify-center border border-white/30 opacity-0 group-hover:opacity-100 transition-all duration-300">
-               <ShoppingBag className="w-4 h-4 text-white" strokeWidth={1.5} />
+            {/* Sliding image — key forces remount on index change for instant swap */}
+            <div
+              key={currentImageIndex}
+              className="absolute inset-0"
+              style={{
+                animation: slideDir
+                  ? `slideIn${slideDir === "left" ? "Left" : "Right"} 0.3s cubic-bezier(0.25,1,0.5,1) both`
+                  : undefined,
+              }}
+            >
+              <Image
+                src={images[currentImageIndex]}
+                alt={product.name}
+                fill
+                className="object-cover group-hover:scale-105 transition-transform duration-700 ease-out rounded-3xl"
+                priority
+              />
             </div>
+
+            <div className="absolute inset-0 ring-1 ring-inset ring-black/5 rounded-3xl pointer-events-none" />
+            <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/25 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+
+            {/* Image counter pill */}
+            {images.length > 1 && (
+              <div className="absolute top-4 right-4 bg-black/50 backdrop-blur-md text-white text-[10px] font-mono px-2.5 py-1 rounded-full tracking-wider">
+                {currentImageIndex + 1} / {images.length}
+              </div>
+            )}
+
+            {/* Desktop prev/next arrows */}
+            {images.length > 1 && (
+              <>
+                <button
+                  className="hidden md:flex absolute left-3 top-1/2 -translate-y-1/2 bg-white/80 backdrop-blur-sm w-9 h-9 rounded-full items-center justify-center text-obsidian opacity-0 group-hover:opacity-100 transition-all duration-300 hover:bg-white shadow-md z-10"
+                  onClick={(e) => { e.stopPropagation(); goPrev(); }}
+                >
+                  <ChevronLeft size={18} strokeWidth={1.5} />
+                </button>
+                <button
+                  className="hidden md:flex absolute right-3 top-1/2 -translate-y-1/2 bg-white/80 backdrop-blur-sm w-9 h-9 rounded-full items-center justify-center text-obsidian opacity-0 group-hover:opacity-100 transition-all duration-300 hover:bg-white shadow-md z-10"
+                  onClick={(e) => { e.stopPropagation(); goNext(); }}
+                >
+                  <ChevronRight size={18} strokeWidth={1.5} />
+                </button>
+              </>
+            )}
+
+            {/* Mobile swipe dots */}
+            {images.length > 1 && (
+              <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-1.5 md:hidden pointer-events-none">
+                {images.map((_, di) => (
+                  <div
+                    key={di}
+                    className={`rounded-full transition-all duration-300 ${di === currentImageIndex ? "w-4 h-1.5 bg-white" : "w-1.5 h-1.5 bg-white/50"}`}
+                  />
+                ))}
+              </div>
+            )}
           </div>
 
-          {/* Thumbnails */}
+          {/* Thumbnail rail (desktop) */}
           {images.length > 1 && (
-            <div className="flex gap-4 px-2 overflow-x-auto no-scrollbar max-w-[340px] md:max-w-none mx-auto w-full">
+            <div className="hidden md:flex gap-3 px-1 overflow-x-auto no-scrollbar max-w-full">
               {images.map((img, idx) => (
-                <button 
+                <button
                   key={idx}
-                  onClick={() => setCurrentImageIndex(idx)}
-                  className={`relative flex-shrink-0 w-16 h-16 rounded-xl overflow-hidden transition-all duration-500 ring-offset-2 bg-sand/10 ${currentImageIndex === idx ? 'ring-2 ring-dustyrose scale-105' : 'opacity-60 hover:opacity-100'}`}
+                  onClick={() => { setSlideDir(idx > currentImageIndex ? "left" : "right"); setCurrentImageIndex(idx); }}
+                  className={`relative flex-shrink-0 w-14 h-14 rounded-xl overflow-hidden transition-all duration-300 ring-offset-alabaster ${
+                    currentImageIndex === idx
+                      ? "ring-2 ring-dustyrose scale-105 shadow-md"
+                      : "opacity-50 hover:opacity-90 hover:scale-105"
+                  }`}
                 >
-                  <Image src={img} alt={`${product.name} ${idx}`} fill className="object-cover" />
+                  <Image src={img} alt={`${product.name} ${idx + 1}`} fill className="object-cover" />
+                </button>
+              ))}
+            </div>
+          )}
+
+          {/* Mobile thumbnail rail (scrollable, slightly smaller) */}
+          {images.length > 1 && (
+            <div className="flex md:hidden gap-2.5 px-1 overflow-x-auto no-scrollbar max-w-[380px] mx-auto w-full pb-1">
+              {images.map((img, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => { setSlideDir(idx > currentImageIndex ? "left" : "right"); setCurrentImageIndex(idx); }}
+                  className={`relative flex-shrink-0 w-12 h-12 rounded-xl overflow-hidden transition-all duration-300 ${
+                    currentImageIndex === idx
+                      ? "ring-2 ring-dustyrose scale-105"
+                      : "opacity-50 active:opacity-90"
+                  }`}
+                >
+                  <Image src={img} alt={`${product.name} ${idx + 1}`} fill className="object-cover" />
                 </button>
               ))}
             </div>

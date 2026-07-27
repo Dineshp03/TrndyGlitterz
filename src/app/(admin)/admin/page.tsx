@@ -27,7 +27,7 @@ import {
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
-const statusConfig: Record<string, { label: string; icon: any; color: string; bg: string }> = {
+const statusConfig: Record<string, { label: string; icon: React.ComponentType<{ size?: number; className?: string }>; color: string; bg: string }> = {
   delivered: { label: "Delivered", icon: CheckCircle2, color: "text-emerald-700", bg: "bg-emerald-50 border-emerald-100" },
   processing: { label: "Processing", icon: Clock, color: "text-blue-600", bg: "bg-blue-50 border-blue-100" },
   pending: { label: "Pending", icon: Package, color: "text-amber-600", bg: "bg-amber-50 border-amber-100" },
@@ -43,8 +43,15 @@ export default function AdminDashboard() {
   
   const [isReset, setIsReset] = useState(false);
   const [filterOption, setFilterOption] = useState("ALL"); // "1M", "2M", "ALL"
-  const [greeting, setGreeting] = useState("Good morning");
+  const [greeting, setGreeting] = useState("Welcome");
   const [showConfirmReset, setShowConfirmReset] = useState(false);
+
+  useEffect(() => {
+    const hour = new Date().getHours();
+    if (hour < 12) setGreeting("Good morning");
+    else if (hour < 17) setGreeting("Good afternoon");
+    else setGreeting("Good evening");
+  }, []);
 
   useEffect(() => {
     async function loadData() {
@@ -58,11 +65,6 @@ export default function AdminDashboard() {
       }
     }
     loadData();
-    
-    const hour = new Date().getHours();
-    if (hour < 12) setGreeting("Good morning");
-    else if (hour < 17) setGreeting("Good afternoon");
-    else setGreeting("Good evening");
   }, [fetchProducts, fetchOrders, getToken, isLoaded, isSignedIn]);
 
   // ─── Analytics Calculations ──────────────────────────────────────────────────
@@ -200,7 +202,7 @@ export default function AdminDashboard() {
     }
 
     // Footer
-    const pageCount = (doc as any).internal.getNumberOfPages();
+    const pageCount = (doc as jsPDF & { internal: { getNumberOfPages: () => number } }).internal.getNumberOfPages();
     for (let i = 1; i <= pageCount; i++) {
       doc.setPage(i);
       doc.setFontSize(8);

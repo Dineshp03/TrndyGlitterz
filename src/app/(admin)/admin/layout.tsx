@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { ReactNode, useEffect, useRef, useState } from "react";
 import {
@@ -45,11 +46,23 @@ const mobileNavItems = [
   { label: "Settings", href: "/admin/settings", icon: Settings },
 ];
 
-// ─── Admin Check helper ──────────────────────────────────────────────────────
+interface ClerkUser {
+  imageUrl?: string;
+  fullName?: string | null;
+  firstName?: string | null;
+  primaryEmailAddress?: {
+    emailAddress: string;
+  } | null;
+  publicMetadata?: {
+    role?: string;
+  };
+}
 
-const ADMIN_EMAILS = ["trendyglitterzz@gmail.com", "admin@trendyglitterz.com"];
+const ADMIN_EMAILS: string[] = [
+  process.env.NEXT_PUBLIC_ADMIN_EMAIL ?? "",
+].filter(Boolean);
 
-function checkIsAdmin(user: any) {
+function checkIsAdmin(user: ClerkUser | null | undefined) {
   if (!user) return false;
   // check email
   const email = user.primaryEmailAddress?.emailAddress;
@@ -72,7 +85,7 @@ function useBreadcrumbs(pathname: string) {
 
 // ─── Desktop Sidebar ─────────────────────────────────────────────────────────
 
-function DesktopSidebar({ pathname, user, onLogout }: { pathname: string; user: any; onLogout: () => void }) {
+function DesktopSidebar({ pathname, user, onLogout }: { pathname: string; user: ClerkUser | null | undefined; onLogout: () => void }) {
   return (
     <aside className="hidden lg:flex flex-col fixed left-0 top-0 bottom-0 w-64 bg-white border-r border-[#F0EDE8] z-40 shadow-sm">
       <div className="h-16 flex items-center px-6 border-b border-[#F0EDE8]">
@@ -132,8 +145,18 @@ function DesktopSidebar({ pathname, user, onLogout }: { pathname: string; user: 
            <span className="text-xs text-[#888] group-hover:text-red-500 font-medium">Logout</span>
         </button>
         <div className="flex items-center gap-3 px-2 py-1 rounded-xl">
-          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#F5B8C8] to-[#E8809A] flex items-center justify-center text-white text-xs font-bold overflow-hidden shadow-sm">
-            {user?.imageUrl ? <img src={user.imageUrl} alt="" className="w-full h-full object-cover" /> : user?.firstName?.[0] || 'A'}
+          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#F5B8C8] to-[#E8809A] flex items-center justify-center text-white text-xs font-bold overflow-hidden shadow-sm relative">
+            {user?.imageUrl ? (
+              <Image
+                src={user.imageUrl}
+                alt="User Avatar"
+                width={32}
+                height={32}
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              user?.firstName?.[0] || 'A'
+            )}
           </div>
           <div className="flex-1 min-w-0">
              <p className="text-xs font-medium text-[#2C2C2C] truncate">{user?.fullName}</p>
@@ -315,7 +338,7 @@ function TopHeader({ pathname }: { pathname: string }) {
 
 // ─── Mobile Top Header ────────────────────────────────────────────────────────
 
-function MobileTopHeader({ pathname, user, onLogout }: { pathname: string; user: any; onLogout: () => void }) {
+function MobileTopHeader({ user, onLogout }: { user: ClerkUser | null | undefined; onLogout: () => void }) {
   const router = useRouter();
   const { notifications, markAllAsRead, clearNotifications } = useNotificationStore();
   const [bellOpen, setBellOpen] = useState(false);
@@ -444,9 +467,19 @@ function MobileTopHeader({ pathname, user, onLogout }: { pathname: string; user:
 
         <button
           onClick={onLogout}
-          className="w-8 h-8 rounded-full border border-[#F0EDE8] overflow-hidden bg-gradient-to-br from-[#F5B8C8] to-[#E8809A] flex items-center justify-center text-white text-[10px] font-bold"
+          className="w-8 h-8 rounded-full border border-[#F0EDE8] overflow-hidden bg-gradient-to-br from-[#F5B8C8] to-[#E8809A] flex items-center justify-center text-white text-[10px] font-bold relative"
         >
-          {user?.imageUrl ? <img src={user.imageUrl} alt="" className="w-full h-full object-cover" /> : user?.firstName?.[0] || 'A'}
+          {user?.imageUrl ? (
+            <Image
+              src={user.imageUrl}
+              alt="User Avatar"
+              width={32}
+              height={32}
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            user?.firstName?.[0] || 'A'
+          )}
         </button>
       </div>
     </header>
@@ -573,7 +606,7 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
     <div className="min-h-screen bg-[#FAFAF8] admin-theme text-obsidian">
       <DesktopSidebar pathname={pathname} user={user} onLogout={() => setShowLogoutConfirm(true)} />
       <TopHeader pathname={pathname} />
-      <MobileTopHeader pathname={pathname} user={user} onLogout={() => setShowLogoutConfirm(true)} />
+      <MobileTopHeader user={user} onLogout={() => setShowLogoutConfirm(true)} />
       <main className="pt-16 pb-20 lg:ml-64 lg:pt-16 lg:pb-0">
         {children}
       </main>

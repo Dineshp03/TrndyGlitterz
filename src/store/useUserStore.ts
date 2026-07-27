@@ -193,10 +193,11 @@ export const useUserStore = create<UserState>()(
             isLoading: false,
           });
           return { success: true };
-        } catch (error: any) {
-          console.error("updateProfile error:", error);
+        } catch (error) {
+          const err = error as Error;
+          console.error("updateProfile error:", err);
           set({ isLoading: false });
-          return { success: false, error: error.message };
+          return { success: false, error: err.message };
         }
       },
 
@@ -229,10 +230,11 @@ export const useUserStore = create<UserState>()(
           
           set({ isLoading: false });
           return { success: true, orderId: order.id };
-        } catch (error: any) {
-          console.error("addOrder error:", error);
+        } catch (error) {
+          const err = error as Error;
+          console.error("addOrder error:", err);
           set({ isLoading: false });
-          return { success: false, error: error.message };
+          return { success: false, error: err.message };
         }
       },
     }),
