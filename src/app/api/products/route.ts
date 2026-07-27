@@ -9,9 +9,10 @@ import {
 } from "@/lib/auth";
 import { auth, clerkClient } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
+import { getAdminEmails } from "@/lib/admin";
 
-// Hardcoded admin emails — must match layout.tsx
-const ADMIN_EMAILS = ["trendyglitterzz@gmail.com", "admin@trendyglitterz.com"];
+// Admin emails list from central helper
+const ADMIN_EMAILS = getAdminEmails();
 
 /**
  * Robust Admin Check (reads directly from Clerk JWT — no DB dependency):

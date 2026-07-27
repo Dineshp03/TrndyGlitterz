@@ -8,8 +8,7 @@ import { useWishlistStore } from "@/store/useWishlistStore";
 import { usePathname, useRouter } from "next/navigation";
 import { useState, useEffect, useCallback } from "react";
 import { useUser, Show } from "@clerk/nextjs";
-
-const ADMIN_EMAILS = ["trendyglitterzz@gmail.com", "admin@trendyglitterz.com"];
+import { checkIsAdmin } from "@/lib/admin";
 
 interface MenuCategoryItem {
   label: string;
@@ -107,10 +106,7 @@ export default function Navbar() {
 
   if (pathname === "/login" || pathname === "/signup" || pathname?.startsWith("/admin")) return null;
 
-  const isAdmin =
-    isSignedIn &&
-    user?.primaryEmailAddress?.emailAddress &&
-    ADMIN_EMAILS.includes(user.primaryEmailAddress.emailAddress);
+  const isAdmin = isSignedIn && checkIsAdmin(user);
 
   const navLinks = [
     { name: "Collections", href: "/#all-products" },

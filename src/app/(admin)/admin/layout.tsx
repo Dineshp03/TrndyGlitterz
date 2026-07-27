@@ -27,6 +27,7 @@ import { useUser, useClerk } from "@clerk/nextjs";
 import { LogoutModal } from "@/components/ui/LogoutModal";
 import { getSupabaseClient } from "@/lib/supabase";
 import { toast } from "sonner";
+import { checkIsAdmin, MinimalClerkUser } from "@/lib/admin";
 
 // ─── Nav Items ───────────────────────────────────────────────────────────────
 
@@ -46,53 +47,11 @@ const mobileNavItems = [
   { label: "Settings", href: "/admin/settings", icon: Settings },
 ];
 
-interface ClerkUser {
+type ClerkUser = MinimalClerkUser & {
   imageUrl?: string;
   fullName?: string | null;
   firstName?: string | null;
-  primaryEmailAddress?: {
-    emailAddress: string;
-  } | null;
-  emailAddresses?: Array<{
-    emailAddress: string;
-  }> | null;
-  publicMetadata?: {
-    role?: string;
-  };
-}
-
-const DEFAULT_ADMIN_EMAILS = [
-  "trendyglitterzz@gmail.com",
-  "admin@trendyglitterz.com",
-];
-
-const ENV_ADMIN_EMAILS = (process.env.NEXT_PUBLIC_ADMIN_EMAIL || "")
-  .split(",")
-  .map((e) => e.trim())
-  .filter(Boolean);
-
-const ADMIN_EMAILS: string[] = Array.from(
-  new Set([...DEFAULT_ADMIN_EMAILS, ...ENV_ADMIN_EMAILS].map((e) => e.toLowerCase()))
-);
-
-function checkIsAdmin(user: ClerkUser | null | undefined) {
-  if (!user) return false;
-  // check metadata
-  if (user.publicMetadata?.role === "admin") return true;
-
-  // check email addresses (primary or any registered)
-  const primaryEmail = user.primaryEmailAddress?.emailAddress?.toLowerCase().trim();
-  if (primaryEmail && ADMIN_EMAILS.includes(primaryEmail)) return true;
-
-  if (user.emailAddresses && Array.isArray(user.emailAddresses)) {
-    const hasAdminEmail = user.emailAddresses.some((e) =>
-      e.emailAddress && ADMIN_EMAILS.includes(e.emailAddress.toLowerCase().trim())
-    );
-    if (hasAdminEmail) return true;
-  }
-
-  return false;
-}
+};
 
 // ─── Breadcrumb helper ────────────────────────────────────────────────────────
 
