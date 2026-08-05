@@ -313,10 +313,13 @@ html.lenis body {
 }
 
 @layer utilities {
-  .hide-scrollbar::-webkit-scrollbar {
+  /* Both class names are supported for compatibility */
+  .hide-scrollbar::-webkit-scrollbar,
+  .scrollbar-hide::-webkit-scrollbar {
     display: none;
   }
-  .hide-scrollbar {
+  .hide-scrollbar,
+  .scrollbar-hide {
     -ms-overflow-style: none;
     scrollbar-width: none;
   }
@@ -529,7 +532,8 @@ html.lenis body {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 20px;
+  flex-wrap: wrap;
+  gap: 14px;
   opacity: 0;
   will-change: transform, opacity;
   animation: tgUp 0.65s 0.88s ease forwards;
@@ -714,10 +718,12 @@ html.lenis body {
     margin-bottom: 26px; 
   }
   .tg-ctas { 
-    gap: 14px;
+    gap: 12px;
+    flex-wrap: wrap;
+    padding: 0 8px;
   }
-  .tg-btn-fill, .tg-btn-ghost { padding: 11px 26px; font-size: 10px; }
-  .tg-stats { gap: 32px; margin-top: 30px; padding-top: 20px; }
-  .tg-stat-num { font-size: 28px; }
+  .tg-btn-fill, .tg-btn-ghost { padding: 11px 22px; font-size: 10px; min-width: 130px; justify-content: center; }
+  .tg-stats { gap: 28px; margin-top: 28px; padding-top: 18px; }
+  .tg-stat-num { font-size: 26px; }
   .tg-stat-lbl { font-size: 9px; }
 }

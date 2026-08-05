@@ -11,17 +11,17 @@ export default function Footer() {
   }
 
   return (
-    <footer className="bg-alabaster text-obsidian pt-32 pb-12 border-t border-obsidian/10 relative overflow-hidden">
+    <footer className="bg-alabaster text-obsidian pt-24 md:pt-32 pb-12 border-t border-obsidian/10 relative overflow-hidden">
       
-      {/* Huge background text */}
-      <div className="absolute top-10 left-0 w-full overflow-hidden opacity-[0.03] select-none pointer-events-none flex justify-center whitespace-nowrap">
-        <span className="text-[15rem] md:text-[20rem] font-serif font-bold tracking-tighter leading-none">GLITTERZ</span>
+      {/* Huge background text — clipped to prevent mobile overflow */}
+      <div className="absolute top-10 left-0 w-full overflow-hidden opacity-[0.03] select-none pointer-events-none flex justify-center">
+        <span className="text-[8rem] sm:text-[12rem] md:text-[20rem] font-serif font-bold tracking-tighter leading-none whitespace-nowrap">GLITTERZ</span>
       </div>
 
-      <div className="container mx-auto px-6 md:px-12 grid grid-cols-1 md:grid-cols-12 gap-16 relative z-10">
+      <div className="container mx-auto px-6 md:px-12 grid grid-cols-1 md:grid-cols-12 gap-12 md:gap-16 relative z-10">
         
         {/* Brand & Newsletter (Span 5) */}
-        <div className="col-span-1 md:col-span-5 space-y-12">
+        <div className="col-span-1 md:col-span-5 space-y-10 md:space-y-12">
           <h3 className="text-3xl md:text-4xl font-serif tracking-tight text-obsidian">
             TRENDY<br/><span className="italic pl-8 text-dustyrose">Glitterz</span>
           </h3>
@@ -38,7 +38,7 @@ export default function Footer() {
               />
               <button 
                 type="submit" 
-                className="text-[10px] font-sans uppercase tracking-[0.2em] text-obsidian group-hover:text-burgundy transition-colors px-4"
+                className="text-[10px] font-sans uppercase tracking-[0.2em] text-obsidian group-hover:text-burgundy transition-colors px-4 shrink-0"
               >
                 Submit
               </button>
@@ -49,47 +49,54 @@ export default function Footer() {
         {/* Space */}
         <div className="hidden md:block col-span-1 md:col-span-1"></div>
 
-        {/* Links (Span 6) */}
-        <div className="col-span-1 md:col-span-6 grid grid-cols-2 lg:grid-cols-3 gap-12">
+        {/* Links — 2 cols on mobile, 4 cols on tablet+ */}
+        <div className="col-span-1 md:col-span-6 grid grid-cols-2 sm:grid-cols-4 gap-8 md:gap-6">
           
-          <div className="space-y-8">
+          <div className="space-y-6 md:space-y-8">
             <h4 className="text-[10px] font-sans uppercase tracking-[0.2em] text-obsidian/40">Explore</h4>
-            <ul className="space-y-4 text-sm font-sans font-light">
-              <li><Link href="/#shop" className="hover:text-burgundy transition-colors">Collections</Link></li>
-              <li><Link href="/#shop" className="hover:text-burgundy transition-colors">New Arrivals</Link></li>
-              <li><Link href="#" className="hover:text-burgundy transition-colors">Journal</Link></li>
+            <ul className="space-y-3 md:space-y-4 text-sm font-sans font-light">
+              <li><Link href="/#all-products" className="hover:text-burgundy transition-colors">Collections</Link></li>
+              <li><Link href="/#new-arrivals" className="hover:text-burgundy transition-colors">New Arrivals</Link></li>
+              <li><Link href="/#about" className="hover:text-burgundy transition-colors">Our Story</Link></li>
               <li><Link href="/#about" className="hover:text-burgundy transition-colors">Our Ethos</Link></li>
             </ul>
           </div>
 
-          <div className="space-y-8">
+          <div className="space-y-6 md:space-y-8">
             <h4 className="text-[10px] font-sans uppercase tracking-[0.2em] text-obsidian/40">Support</h4>
-            <ul className="space-y-4 text-sm font-sans font-light">
-              <li><Link href="#" className="hover:text-burgundy transition-colors">Concierge</Link></li>
-              <li><Link href="#" className="hover:text-burgundy transition-colors">Shipping Returns</Link></li>
-              <li><Link href="#" className="hover:text-burgundy transition-colors">Care Guide</Link></li>
-              <li><Link href="#" className="hover:text-burgundy transition-colors">FAQ</Link></li>
+            <ul className="space-y-3 md:space-y-4 text-sm font-sans font-light">
+              <li><Link href="/shipping-policy" className="hover:text-burgundy transition-colors">Shipping Policy</Link></li>
+              <li><Link href="/return-and-refund" className="hover:text-burgundy transition-colors">Returns & Refunds</Link></li>
+              <li><Link href="/privacy-policy" className="hover:text-burgundy transition-colors">Privacy Policy</Link></li>
+              <li><Link href="/terms" className="hover:text-burgundy transition-colors">Terms of Service</Link></li>
             </ul>
           </div>
 
-          <div className="space-y-8 col-span-2 lg:col-span-1">
+          <div className="space-y-6 md:space-y-8">
             <h4 className="text-[10px] font-sans uppercase tracking-[0.2em] text-obsidian/40">Social</h4>
-            <ul className="space-y-4 text-sm font-sans font-light">
-              <li><a href="#" className="hover:text-burgundy transition-colors block">Instagram</a></li>
+            <ul className="space-y-3 md:space-y-4 text-sm font-sans font-light">
+              <li><a href="https://www.instagram.com/trendyglitterz?igsh=MmRpanBnZ3NpOHhw" target="_blank" rel="noopener noreferrer" className="hover:text-burgundy transition-colors block">Instagram</a></li>
+              <li><a href="https://wa.me/919884110778" target="_blank" rel="noopener noreferrer" className="hover:text-burgundy transition-colors block">WhatsApp</a></li>
               <li><a href="#" className="hover:text-burgundy transition-colors block">Pinterest</a></li>
-              <li><a href="#" className="hover:text-burgundy transition-colors block">TikTok</a></li>
             </ul>
           </div>
-            {/* Important Links */}
-            <div className="space-y-8">
-              <h4 className="text-[10px] font-sans uppercase tracking-[0.2em] text-obsidian/40">Important Links</h4>
-              <ul className="space-y-4 text-sm font-sans font-light">
-                <li><Link href="/privacy-policy" className="hover:text-burgundy transition-colors">Privacy Policy</Link></li>
-                <li><Link href="/terms-of-service" className="hover:text-burgundy transition-colors">Terms of Service</Link></li>
-                <li><Link href="/contact" className="hover:text-burgundy transition-colors">Contact Us</Link></li>
-                <li><Link href="/about" className="hover:text-burgundy transition-colors">About Us</Link></li>
-              </ul>
-            </div>
+
+          {/* Contact */}
+          <div className="space-y-6 md:space-y-8">
+            <h4 className="text-[10px] font-sans uppercase tracking-[0.2em] text-obsidian/40">Contact</h4>
+            <ul className="space-y-3 md:space-y-4 text-sm font-sans font-light">
+              <li>
+                <a href="mailto:trendyglitterzz@gmail.com" className="hover:text-burgundy transition-colors break-all">
+                  trendyglitterzz@gmail.com
+                </a>
+              </li>
+              <li>
+                <a href="https://wa.me/919884110778" target="_blank" rel="noopener noreferrer" className="hover:text-burgundy transition-colors">
+                  +91 98841 10778
+                </a>
+              </li>
+            </ul>
+          </div>
 
         </div>
       </div>

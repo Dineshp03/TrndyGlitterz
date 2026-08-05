@@ -164,18 +164,21 @@ export default function Home() {
                       {filter.label}
                     </button>
                   ))}
-                  
-
                 </div>
               </div>
             </div>
+
+            {/* Item count — shown on mobile below filters, on desktop inline */}
+            <p className="text-[10px] font-mono text-obsidian/40 uppercase tracking-widest shrink-0 mt-2 md:hidden">
+              {displayProducts.length} items
+            </p>
             <p className="text-[10px] md:text-xs font-mono text-obsidian/40 uppercase tracking-widest shrink-0 hidden md:block">
               {displayProducts.length} ITEMS TOTAL
             </p>
           </div>
 
           {selectedCategory ? (
-            <div className="grid grid-cols-2 sm:grid-cols-[repeat(auto-fill,minmax(175px,1fr))] gap-x-4 md:gap-x-4 gap-y-8 md:gap-y-7 px-0">
+            <div className="grid grid-cols-2 sm:grid-cols-[repeat(auto-fill,minmax(175px,1fr))] gap-x-4 md:gap-x-4 gap-y-8 md:gap-y-7 px-0 transition-opacity duration-500 ease-in-out">
               {displayProducts.map((product, index) => (
                 <div
                   key={product.id}
