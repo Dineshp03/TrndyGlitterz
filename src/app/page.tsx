@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useProductStore } from "@/store/useProductStore";
 import ProductSlider from "@/components/ProductSlider";
 import ProductCard from "@/components/ProductCard";
@@ -9,22 +9,36 @@ import { Search, ShoppingBag, X, Menu, Gem, ArrowUpRight, Instagram } from "luci
 import HeroSection from "@/components/HeroSection";
 import { Testimonials } from "@/components/ui/demo";
 import { useSettingsStore } from "@/store/useSettingsStore";
+import { useRouter, useSearchParams } from "next/navigation";
 
-export default function Home() {
+// Fixed category filters matching the menu structure
+const CATEGORY_FILTERS = [
+  { label: "Xuping Exclusive", categories: ["Xuping Earrings", "Xuping Neckpiece", "Xuping Bracelets", "Xuping Finger Rings"] },
+  { label: "Korean Earrings",  categories: ["Korean Earrings"] },
+  { label: "Neckpiece",        categories: ["Neckpiece"] },
+  { label: "Bracelets",        categories: ["Bracelets"] },
+  { label: "Finger Rings",     categories: ["Finger Rings"] },
+  { label: "Hair Accessories", categories: ["Hair Accessories"] },
+];
+
+function HomeContent() {
   const [mounted, setMounted] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const { products, syncWithInitial } = useProductStore();
   const settings = useSettingsStore();
+  const router = useRouter();
+  const searchParams = useSearchParams();
 
-  // Fixed category filters matching the menu structure
-  const CATEGORY_FILTERS = [
-    { label: "Xuping Exclusive", categories: ["Xuping Earrings", "Xuping Neckpiece", "Xuping Bracelets", "Xuping Finger Rings"] },
-    { label: "Korean Earrings",  categories: ["Korean Earrings"] },
-    { label: "Neckpiece",        categories: ["Neckpiece"] },
-    { label: "Bracelets",        categories: ["Bracelets"] },
-    { label: "Finger Rings",     categories: ["Finger Rings"] },
-    { label: "Hair Accessories", categories: ["Hair Accessories"] },
-  ];
+  // Read collection filter reactively from URL — this updates on back/forward navigation
+  const collectionParam = searchParams.get("collection");
+  const selectedCategory = collectionParam || null;
+
+  const setSelectedCategory = (category: string | null) => {
+    if (category) {
+      router.replace(`/?collection=${encodeURIComponent(category)}`, { scroll: false });
+    } else {
+      router.replace("/", { scroll: false });
+    }
+  };
 
   const scrollToProducts = () => {
     const el = document.getElementById('all-products');
@@ -44,7 +58,6 @@ export default function Home() {
     return 0;
   });
 
-
   // Products for the ALL COLLECTIONS slider — filter by selected category group
   const displayProducts = selectedCategory
     ? (() => {
@@ -61,7 +74,7 @@ export default function Home() {
     if (!p.createdAt) return false;
     const diffTime = Math.abs(new Date().getTime() - new Date(p.createdAt).getTime());
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
-    return diffDays <= 30; // Increased to 30 days
+    return diffDays <= 30;
   });
 
   // Fallback: If no products were added in the last 30 days, show the 8 most recently created products
@@ -74,28 +87,25 @@ export default function Home() {
 
   const showNewArrivals = newArrivals.length > 0 && settings.newBadgeEnabled;
 
-
   useEffect(() => {
     setMounted(true);
     syncWithInitial();
-
-    if (typeof window !== "undefined") {
-      const params = new URLSearchParams(window.location.search);
-      const colParam = params.get("collection");
-      if (colParam) {
-        setSelectedCategory(colParam);
-        setTimeout(() => {
-          const el = document.getElementById("all-products");
-          if (el) {
-            el.scrollIntoView({ behavior: "smooth" });
-          }
-        }, 150);
-      } else {
-        window.scrollTo(0, 0);
-      }
-    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-  
+
+  // Scroll to ALL COLLECTIONS section when collection param is present (including on back navigation)
+  useEffect(() => {
+    if (!mounted) return;
+    if (collectionParam) {
+      setTimeout(() => {
+        const el = document.getElementById("all-products");
+        if (el) {
+          el.scrollIntoView({ behavior: "smooth" });
+        }
+      }, 100);
+    }
+  }, [collectionParam, mounted]);
+
   if (!mounted) {
     return <div className="min-h-screen bg-alabaster" />;
   }
@@ -149,12 +159,7 @@ export default function Home() {
                 <div className="flex items-center overflow-x-auto pb-4 md:pb-0 -mb-4 md:mb-0 scrollbar-hide w-full gap-2 snap-x">
                   {/* ALL */}
                   <button 
-                    onClick={() => {
-                      setSelectedCategory(null);
-                      const url = new URL(window.location.href);
-                      url.searchParams.delete("collection");
-                      window.history.replaceState({}, "", url.toString());
-                    }}
+                    onClick={() => setSelectedCategory(null)}
                     className={`shrink-0 snap-start text-[10px] px-4 py-2 rounded-full border transition-all uppercase tracking-widest ${
                       !selectedCategory 
                       ? "bg-[#D4AF37] text-black border-[#D4AF37]" 
@@ -168,12 +173,7 @@ export default function Home() {
                   {CATEGORY_FILTERS.map(filter => (
                     <button 
                       key={filter.label}
-                      onClick={() => {
-                        setSelectedCategory(filter.label);
-                        const url = new URL(window.location.href);
-                        url.searchParams.set("collection", filter.label);
-                        window.history.replaceState({}, "", url.toString());
-                      }}
+                      onClick={() => setSelectedCategory(filter.label)}
                       className={`shrink-0 snap-start text-[10px] px-4 py-2 rounded-full border transition-all uppercase tracking-widest ${
                         selectedCategory === filter.label
                         ? "bg-[#D4AF37] text-black border-[#D4AF37]" 
@@ -254,5 +254,13 @@ export default function Home() {
 
       <Testimonials />
     </div>
+  );
+}
+
+export default function Home() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-alabaster" />}>
+      <HomeContent />
+    </Suspense>
   );
 }
