@@ -700,11 +700,11 @@ export default function ProductDetailClient({ initialProduct }: { initialProduct
               router.push("/catalog");
             }
           }}
-          className="inline-flex items-center gap-2 text-xs font-sans uppercase tracking-[0.15em] text-obsidian/70 hover:text-obsidian transition-colors bg-white/60 backdrop-blur-md px-3.5 py-2 rounded-full border border-obsidian/10 shadow-sm hover:shadow active:scale-95"
+          className="inline-flex items-center gap-2 text-[10px] font-sans uppercase tracking-[0.2em] text-[#FAFAFA]/50 hover:text-[#FAFAFA] transition-colors"
           aria-label="Go back to previous page"
         >
-          <ArrowLeft size={16} />
-          <span>Back</span>
+          <ArrowLeft size={12} />
+          <span>BACK</span>
         </button>
       </div>
 

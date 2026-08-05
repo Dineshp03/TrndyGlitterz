@@ -54,7 +54,7 @@ export default function ProductCard({ product }: { product: Product }) {
   return (
     <div className="group flex flex-col relative w-full overflow-visible">
       {/* Image Container — clean and crisp */}
-      <div className="relative aspect-[1/1] w-full bg-[#1A1A1A] mb-4 cursor-pointer overflow-hidden rounded-2xl border border-transparent group-hover:border-white/10 transition-all">
+      <div className="relative aspect-[1/1] w-full bg-[#1A1A1A] mb-4 cursor-pointer overflow-hidden rounded-2xl border border-transparent group-hover:border-white/10 transition-all will-change-transform">
         <Link href={`/product/${product.id}`} className="block w-full h-full relative">
           <Image 
             src={product.image} 
@@ -98,7 +98,7 @@ export default function ProductCard({ product }: { product: Product }) {
         {/* Quick Add Bar */}
         <button 
           onClick={handleAddToCart}
-          className="absolute bottom-0 left-0 w-full bg-[#111111] text-white py-3 text-[10px] font-bold uppercase tracking-[0.2em] translate-y-full group-hover:translate-y-0 transition-all duration-300 flex items-center justify-center gap-2 z-20 hover:bg-gradient-to-r hover:from-[#BF953F] hover:via-[#FCF6BA] hover:to-[#B38728] hover:text-[#111] border-t border-white/5 active:scale-95 origin-bottom"
+          className="absolute bottom-0 left-0 w-full bg-[#111111] text-white py-3 text-[10px] font-bold uppercase tracking-[0.2em] translate-y-full group-hover:translate-y-0 focus:translate-y-0 active:translate-y-0 transition-all duration-300 flex items-center justify-center gap-2 z-20 hover:bg-gradient-to-r hover:from-[#BF953F] hover:via-[#FCF6BA] hover:to-[#B38728] hover:text-[#111] border-t border-white/5 active:scale-95 origin-bottom touch-manipulation"
         >
           <ShoppingCart size={12} />
           Quick Add
@@ -108,8 +108,9 @@ export default function ProductCard({ product }: { product: Product }) {
       {/* Details Container - Centered to match Image 3 */}
       <div className="flex flex-col items-center text-center px-1">
                   <h3 className="text-[14px] md:text-sm font-sans text-obsidian/70 mb-1 group-hover:text-obsidian transition-colors truncate w-full tracking-tight">
-          {product.name}
-            
+          <Link href={`/product/${product.id}`} className="hover:underline">
+            {product.name}
+          </Link>
         </h3>
         
         <div className="flex items-center gap-2 font-sans">
