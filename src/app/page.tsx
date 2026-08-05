@@ -78,13 +78,22 @@ export default function Home() {
   useEffect(() => {
     setMounted(true);
     syncWithInitial();
-    // Force scroll to top to prevent mobile browsers from opening from the footer due to initial layout height changes
-    window.scrollTo(0, 0);
-    const timer = setTimeout(() => {
-      window.scrollTo(0, 0);
-    }, 100);
-    return () => clearTimeout(timer);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const colParam = params.get("collection");
+      if (colParam) {
+        setSelectedCategory(colParam);
+        setTimeout(() => {
+          const el = document.getElementById("all-products");
+          if (el) {
+            el.scrollIntoView({ behavior: "smooth" });
+          }
+        }, 150);
+      } else {
+        window.scrollTo(0, 0);
+      }
+    }
   }, []);
   
   if (!mounted) {
@@ -140,7 +149,12 @@ export default function Home() {
                 <div className="flex items-center overflow-x-auto pb-4 md:pb-0 -mb-4 md:mb-0 scrollbar-hide w-full gap-2 snap-x">
                   {/* ALL */}
                   <button 
-                    onClick={() => setSelectedCategory(null)}
+                    onClick={() => {
+                      setSelectedCategory(null);
+                      const url = new URL(window.location.href);
+                      url.searchParams.delete("collection");
+                      window.history.replaceState({}, "", url.toString());
+                    }}
                     className={`shrink-0 snap-start text-[10px] px-4 py-2 rounded-full border transition-all uppercase tracking-widest ${
                       !selectedCategory 
                       ? "bg-[#D4AF37] text-black border-[#D4AF37]" 
@@ -154,11 +168,16 @@ export default function Home() {
                   {CATEGORY_FILTERS.map(filter => (
                     <button 
                       key={filter.label}
-                      onClick={() => setSelectedCategory(filter.label)}
+                      onClick={() => {
+                        setSelectedCategory(filter.label);
+                        const url = new URL(window.location.href);
+                        url.searchParams.set("collection", filter.label);
+                        window.history.replaceState({}, "", url.toString());
+                      }}
                       className={`shrink-0 snap-start text-[10px] px-4 py-2 rounded-full border transition-all uppercase tracking-widest ${
                         selectedCategory === filter.label
                         ? "bg-[#D4AF37] text-black border-[#D4AF37]" 
-                        : "bg-[#111] text-white/60 border-transparent hover:border-[#D4AF37] hover:text-[#D4AF37]"
+                        : "bg-[#111] text-[#FAFAFA]/70 border-transparent hover:border-[#D4AF37] hover:text-[#D4AF37]"
                       }`}
                     >
                       {filter.label}
