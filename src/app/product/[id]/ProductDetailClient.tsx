@@ -8,7 +8,7 @@ import { useProductStore } from "@/store/useProductStore";
 import { useCart } from "@/hooks/useCart";
 import { useOrderStore } from "@/store/useOrderStore";
 import { useSettingsStore } from "@/store/useSettingsStore";
-import { CheckCircle, X, ChevronRight, ChevronLeft, Loader2, ShoppingBag, CreditCard, ShieldCheck, RotateCcw, Sparkles, Smile, Shield, MessageSquare } from "lucide-react";
+import { CheckCircle, X, ChevronRight, ChevronLeft, Loader2, ShoppingBag, CreditCard, ShieldCheck, RotateCcw, Sparkles, Smile, Shield, MessageSquare, ArrowLeft } from "lucide-react";
 
 /* ------------------------------------------------------------------ */
 /*  useSwipe — reusable touch-swipe hook                               */
@@ -690,6 +690,23 @@ export default function ProductDetailClient({ initialProduct }: { initialProduct
           </div>
         </div>
       )}
+
+      <div className="container mx-auto mb-6">
+        <button
+          onClick={() => {
+            if (typeof window !== "undefined" && window.history.length > 1) {
+              router.back();
+            } else {
+              router.push("/catalog");
+            }
+          }}
+          className="inline-flex items-center gap-2 text-xs font-sans uppercase tracking-[0.15em] text-obsidian/70 hover:text-obsidian transition-colors bg-white/60 backdrop-blur-md px-3.5 py-2 rounded-full border border-obsidian/10 shadow-sm hover:shadow active:scale-95"
+          aria-label="Go back to previous page"
+        >
+          <ArrowLeft size={16} />
+          <span>Back</span>
+        </button>
+      </div>
 
       <div className="container mx-auto flex flex-col md:flex-row gap-8 lg:gap-16">
         {/* ── Image Section ── */}
