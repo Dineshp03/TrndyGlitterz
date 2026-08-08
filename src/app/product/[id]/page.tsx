@@ -2,7 +2,7 @@ import { Metadata } from "next";
 import ProductDetailClient from "./ProductDetailClient";
 import { siteConfig } from "@/lib/metadata-config";
 import { createAdminSupabaseClient } from "@/lib/supabase-server";
-import { Product } from "@/data/products";
+import { Product, products as staticProducts } from "@/data/products";
 
 async function getProduct(id: string): Promise<Product | null> {
   try {
@@ -13,25 +13,28 @@ async function getProduct(id: string): Promise<Product | null> {
       .eq("id", id)
       .single();
 
-    if (error || !data) return null;
-
-    return {
-      id: data.id,
-      name: data.name,
-      price: data.price,
-      category: data.category,
-      image: data.image,
-      images: data.images || [],
-      description: data.description,
-      stock: data.stock,
-      featured: data.featured,
-      isImported: data.is_imported,
-      oldPrice: data.old_price,
-    };
+    if (!error && data) {
+      return {
+        id: data.id,
+        name: data.name,
+        price: data.price,
+        category: data.category,
+        image: data.image,
+        images: data.images || [],
+        description: data.description,
+        stock: data.stock,
+        featured: data.featured,
+        isImported: data.is_imported,
+        oldPrice: data.old_price,
+      };
+    }
   } catch (error) {
-    console.error("Error fetching product:", error);
-    return null;
+    console.error("Error fetching product from Supabase:", error);
   }
+
+  // Fallback to static products list
+  const fallback = staticProducts.find((p) => p.id === id);
+  return fallback || null;
 }
 
 export async function generateStaticParams() {

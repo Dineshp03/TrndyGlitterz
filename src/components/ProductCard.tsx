@@ -18,7 +18,7 @@ export default function ProductCard({ product }: { product: Product }) {
   const activeWishlist = isInWishlist(product.id);
   const { isSignedIn } = useUser();
 
-  const handleAddToCart = (e: React.MouseEvent) => {
+  const handleAddToCart = (e: React.MouseEvent | React.TouchEvent) => {
     e.preventDefault();
     e.stopPropagation();
     if (!isSignedIn) {
@@ -29,7 +29,7 @@ export default function ProductCard({ product }: { product: Product }) {
     toast.success(`${product.name} added to cart!`);
   };
 
-  const handleWishlist = (e: React.MouseEvent) => {
+  const handleWishlist = (e: React.MouseEvent | React.TouchEvent) => {
     e.preventDefault();
     e.stopPropagation();
     if (!isSignedIn) {
@@ -44,10 +44,9 @@ export default function ProductCard({ product }: { product: Product }) {
     }
   };
 
-  const handleQuickView = (e: React.MouseEvent) => {
+  const handleQuickView = (e: React.MouseEvent | React.TouchEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    // For now, navigate to product, or could show a modal
     router.push(`/product/${product.id}`);
   };
 

@@ -17,15 +17,19 @@ function useSwipe(onSwipeLeft: () => void, onSwipeRight: () => void, threshold =
   const startX = useRef<number | null>(null);
 
   const onTouchStart = useCallback((e: TouchEvent) => {
-    startX.current = e.touches[0].clientX;
+    if (e.touches && e.touches.length > 0) {
+      startX.current = e.touches[0].clientX;
+    }
   }, []);
 
   const onTouchEnd = useCallback((e: TouchEvent) => {
     if (startX.current === null) return;
-    const diff = startX.current - e.changedTouches[0].clientX;
-    if (Math.abs(diff) >= threshold) {
-      if (diff > 0) onSwipeLeft();
-      else onSwipeRight();
+    if (e.changedTouches && e.changedTouches.length > 0) {
+      const diff = startX.current - e.changedTouches[0].clientX;
+      if (Math.abs(diff) >= threshold) {
+        if (diff > 0) onSwipeLeft();
+        else onSwipeRight();
+      }
     }
     startX.current = null;
   }, [onSwipeLeft, onSwipeRight, threshold]);
@@ -382,8 +386,8 @@ function PaymentModal({
   );
 
   return (
-    <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-obsidian/60 backdrop-blur-sm" onClick={onClose} />
+    <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 transform-gpu">
+      <div className="absolute inset-0 bg-obsidian/60 backdrop-blur-sm transform-gpu" onClick={onClose} />
       <div className="relative z-10 w-full max-w-lg bg-alabaster shadow-2xl max-h-[90vh] flex flex-col overflow-hidden rounded-2xl">
         <div className="px-8 py-6 border-b border-obsidian/10">
           <p className="text-[10px] font-sans uppercase tracking-[0.2em] text-dustyrose">Checkout — {product.name}</p>
@@ -515,11 +519,35 @@ export default function ProductDetailClient({ initialProduct }: { initialProduct
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [mounted, setMounted] = useState(false);
   const [slideDir, setSlideDir] = useState<"left" | "right" | null>(null);
-  const { products } = useProductStore();
-  const product = initialProduct || products.find((p) => p.id === id);
+  const { products, fetchProducts } = useProductStore();
+  const [fetchedProduct, setFetchedProduct] = useState<Product | null>(initialProduct || null);
+  const [fetchingProduct, setFetchingProduct] = useState(false);
   const router = useRouter();
   const { isSignedIn, user } = useUser();
   const { getToken } = useAuth();
+
+  useEffect(() => {
+    setMounted(true);
+    if (typeof window !== "undefined") {
+      window.scrollTo({ top: 0, left: 0, behavior: "instant" as ScrollBehavior });
+    }
+  }, [id]);
+
+  useEffect(() => {
+    if (initialProduct) {
+      setFetchedProduct(initialProduct);
+      return;
+    }
+    const found = products.find((p) => p.id === id);
+    if (found) {
+      setFetchedProduct(found);
+    } else if (id && !fetchingProduct) {
+      setFetchingProduct(true);
+      fetchProducts().finally(() => setFetchingProduct(false));
+    }
+  }, [id, initialProduct, products, fetchProducts, fetchingProduct]);
+
+  const product = fetchedProduct || products.find((p) => p.id === id);
 
   // Reviews state
   const [reviews, setReviews] = useState<Review[]>([]);
@@ -597,8 +625,6 @@ export default function ProductDetailClient({ initialProduct }: { initialProduct
     ? [product.image, ...product.images].filter(Boolean) as string[]
     : [product?.image || ""];
 
-  useEffect(() => { setMounted(true); window.scrollTo(0, 0); }, [id]);
-
   /* Swipe navigation helpers */
   const goNext = useCallback(() => {
     if (images.length <= 1) return;
@@ -624,8 +650,31 @@ export default function ProductDetailClient({ initialProduct }: { initialProduct
     }
   }, [slideDir]);
 
-  if (!product) return notFound();
-  if (!mounted) return <div className="min-h-screen bg-alabaster animate-pulse" />;
+  if (!mounted || (fetchingProduct && !product)) {
+    return (
+      <div className="min-h-screen bg-alabaster flex flex-col items-center justify-center p-8 pt-32">
+        <Loader2 className="w-8 h-8 animate-spin text-dustyrose mb-4" />
+        <p className="text-xs font-mono uppercase text-obsidian/40 tracking-widest">Loading Details...</p>
+      </div>
+    );
+  }
+
+  if (!product) {
+    return (
+      <div className="min-h-screen bg-alabaster flex flex-col items-center justify-center text-center p-6 pt-32">
+        <h2 className="text-3xl font-serif text-obsidian mb-4">Product Not Found</h2>
+        <p className="text-obsidian/60 max-w-md font-sans text-xs mb-6">
+          The requested item is either unavailable or has been removed.
+        </p>
+        <button
+          onClick={() => router.push("/catalog")}
+          className="bg-gradient-to-r from-[#BF953F] via-[#FCF6BA] to-[#B38728] text-[#111] font-bold py-3.5 px-8 rounded-xl font-sans uppercase text-[11px] tracking-widest shadow-md hover:scale-105 active:scale-95 transition-all"
+        >
+          Explore Catalog
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col min-h-screen bg-alabaster pt-32 pb-16 px-4 md:px-12">
@@ -634,7 +683,7 @@ export default function ProductDetailClient({ initialProduct }: { initialProduct
       {/* ── Lightbox Modal ── */}
       {showLightbox && (
         <div
-          className="fixed inset-0 z-[300] bg-black/98 backdrop-blur-xl flex items-center justify-center p-4 md:p-12 animate-in fade-in zoom-in duration-300"
+          className="fixed inset-0 z-[300] bg-black/98 backdrop-blur-xl flex items-center justify-center p-4 md:p-12 animate-in fade-in zoom-in duration-300 transform-gpu"
           onClick={() => setShowLightbox(false)}
           {...lightboxSwipe}
         >
