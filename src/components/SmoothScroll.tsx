@@ -8,12 +8,19 @@ export default function SmoothScroll() {
   const pathname = usePathname();
 
   useEffect(() => {
+    // Skip Lenis on iOS / touch-only devices to avoid WebKit renderer crashes
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+      (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    const isTouchOnly = window.matchMedia('(pointer: coarse) and (hover: none)').matches;
+
+    if (isIOS || isTouchOnly) return;
+
     const lenis = new Lenis({
       duration: 1.5,
       easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
       smoothWheel: true,
       wheelMultiplier: 1.1,
-      touchMultiplier: 2,
+      touchMultiplier: 1,
     });
 
     let rafId: number;
