@@ -636,10 +636,13 @@ export const Testimonials = () => {
 
         </motion.div>
 
-        <div className="flex justify-center gap-6 mt-16 [mask-image:linear-gradient(to_bottom,transparent,black_25%,black_75%,transparent)] h-[650px] overflow-hidden">
+        <div className="flex justify-center gap-6 mt-16 h-[650px] overflow-hidden relative">
+          {/* Hardware-accelerated fading overlays */}
+          <div className="absolute top-0 inset-x-0 h-32 bg-gradient-to-b from-[#0A0A0A] to-transparent pointer-events-none z-20" />
           <TestimonialsColumn testimonials={firstColumn} duration={90} />
           <TestimonialsColumn testimonials={secondColumn} className="hidden md:block" duration={105} />
           <TestimonialsColumn testimonials={thirdColumn} className="hidden lg:block" duration={95} />
+          <div className="absolute bottom-0 inset-x-0 h-32 bg-gradient-to-t from-[#0A0A0A] to-transparent pointer-events-none z-20" />
         </div>
       </div>
     </section>

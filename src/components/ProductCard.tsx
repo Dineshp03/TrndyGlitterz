@@ -13,6 +13,7 @@ import { useUser } from "@clerk/nextjs";
 export default function ProductCard({ product }: { product: Product }) {
   const router = useRouter();
   const isOnSale = !!product.oldPrice;
+  const isSoldOut = product.stock !== undefined && product.stock !== null && product.stock <= 0;
   const { addItem } = useCart();
   const { toggleWishlist, isInWishlist } = useWishlistStore();
   const activeWishlist = isInWishlist(product.id);
@@ -21,6 +22,7 @@ export default function ProductCard({ product }: { product: Product }) {
   const handleAddToCart = (e: React.MouseEvent | React.TouchEvent) => {
     e.preventDefault();
     e.stopPropagation();
+    if (isSoldOut) return;
     if (!isSignedIn) {
       router.push("/login");
       return;
@@ -61,20 +63,26 @@ export default function ProductCard({ product }: { product: Product }) {
             fill
             priority={product.id === "ear-1"}
             quality={80}
-            className="object-cover object-center transition-transform duration-[1s] ease-out group-hover:scale-105"
+            className={`object-cover object-center transition-transform duration-[1s] ease-out group-hover:scale-105 ${isSoldOut ? 'opacity-50 grayscale-[30%]' : ''}`}
             sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
           />
           <div className="absolute inset-0 ring-1 ring-inset ring-black/5 rounded-2xl pointer-events-none" />
         </Link>
 
-        {/* Sale Badge */}
-        {isOnSale && (
+        {/* Sale/Sold Out Badge */}
+        {isSoldOut ? (
+          <div className="absolute top-2 left-2 z-10">
+            <span className="bg-[#111111] text-white text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-sm shadow-sm pointer-events-none">
+              Sold Out
+            </span>
+          </div>
+        ) : isOnSale ? (
           <div className="absolute top-2 left-2 z-10">
             <span className="bg-[#ff4d4f] text-white text-[9px] font-bold uppercase px-2 py-0.5 rounded-sm shadow-sm pointer-events-none">
               Sale
             </span>
           </div>
-        )}
+        ) : null}
 
         {/* Floating Icons */}
         <div className="absolute top-2 right-2 flex flex-col gap-2 z-10 sm:opacity-0 sm:group-hover:opacity-100 sm:translate-x-4 sm:group-hover:translate-x-0 transition-all duration-300">
@@ -97,10 +105,21 @@ export default function ProductCard({ product }: { product: Product }) {
         {/* Quick Add Bar */}
         <button 
           onClick={handleAddToCart}
-          className="absolute bottom-0 left-0 w-full bg-[#111111] text-white py-3 text-[10px] font-bold uppercase tracking-[0.2em] translate-y-full group-hover:translate-y-0 focus:translate-y-0 active:translate-y-0 transition-all duration-300 flex items-center justify-center gap-2 z-20 hover:bg-gradient-to-r hover:from-[#BF953F] hover:via-[#FCF6BA] hover:to-[#B38728] hover:text-[#111] border-t border-white/5 active:scale-95 origin-bottom touch-manipulation"
+          disabled={isSoldOut}
+          className={`absolute bottom-0 left-0 w-full py-3 text-[10px] font-bold uppercase tracking-[0.2em] translate-y-full group-hover:translate-y-0 focus:translate-y-0 active:translate-y-0 transition-all duration-300 flex items-center justify-center gap-2 z-20 border-t border-white/5 origin-bottom touch-manipulation ${
+            isSoldOut 
+              ? "bg-[#222222] text-white/40 cursor-not-allowed" 
+              : "bg-[#111111] text-white hover:bg-gradient-to-r hover:from-[#BF953F] hover:via-[#FCF6BA] hover:to-[#B38728] hover:text-[#111] active:scale-95"
+          }`}
         >
-          <ShoppingCart size={12} />
-          Quick Add
+          {isSoldOut ? (
+            <span>Sold Out</span>
+          ) : (
+            <>
+              <ShoppingCart size={12} />
+              Quick Add
+            </>
+          )}
         </button>
       </div>
       

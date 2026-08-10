@@ -625,6 +625,8 @@ export default function ProductDetailClient({ initialProduct }: { initialProduct
     ? [product.image, ...product.images].filter(Boolean) as string[]
     : [product?.image || ""];
 
+  const isSoldOut = product?.stock !== undefined && product?.stock !== null && product.stock <= 0;
+
   /* Swipe navigation helpers */
   const goNext = useCallback(() => {
     if (images.length <= 1) return;
@@ -683,7 +685,7 @@ export default function ProductDetailClient({ initialProduct }: { initialProduct
       {/* ── Lightbox Modal ── */}
       {showLightbox && (
         <div
-          className="fixed inset-0 z-[300] bg-black/98 backdrop-blur-xl flex items-center justify-center p-4 md:p-12 animate-in fade-in zoom-in duration-300 transform-gpu"
+          className="fixed inset-0 z-[300] bg-black md:bg-black/98 md:backdrop-blur-xl flex items-center justify-center p-4 md:p-12 animate-in fade-in zoom-in duration-300 transform-gpu"
           onClick={() => setShowLightbox(false)}
           {...lightboxSwipe}
         >
@@ -764,7 +766,7 @@ export default function ProductDetailClient({ initialProduct }: { initialProduct
                 src={images[currentImageIndex]}
                 alt={product.name}
                 fill
-                className="object-cover group-hover:scale-105 transition-transform duration-700 ease-out rounded-3xl"
+                className={`object-cover md:group-hover:scale-105 md:transition-transform md:duration-700 ease-out rounded-3xl ${isSoldOut ? 'opacity-70 grayscale-[30%]' : ''}`}
                 priority
               />
             </div>
@@ -772,9 +774,16 @@ export default function ProductDetailClient({ initialProduct }: { initialProduct
             <div className="absolute inset-0 ring-1 ring-inset ring-black/5 rounded-3xl pointer-events-none" />
             <div className="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-black/25 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
+            {/* Sold Out badge on main image viewer */}
+            {isSoldOut && (
+              <div className="absolute top-4 left-4 bg-[#ff4d4f] text-white text-[10px] font-mono font-bold px-3 py-1 rounded-full tracking-wider uppercase z-10 shadow-sm">
+                Sold Out
+              </div>
+            )}
+
             {/* Image counter pill */}
             {images.length > 1 && (
-              <div className="absolute top-4 right-4 bg-black/50 backdrop-blur-md text-white text-[10px] font-mono px-2.5 py-1 rounded-full tracking-wider">
+              <div className="absolute top-4 right-4 bg-black/70 md:bg-black/50 md:backdrop-blur-md text-white text-[10px] font-mono px-2.5 py-1 rounded-full tracking-wider">
                 {currentImageIndex + 1} / {images.length}
               </div>
             )}
@@ -850,7 +859,14 @@ export default function ProductDetailClient({ initialProduct }: { initialProduct
         </div>
 
         <div className="w-full md:w-[50%] flex flex-col justify-center py-4">
-          <p className="text-[10px] font-sans uppercase tracking-[0.3em] text-dustyrose mb-4">{product.category}</p>
+          <div className="flex items-center justify-between mb-4">
+            <p className="text-[10px] font-sans uppercase tracking-[0.3em] text-dustyrose">{product.category}</p>
+            {isSoldOut && (
+              <span className="bg-[#ff4d4f]/10 text-[#ff4d4f] text-[9px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-md border border-[#ff4d4f]/20">
+                Sold Out
+              </span>
+            )}
+          </div>
           <h1 className="text-3xl md:text-5xl font-serif text-obsidian mb-4 leading-tight">{product.name}</h1>
           <p className="text-xl md:text-2xl font-sans mb-8">₹{product.price.toFixed(2)}</p>
           <div className="h-px w-12 bg-dustyrose/30 mb-8" />
@@ -858,8 +874,21 @@ export default function ProductDetailClient({ initialProduct }: { initialProduct
             {renderDescription(product.description)}
           </div>
           <div className="flex flex-col sm:flex-row gap-4 mb-8">
-            <MagneticButton onClick={() => isSignedIn ? addItem(product) : router.push("/login")} className="sm:w-1/2">Add to Cart</MagneticButton>
-            <MagneticButton onClick={() => isSignedIn ? setShowPayment(true) : router.push("/login")} className="sm:w-1/2" variant="secondary">Buy Now</MagneticButton>
+            <MagneticButton 
+              onClick={() => isSignedIn ? addItem(product) : router.push("/login")} 
+              disabled={isSoldOut}
+              className="sm:w-1/2"
+            >
+              {isSoldOut ? "Sold Out" : "Add to Cart"}
+            </MagneticButton>
+            <MagneticButton 
+              onClick={() => isSignedIn ? setShowPayment(true) : router.push("/login")} 
+              disabled={isSoldOut}
+              className="sm:w-1/2" 
+              variant="secondary"
+            >
+              Buy Now
+            </MagneticButton>
           </div>
 
           {/* Trust Badges / Extra Details */}
