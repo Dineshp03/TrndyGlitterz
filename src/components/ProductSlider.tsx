@@ -21,13 +21,10 @@ export default function ProductSlider({ products, mobileSwipe = false, autoPlay 
   const [enableAutoPlay, setEnableAutoPlay] = useState(false);
 
   useEffect(() => {
-    // Disable Swiper autoplay on iOS and touch-only devices.
-    // The rAF timer fires while WebKit is still GPU-decoding product images,
-    // causing a compositing OOM crash ("A problem repeatedly occurred").
-    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
-      (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-    const isTouchOnly = window.matchMedia('(pointer: coarse)').matches;
-    setEnableAutoPlay(autoPlay && !isIOS && !isTouchOnly);
+    // Autoplay is now safe on all devices — the original iOS OOM crash was caused by
+    // autoplay firing simultaneously with 9 GPU particle layers + 12 will-change-transform
+    // card containers. Those have been removed, so autoplay can run everywhere.
+    setEnableAutoPlay(autoPlay);
   }, [autoPlay]);
 
   return (

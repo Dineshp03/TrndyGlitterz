@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState, useEffect, Suspense } from "react";
+import { useState, useEffect, Suspense, useTransition, useCallback, useMemo } from "react";
 import { useProductStore } from "@/store/useProductStore";
 import ProductSlider from "@/components/ProductSlider";
 import ProductCard from "@/components/ProductCard";
@@ -29,18 +29,35 @@ function HomeContent() {
   const settings = useSettingsStore();
   const router = useRouter();
   const searchParams = useSearchParams();
+  const [isPending, startTransition] = useTransition();
 
-  // Read collection filter reactively from URL — this updates on back/forward navigation
-  const collectionParam = searchParams.get("collection");
-  const selectedCategory = collectionParam || null;
+  // Local state for instant switching — no router roundtrip on each tap.
+  // Initialised from URL so direct links / back navigation still work.
+  const [selectedCategory, setSelectedCategoryLocal] = useState<string | null>(
+    () => searchParams.get("collection") || null
+  );
 
-  const setSelectedCategory = (category: string | null) => {
-    if (category) {
-      router.replace(`/?collection=${encodeURIComponent(category)}`, { scroll: false });
-    } else {
-      router.replace("/", { scroll: false });
-    }
-  };
+  // Sync local state → URL (debounced) so bookmarks / sharing still works,
+  // but the UI updates instantly without waiting for a navigation cycle.
+  useEffect(() => {
+    const t = setTimeout(() => {
+      const current = searchParams.get("collection") || null;
+      if (selectedCategory !== current) {
+        if (selectedCategory) {
+          router.replace(`/?collection=${encodeURIComponent(selectedCategory)}`, { scroll: false });
+        } else {
+          router.replace("/", { scroll: false });
+        }
+      }
+    }, 150);
+    return () => clearTimeout(t);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedCategory]);
+
+  // Instant — no async, no router, immediate UI response
+  const setSelectedCategory = useCallback((category: string | null) => {
+    startTransition(() => setSelectedCategoryLocal(category));
+  }, [startTransition]);
 
   const scrollToProducts = () => {
     const el = document.getElementById('all-products');
@@ -54,11 +71,11 @@ function HomeContent() {
   const filteredProducts = products;
 
   // Sort products: Uncategorized at the last
-  const sortedProducts = [...filteredProducts].sort((a, b) => {
+  const sortedProducts = useMemo(() => [...filteredProducts].sort((a, b) => {
     if ((!a.category || a.category === "Uncategorized") && (b.category && b.category !== "Uncategorized")) return 1;
     if ((a.category && a.category !== "Uncategorized") && (!b.category || b.category === "Uncategorized")) return -1;
     return 0;
-  });
+  }), [filteredProducts]);
 
   // Products for the ALL COLLECTIONS slider — filter by selected category group
   const displayProducts = selectedCategory
@@ -92,24 +109,12 @@ function HomeContent() {
 
   const showNewArrivals = newArrivals.length > 0 && settings.newBadgeEnabled;
 
+  // Remove old URL-sync effect — we now handle it in the debounced effect above
   useEffect(() => {
     setMounted(true);
     syncWithInitial();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  // Scroll to ALL COLLECTIONS section when collection param is present (including on back navigation)
-  useEffect(() => {
-    if (!mounted) return;
-    if (collectionParam) {
-      setTimeout(() => {
-        const el = document.getElementById("all-products");
-        if (el) {
-          el.scrollIntoView({ behavior: "smooth" });
-        }
-      }, 100);
-    }
-  }, [collectionParam, mounted]);
 
   if (!mounted) {
     return <div className="min-h-screen bg-alabaster" />;
@@ -160,35 +165,35 @@ function HomeContent() {
               }}>ALL COLLECTIONS</h2>
               <div className="flex flex-col md:flex-row md:items-center gap-4 mt-4 w-full">
                 
-                {/* Scrollable Category Filters & Imported Toggle */}
-                <div className="flex items-center overflow-x-auto pb-4 md:pb-0 -mb-4 md:mb-0 scrollbar-hide w-full gap-2 snap-x">
-                  {/* ALL */}
-                  <button 
-                    onClick={() => setSelectedCategory(null)}
-                    className={`shrink-0 snap-start text-[10px] px-4 py-2 rounded-full border transition-all uppercase tracking-widest ${
-                      !selectedCategory 
-                      ? "bg-[#D4AF37] text-black border-[#D4AF37]" 
-                      : "bg-[#111] text-white/60 border-transparent hover:border-[#D4AF37] hover:text-[#D4AF37]"
-                    }`}
-                  >
-                    All
-                  </button>
+                {/* Scrollable Category Filters */}
+                 <div className="flex items-center overflow-x-auto pb-4 md:pb-0 -mb-4 md:mb-0 scrollbar-hide w-full gap-2 snap-x scroll-smooth">
+                   {/* ALL */}
+                   <button 
+                     onClick={() => setSelectedCategory(null)}
+                     className={`shrink-0 snap-start text-[10px] px-4 py-2 rounded-full border transition-colors duration-150 uppercase tracking-widest touch-manipulation ${
+                       !selectedCategory 
+                       ? "bg-[#D4AF37] text-black border-[#D4AF37]" 
+                       : "bg-[#111] text-white/60 border-transparent active:bg-[#D4AF37]/20"
+                     }`}
+                   >
+                     All
+                   </button>
 
-                  {/* Fixed category pills from menu */}
-                  {CATEGORY_FILTERS.map(filter => (
-                    <button 
-                      key={filter.label}
-                      onClick={() => setSelectedCategory(filter.label)}
-                      className={`shrink-0 snap-start text-[10px] px-4 py-2 rounded-full border transition-all uppercase tracking-widest ${
-                        selectedCategory === filter.label
-                        ? "bg-[#D4AF37] text-black border-[#D4AF37]" 
-                        : "bg-[#111] text-[#FAFAFA]/70 border-transparent hover:border-[#D4AF37] hover:text-[#D4AF37]"
-                      }`}
-                    >
-                      {filter.label}
-                    </button>
-                  ))}
-                </div>
+                   {/* Fixed category pills from menu */}
+                   {CATEGORY_FILTERS.map(filter => (
+                     <button 
+                       key={filter.label}
+                       onClick={() => setSelectedCategory(filter.label)}
+                       className={`shrink-0 snap-start text-[10px] px-4 py-2 rounded-full border transition-colors duration-150 uppercase tracking-widest touch-manipulation ${
+                         selectedCategory === filter.label
+                         ? "bg-[#D4AF37] text-black border-[#D4AF37]" 
+                         : "bg-[#111] text-[#FAFAFA]/70 border-transparent active:bg-[#D4AF37]/20"
+                       }`}
+                     >
+                       {filter.label}
+                     </button>
+                   ))}
+                 </div>
               </div>
             </div>
 
