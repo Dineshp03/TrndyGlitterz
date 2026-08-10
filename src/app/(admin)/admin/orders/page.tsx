@@ -8,11 +8,14 @@ import { useOrderStore, GlobalOrder } from "@/store/useOrderStore";
 import { useEffect } from "react";
 
 const statusConfig: Record<string, { label: string; icon: typeof CheckCircle2; color: string; bg: string }> = {
+  pending: { label: "Order Confirmed", icon: CheckCircle2, color: "text-blue-600", bg: "bg-blue-50 border-blue-100" },
+  processing: { label: "Order Confirmed", icon: CheckCircle2, color: "text-blue-600", bg: "bg-blue-50 border-blue-100" },
+  shipped: { label: "Shipped", icon: Package, color: "text-amber-600", bg: "bg-amber-50 border-amber-100" },
   delivered: { label: "Delivered", icon: CheckCircle2, color: "text-emerald-700", bg: "bg-emerald-50 border-emerald-100" },
-  processing: { label: "Processing", icon: Clock, color: "text-blue-600", bg: "bg-blue-50 border-blue-100" },
-  pending: { label: "Pending", icon: Package, color: "text-amber-600", bg: "bg-amber-50 border-amber-100" },
   cancelled: { label: "Cancelled", icon: AlertCircle, color: "text-red-500", bg: "bg-red-50 border-red-100" },
 };
+
+const allowedUpdateStatuses = ["pending", "shipped", "delivered", "cancelled"];
 
 type Order = GlobalOrder;
 
@@ -45,8 +48,10 @@ export default function OrdersPage() {
         (order.product?.toLowerCase() ?? "").includes(search.toLowerCase());
       
       const matchesFilter = filter === "All" || 
-        (filter === "Pending" && (order.status === "pending" || order.status === "processing")) ||
-        order.status.toLowerCase() === filter.toLowerCase();
+        (filter === "Order Confirmed" && (order.status === "pending" || order.status === "processing")) ||
+        (filter === "Shipped" && order.status === "shipped") ||
+        (filter === "Delivered" && order.status === "delivered") ||
+        (filter === "Cancelled" && order.status === "cancelled");
 
       return matchesSearch && matchesFilter;
     });
@@ -55,8 +60,9 @@ export default function OrdersPage() {
   // Tab stats calculated from all current orders
   const stats = useMemo(() => [
     { label: "All", count: orders.length },
+    { label: "Order Confirmed", count: orders.filter(o => o.status === "pending" || o.status === "processing").length },
+    { label: "Shipped", count: orders.filter(o => o.status === "shipped").length },
     { label: "Delivered", count: orders.filter(o => o.status === "delivered").length },
-    { label: "Pending", count: orders.filter(o => o.status === "pending" || o.status === "processing").length },
     { label: "Cancelled", count: orders.filter(o => o.status === "cancelled").length },
   ], [orders]);
 
@@ -98,7 +104,7 @@ export default function OrdersPage() {
       </div>
 
       {/* Status Summary */}
-      <div className="grid grid-cols-4 gap-3 mb-6">
+      <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 mb-6">
         {stats.map((tab) => (
           <button
             key={tab.label}
@@ -360,18 +366,21 @@ export default function OrdersPage() {
               <div>
                 <label className="text-[9px] font-mono text-[#bbb] uppercase tracking-widest mb-2 block">Update Status</label>
                 <div className="grid grid-cols-2 gap-2">
-                  {Object.entries(statusConfig).map(([key, config]) => (
-                    <button
-                      key={key}
-                      onClick={() => setEditStatus(key)}
-                      className={`flex items-center justify-center gap-1.5 py-2.5 rounded-lg border text-xs font-medium transition-all ${
-                        editStatus === key ? `border-[#2C2C2C] bg-[#2C2C2C] text-white` : `border-[#F0EDE8] bg-white text-[#888] hover:border-[#ccc]`
-                      }`}
-                    >
-                      <config.icon size={12} />
-                      {config.label}
-                    </button>
-                  ))}
+                  {allowedUpdateStatuses.map((key) => {
+                    const config = statusConfig[key];
+                    return (
+                      <button
+                        key={key}
+                        onClick={() => setEditStatus(key)}
+                        className={`flex items-center justify-center gap-1.5 py-2.5 rounded-lg border text-xs font-medium transition-all ${
+                          editStatus === key ? `border-[#2C2C2C] bg-[#2C2C2C] text-white` : `border-[#F0EDE8] bg-white text-[#888] hover:border-[#ccc]`
+                        }`}
+                      >
+                        <config.icon size={12} />
+                        {config.label}
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
             </div>
