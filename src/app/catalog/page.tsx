@@ -120,7 +120,13 @@ function CatalogContent() {
 
   const filteredProducts = useMemo(() => {
     let items = products;
-    if (selectedCategory)  items = items.filter(p => p.category === selectedCategory);
+    if (selectedCategory) {
+      if (selectedCategory.toLowerCase() === "earrings") {
+        items = items.filter(p => (p.category ?? "").toLowerCase().includes("earring"));
+      } else {
+        items = items.filter(p => p.category === selectedCategory);
+      }
+    }
     if (showOfferOnly)     items = items.filter(p => p.featured);
     if (selectedPrice) {
       const rule = PRICE_FILTERS.find(f => f.param === selectedPrice);

@@ -13,12 +13,14 @@ import { useRouter, useSearchParams } from "next/navigation";
 
 // Fixed category filters matching the menu structure
 const CATEGORY_FILTERS = [
-  { label: "Xuping Exclusive", categories: ["Xuping Earrings", "Xuping Neckpiece", "Xuping Bracelets", "Xuping Finger Rings"] },
-  { label: "Korean Earrings",  categories: ["Korean Earrings"] },
-  { label: "Neckpiece",        categories: ["Neckpiece"] },
-  { label: "Bracelets",        categories: ["Bracelets"] },
-  { label: "Finger Rings",     categories: ["Finger Rings"] },
-  { label: "Hair Accessories", categories: ["Hair Accessories"] },
+  { label: "Earrings",             categories: ["Earrings", "Traditional Earrings", "Korean Earrings", "Xuping Earrings"] },
+  { label: "Korean Earrings",      categories: ["Korean Earrings"] },
+  { label: "Traditional Earrings", categories: ["Traditional Earrings"] },
+  { label: "Xuping Exclusive",     categories: ["Xuping Earrings", "Xuping Neckpiece", "Xuping Bracelets", "Xuping Finger Rings"] },
+  { label: "Neckpiece",            categories: ["Neckpiece", "Xuping Neckpiece", "Chains"] },
+  { label: "Bracelets",            categories: ["Bracelets", "Xuping Bracelets", "Bands"] },
+  { label: "Finger Rings",         categories: ["Finger Rings", "Xuping Finger Rings", "Rings"] },
+  { label: "Hair Accessories",     categories: ["Hair Accessories"] },
 ];
 
 function HomeContent() {
@@ -61,12 +63,15 @@ function HomeContent() {
   // Products for the ALL COLLECTIONS slider — filter by selected category group
   const displayProducts = selectedCategory
     ? (() => {
-        const filter = CATEGORY_FILTERS.find(f => f.label === selectedCategory);
+        const filter = CATEGORY_FILTERS.find(f => f.label.toLowerCase() === selectedCategory.toLowerCase());
         if (filter) {
           const lowerFilterCategories = filter.categories.map(c => c.toLowerCase());
-          return sortedProducts.filter(p => lowerFilterCategories.includes((p.category ?? "").toLowerCase()));
+          return sortedProducts.filter(p => {
+            const cat = (p.category ?? "").toLowerCase();
+            return lowerFilterCategories.includes(cat) || (filter.label.toLowerCase() === "earrings" && cat.includes("earring"));
+          });
         }
-        return sortedProducts;
+        return sortedProducts.filter(p => (p.category ?? "").toLowerCase() === selectedCategory.toLowerCase());
       })()
     : sortedProducts;
 
