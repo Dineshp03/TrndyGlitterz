@@ -50,6 +50,45 @@ interface RazorpayConstructor {
   new (options: unknown): RazorpayInstance;
 }
 
+const INDIAN_STATES = [
+  "Andhra Pradesh",
+  "Arunachal Pradesh",
+  "Assam",
+  "Bihar",
+  "Chhattisgarh",
+  "Goa",
+  "Gujarat",
+  "Haryana",
+  "Himachal Pradesh",
+  "Jharkhand",
+  "Karnataka",
+  "Kerala",
+  "Madhya Pradesh",
+  "Maharashtra",
+  "Manipur",
+  "Meghalaya",
+  "Mizoram",
+  "Nagaland",
+  "Odisha",
+  "Punjab",
+  "Rajasthan",
+  "Sikkim",
+  "Tamil Nadu",
+  "Telangana",
+  "Tripura",
+  "Uttar Pradesh",
+  "Uttarakhand",
+  "West Bengal",
+  "Andaman and Nicobar Islands",
+  "Chandigarh",
+  "Dadra and Nagar Haveli and Daman and Diu",
+  "Delhi",
+  "Jammu and Kashmir",
+  "Ladakh",
+  "Lakshadweep",
+  "Puducherry"
+];
+
 const emptyDetails: UserDetails = {
   fullName: "",
   email: "",
@@ -97,6 +136,44 @@ export default function CartCheckoutModal({ onClose }: { onClose: () => void }) 
   const [processing, setProcessing] = useState(false);
 
   const total = getCartTotal();
+
+  // Dynamic Shipping Charge calculation based on entered address city/state
+  const getShippingCharge = (): number => {
+    // Standard Shipping: Free on orders above ₹999
+    if (total >= 999) return 0;
+    
+    const cityLower = (details.city || "").trim().toLowerCase();
+    const stateLower = (details.state || "").trim().toLowerCase();
+    
+    if (!cityLower && !stateLower) return 0;
+    
+    // Chennai: ₹50
+    if (cityLower === "chennai" || cityLower.includes("chennai")) {
+      return 50;
+    }
+    // Bangalore / Bengaluru: ₹100
+    if (
+      cityLower === "bangalore" || 
+      cityLower === "bengaluru" || 
+      cityLower.includes("bangalore") || 
+      cityLower.includes("bengaluru")
+    ) {
+      return 100;
+    }
+    // Tamil Nadu: ₹80
+    if (stateLower === "tamil nadu" || stateLower === "tamilnadu" || stateLower === "tn") {
+      return 80;
+    }
+    // Kerala: ₹100
+    if (stateLower === "kerala") {
+      return 100;
+    }
+    // Rest of India (North India / other states): ₹150
+    return 150;
+  };
+
+  const shippingCharge = getShippingCharge();
+  const finalTotal = total + shippingCharge;
 
   // Prevent body scroll
   useEffect(() => {
@@ -150,7 +227,7 @@ export default function CartCheckoutModal({ onClose }: { onClose: () => void }) 
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
         body: JSON.stringify({
-          amount: total,
+          amount: finalTotal,
           receipt: `cart_${Date.now()}`,
         }),
       });
@@ -216,7 +293,7 @@ export default function CartCheckoutModal({ onClose }: { onClose: () => void }) 
               city: details.city,
               state: details.state,
               pincode: details.pincode,
-              total: total,
+              total: finalTotal,
               payment_method: "razorpay",
               razorpay_payment_id: response.razorpay_payment_id,
               razorpay_order_id: response.razorpay_order_id,
@@ -290,21 +367,44 @@ export default function CartCheckoutModal({ onClose }: { onClose: () => void }) 
       >
         {label}
       </label>
-      <input
-        id={id}
-        type={type}
-        placeholder={placeholder}
-        value={details[id]}
-        onChange={(e) => {
-          setDetails((d) => ({ ...d, [id]: e.target.value }));
-          setErrors((er) => ({ ...er, [id]: undefined }));
-        }}
-        className={`border-b py-2 bg-transparent text-sm font-sans text-obsidian outline-none transition-colors duration-200 placeholder:text-obsidian/30 ${
-          errors[id]
-            ? "border-red-400"
-            : "border-obsidian/20 focus:border-obsidian"
-        }`}
-      />
+      {id === "state" ? (
+        <select
+          id={id}
+          value={details.state}
+          onChange={(e) => {
+            setDetails((d) => ({ ...d, state: e.target.value }));
+            setErrors((er) => ({ ...er, state: undefined }));
+          }}
+          className={`border-b py-2 bg-transparent text-sm font-sans text-obsidian outline-none transition-colors duration-200 ${
+            errors[id]
+              ? "border-red-400"
+              : "border-obsidian/20 focus:border-obsidian"
+          }`}
+        >
+          <option value="" disabled className="text-black bg-alabaster">Select State</option>
+          {INDIAN_STATES.map((st) => (
+            <option key={st} value={st} className="text-black bg-alabaster">
+              {st}
+            </option>
+          ))}
+        </select>
+      ) : (
+        <input
+          id={id}
+          type={type}
+          placeholder={placeholder}
+          value={details[id]}
+          onChange={(e) => {
+            setDetails((d) => ({ ...d, [id]: e.target.value }));
+            setErrors((er) => ({ ...er, [id]: undefined }));
+          }}
+          className={`border-b py-2 bg-transparent text-sm font-sans text-obsidian outline-none transition-colors duration-200 placeholder:text-obsidian/30 ${
+            errors[id]
+              ? "border-red-400"
+              : "border-obsidian/20 focus:border-obsidian"
+          }`}
+        />
+      )}
       {errors[id] && (
         <p className="text-[10px] text-red-500 mt-0.5">{errors[id]}</p>
       )}
@@ -425,6 +525,20 @@ export default function CartCheckoutModal({ onClose }: { onClose: () => void }) 
                 {field("state", "State")}
               </div>
               {field("pincode", "Pincode", "text", "400001")}
+
+              {/* Live Shipping Preview Banner */}
+              {(details.city || details.state) && (
+                <div className="mt-2 p-3 bg-burgundy/5 border border-burgundy/20 rounded-xl flex items-center justify-between text-xs font-sans animate-fade-in">
+                  <span className="text-obsidian/70">Estimated Shipping Charge:</span>
+                  <span className="font-semibold text-burgundy">
+                    {total >= 999 ? (
+                      <span className="text-green-600 font-bold uppercase tracking-wider">Free (Above ₹999)</span>
+                    ) : (
+                      `₹${shippingCharge}`
+                    )}
+                  </span>
+                </div>
+              )}
             </div>
           )}
 
@@ -462,11 +576,13 @@ export default function CartCheckoutModal({ onClose }: { onClose: () => void }) 
                 </div>
                 <div className="flex justify-between">
                   <span>Shipping</span>
-                  <span className="text-green-600">Free</span>
+                  <span className={shippingCharge === 0 ? "text-green-600 font-semibold" : "font-medium text-obsidian"}>
+                    {shippingCharge === 0 ? "Free" : `₹${shippingCharge.toFixed(2)}`}
+                  </span>
                 </div>
                 <div className="flex justify-between font-medium text-obsidian text-sm mt-2 pt-2 border-t border-obsidian/10">
                   <span>Total</span>
-                  <span>₹{total.toFixed(2)}</span>
+                  <span>₹{finalTotal.toFixed(2)}</span>
                 </div>
               </div>
             </div>
