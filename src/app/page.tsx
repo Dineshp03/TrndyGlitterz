@@ -133,13 +133,12 @@ function HomeContent() {
         <section id="new-arrivals" className="py-8 md:py-16 px-0 md:px-12 bg-[#0A0A0A] overflow-hidden">
           <div className="container mx-auto px-4 md:px-0">
             <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 md:mb-16 gap-6 md:gap-8 border-b border-obsidian/10 pb-6 md:pb-8">
-              <div className="w-full md:w-auto overflow-hidden">
-                <h2 className="text-3xl md:text-5xl font-sans font-bold tracking-tighter uppercase mb-2" style={{
-                  background: "linear-gradient(to right, #BF953F 0%, #FCF6BA 30%, #B38728 55%, #FBF5B7 80%, #BF953F 100%)",
-                  WebkitBackgroundClip: "text",
-                  WebkitTextFillColor: "transparent",
-                  backgroundClip: "text",
-                }}>NEW ARRIVALS</h2>
+              <div className="w-full md:w-auto overflow-visible">
+                <h2 className="text-3xl md:text-5xl font-sans font-bold tracking-tighter uppercase mb-2 relative inline-block">
+                  <span className="gold-gradient-text pb-1">NEW ARRIVALS</span>
+                  <div className="tg-sparkle s1" />
+                  <div className="tg-sparkle s2" />
+                </h2>
                 <div className="flex flex-col md:flex-row md:items-center gap-4 mt-4 w-full">
                    <p className="text-sm font-sans text-obsidian/60 tracking-wider">Discover our latest pieces, sparkling for the first time.</p>
                 </div>
@@ -156,13 +155,12 @@ function HomeContent() {
           
           {/* Header */}
           <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 md:mb-16 gap-6 md:gap-8 border-b border-obsidian/10 pb-6 md:pb-8">
-            <div className="w-full md:w-auto overflow-hidden">
-              <h2 className="text-3xl md:text-5xl font-sans font-bold tracking-tighter uppercase mb-2" style={{
-                background: "linear-gradient(to right, #BF953F 0%, #FCF6BA 30%, #B38728 55%, #FBF5B7 80%, #BF953F 100%)",
-                WebkitBackgroundClip: "text",
-                WebkitTextFillColor: "transparent",
-                backgroundClip: "text",
-              }}>ALL COLLECTIONS</h2>
+            <div className="w-full md:w-auto overflow-visible">
+              <h2 className="text-3xl md:text-5xl font-sans font-bold tracking-tighter uppercase mb-2 relative inline-block">
+                <span className="gold-gradient-text pb-1">ALL COLLECTIONS</span>
+                <div className="tg-sparkle s3" />
+                <div className="tg-sparkle s4" />
+              </h2>
               <div className="flex flex-col md:flex-row md:items-center gap-4 mt-4 w-full">
                 
                 {/* Scrollable Category Filters */}

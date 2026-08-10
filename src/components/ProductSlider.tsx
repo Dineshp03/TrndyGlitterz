@@ -62,8 +62,9 @@ export default function ProductSlider({ products, mobileSwipe = false, autoPlay 
             nextEl: '.swiper-button-next-custom',
           }}
           autoplay={enableAutoPlay ? {
-            delay: 3000,
+            delay: 2500,
             disableOnInteraction: false,
+            pauseOnMouseEnter: false,
           } : false}
           breakpoints={{
             640: {
