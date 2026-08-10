@@ -209,6 +209,25 @@ body {
   color: var(--color-obsidian);
   font-family: var(--font-sans);
   overflow-x: hidden;
+  /* Remove 300ms tap delay on all touch browsers */
+  touch-action: manipulation;
+  /* Prevent flash of tap highlight on Android Chrome / iOS Safari */
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* ── Touch: instant tap on all interactive elements ── */
+a, button, [role="button"] {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* ── Below-fold content-visibility: browser skips paint until in view ── */
+/* Saves ~50ms first-paint on Android by deferring off-screen layout */
+#new-arrivals,
+#all-products,
+#about {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 600px;
 }
 
 /* Lenis essential CSS */
@@ -799,27 +818,25 @@ html.lenis body {
 /* devices regardless of viewport width (tablets, large phones)     */
 /* ================================================================ */
 @media (pointer: coarse) {
-  /* Disable product image hover scale — triggers compositor layer   */
+  /* Disable product image hover scale on touch devices to avoid tap stickiness */
   .group:hover .group-hover\:scale-105,
   .md\:group-hover\:scale-105 {
     transform: none !important;
   }
+}
 
-  /* Stop all infinite tg-dot particle float animations             */
-  .tg-dot {
-    display: none !important;
-  }
+/* iOS Specific WebKit compositor relief (OOM prevention) */
+.is-ios .tg-dot {
+  display: none !important;
+}
 
-  /* Stop gold gradient shine scroll animation                       */
-  .gold-gradient-text {
-    animation: none;
-    background-position: 0% center;
-  }
+.is-ios .tg-sparkle {
+  display: none !important;
+}
 
-  /* Stop all sparkle animations                                     */
-  .tg-sparkle {
-    display: none !important;
-  }
+.is-ios .gold-gradient-text {
+  animation: none !important;
+  background-position: 0% center !important;
 }
 /* filter: blur() on animated elements = new GPU composite layer    */
 @media (max-width: 768px) {

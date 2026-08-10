@@ -13,6 +13,10 @@ export default function SmoothScroll() {
       (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
     const isTouchOnly = window.matchMedia('(pointer: coarse) and (hover: none)').matches;
 
+    if (isIOS) {
+      document.documentElement.classList.add('is-ios');
+    }
+
     if (isIOS || isTouchOnly) return;
 
     const lenis = new Lenis({

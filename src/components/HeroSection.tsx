@@ -35,14 +35,11 @@ export default function HeroSection({ onStartShopping, hasNewArrivals }: HeroSec
 
   useEffect(() => {
     if (!mounted) return;
-    // Suppress particles on iOS and any touch-only (coarse pointer) device.
-    // Each particle creates a separate will-change:transform GPU layer.
-    // On iOS these layers persist in the compositor even when off-screen,
-    // causing an OOM crash when Swiper autoplay + product images load below.
+    // Suppress particles only on iOS devices where WebKit layer compositor OOM is a threat.
+    // Android and desktop browsers handle these layers smoothly.
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
       (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-    const isTouchOnly = window.matchMedia('(pointer: coarse)').matches;
-    if (!isIOS && !isTouchOnly) {
+    if (!isIOS) {
       setShowParticles(true);
     }
   }, [mounted]);
