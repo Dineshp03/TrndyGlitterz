@@ -48,7 +48,8 @@ export default function ProductSlider({ products, mobileSwipe = false, autoPlay 
           slidesPerView={1.2}
           centeredSlides={false}
           grabCursor={true}
-          freeMode={true}
+          freeMode={false}
+          speed={600}
           mousewheel={{
             forceToAxis: true,
           }}

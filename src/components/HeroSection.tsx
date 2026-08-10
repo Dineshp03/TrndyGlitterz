@@ -34,12 +34,7 @@ export default function HeroSection({ onStartShopping, hasNewArrivals }: HeroSec
   }, []);
 
   useEffect(() => {
-    if (!mounted) return;
-    // Suppress particles only on iOS devices where WebKit layer compositor OOM is a threat.
-    // Android and desktop browsers handle these layers smoothly.
-    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
-      (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-    if (!isIOS) {
+    if (mounted) {
       setShowParticles(true);
     }
   }, [mounted]);

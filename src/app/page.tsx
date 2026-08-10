@@ -219,7 +219,7 @@ function HomeContent() {
               ))}
             </div>
           ) : (
-            <ProductSlider products={displayProducts} />
+            <ProductSlider products={displayProducts} mobileSwipe={true} autoPlay={true} />
           )}
         </div>
       </section>
