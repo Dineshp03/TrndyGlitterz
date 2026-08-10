@@ -1,6 +1,6 @@
 "use client";
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Navigation, Pagination, Mousewheel, FreeMode, Autoplay } from 'swiper/modules';
 import 'swiper/css';
@@ -18,6 +18,18 @@ interface ProductSliderProps {
 }
 
 export default function ProductSlider({ products, mobileSwipe = false, autoPlay = false }: ProductSliderProps) {
+  const [enableAutoPlay, setEnableAutoPlay] = useState(false);
+
+  useEffect(() => {
+    // Disable Swiper autoplay on iOS and touch-only devices.
+    // The rAF timer fires while WebKit is still GPU-decoding product images,
+    // causing a compositing OOM crash ("A problem repeatedly occurred").
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+      (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    const isTouchOnly = window.matchMedia('(pointer: coarse)').matches;
+    setEnableAutoPlay(autoPlay && !isIOS && !isTouchOnly);
+  }, [autoPlay]);
+
   return (
     <div className="relative group w-full px-0">
       {/* Mobile View: 2-Column Grid matching Image 3 (unless mobileSwipe is true) */}
@@ -51,7 +63,7 @@ export default function ProductSlider({ products, mobileSwipe = false, autoPlay 
             prevEl: '.swiper-button-prev-custom',
             nextEl: '.swiper-button-next-custom',
           }}
-          autoplay={autoPlay ? {
+          autoplay={enableAutoPlay ? {
             delay: 3000,
             disableOnInteraction: false,
           } : false}

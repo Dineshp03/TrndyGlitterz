@@ -55,7 +55,7 @@ export default function ProductCard({ product }: { product: Product }) {
   return (
     <div className="group flex flex-col relative w-full overflow-visible">
       {/* Image Container — clean and crisp */}
-      <div className="relative aspect-[1/1] w-full bg-[#1A1A1A] mb-4 cursor-pointer overflow-hidden rounded-2xl border border-transparent group-hover:border-white/10 transition-all will-change-transform">
+      <div className="relative aspect-[1/1] w-full bg-[#1A1A1A] mb-4 cursor-pointer overflow-hidden rounded-2xl border border-transparent group-hover:border-white/10 transition-all">
         <Link href={`/product/${product.id}`} className="block w-full h-full relative">
           <Image 
             src={product.image} 

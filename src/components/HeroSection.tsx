@@ -26,11 +26,26 @@ interface HeroSectionProps {
 export default function HeroSection({ onStartShopping, hasNewArrivals }: HeroSectionProps) {
   const [mounted, setMounted] = useState(false);
   const [activeBtn, setActiveBtn] = useState<'shop' | 'new'>('shop');
+  const [showParticles, setShowParticles] = useState(false);
 
   useEffect(() => {
     const frame = requestAnimationFrame(() => setMounted(true));
     return () => cancelAnimationFrame(frame);
   }, []);
+
+  useEffect(() => {
+    if (!mounted) return;
+    // Suppress particles on iOS and any touch-only (coarse pointer) device.
+    // Each particle creates a separate will-change:transform GPU layer.
+    // On iOS these layers persist in the compositor even when off-screen,
+    // causing an OOM crash when Swiper autoplay + product images load below.
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+      (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    const isTouchOnly = window.matchMedia('(pointer: coarse)').matches;
+    if (!isIOS && !isTouchOnly) {
+      setShowParticles(true);
+    }
+  }, [mounted]);
 
   const handleShop = () => {
     if (onStartShopping) {
@@ -60,8 +75,8 @@ export default function HeroSection({ onStartShopping, hasNewArrivals }: HeroSec
         <div className="absolute inset-0 bg-black/60 z-[1] pointer-events-none" />
 
 
-        {/* floating particles — only after mount to avoid SSR mismatch */}
-        {mounted && PARTICLES.map((p) => (
+        {/* floating particles — desktop only, suppressed on iOS/touch to prevent GPU OOM */}
+        {showParticles && PARTICLES.map((p) => (
           <div
             key={p.id}
             className="tg-dot"

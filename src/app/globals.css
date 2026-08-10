@@ -794,7 +794,33 @@ html.lenis body {
   }
 }
 
-/* Override filter:blur in entry animations on mobile               */
+/* ================================================================ */
+/* Touch Device GPU Relief — pointer:coarse catches ALL touch       */
+/* devices regardless of viewport width (tablets, large phones)     */
+/* ================================================================ */
+@media (pointer: coarse) {
+  /* Disable product image hover scale — triggers compositor layer   */
+  .group:hover .group-hover\:scale-105,
+  .md\:group-hover\:scale-105 {
+    transform: none !important;
+  }
+
+  /* Stop all infinite tg-dot particle float animations             */
+  .tg-dot {
+    display: none !important;
+  }
+
+  /* Stop gold gradient shine scroll animation                       */
+  .gold-gradient-text {
+    animation: none;
+    background-position: 0% center;
+  }
+
+  /* Stop all sparkle animations                                     */
+  .tg-sparkle {
+    display: none !important;
+  }
+}
 /* filter: blur() on animated elements = new GPU composite layer    */
 @media (max-width: 768px) {
   @keyframes fadeSlideIn {
