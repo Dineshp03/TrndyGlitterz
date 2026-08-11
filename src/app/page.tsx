@@ -11,12 +11,11 @@ import { Testimonials } from "@/components/ui/demo";
 import { useSettingsStore } from "@/store/useSettingsStore";
 import { useRouter, useSearchParams } from "next/navigation";
 
-// Fixed category filters matching the menu structure
 const CATEGORY_FILTERS = [
-  { label: "Earrings",             categories: ["Earrings", "Traditional Earrings", "Korean Earrings", "Xuping Earrings"] },
-  { label: "Korean Earrings",      categories: ["Korean Earrings"] },
-  { label: "Traditional Earrings", categories: ["Traditional Earrings"] },
   { label: "Xuping Exclusive",     categories: ["Xuping Earrings", "Xuping Neckpiece", "Xuping Bracelets", "Xuping Finger Rings"] },
+  { label: "Korean Earrings",      categories: ["Korean Earrings"] },
+  { label: "Earrings",             categories: ["Earrings", "Traditional Earrings", "Korean Earrings", "Xuping Earrings"] },
+  { label: "Traditional Earrings", categories: ["Traditional Earrings"] },
   { label: "Neckpiece",            categories: ["Neckpiece", "Xuping Neckpiece", "Chains"] },
   { label: "Bracelets",            categories: ["Bracelets", "Xuping Bracelets", "Bands"] },
   { label: "Finger Rings",         categories: ["Finger Rings", "Xuping Finger Rings", "Rings"] },
