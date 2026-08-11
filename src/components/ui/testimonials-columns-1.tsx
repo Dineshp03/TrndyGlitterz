@@ -8,35 +8,21 @@ export const TestimonialsColumn = (props: {
   testimonials: { text: string; image: string; name: string; role: string }[];
   duration?: number;
 }) => {
-  const [isMobile, setIsMobile] = useState(false);
-
-  useEffect(() => {
-    const checkMobile = () => {
-      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
-        (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-      const isSmallScreen = window.innerWidth < 768;
-      setIsMobile(isIOS || isSmallScreen);
-    };
-    checkMobile();
-    window.addEventListener("resize", checkMobile);
-    return () => window.removeEventListener("resize", checkMobile);
-  }, []);
-
-  const list = isMobile ? props.testimonials.slice(0, 3) : props.testimonials;
-  const loopArray = isMobile ? [0] : [0, 1];
+  const list = props.testimonials;
+  const loopArray = [0, 1];
 
   return (
     <div className={props.className}>
       <motion.div
-        animate={!isMobile ? {
+        animate={{
           translateY: "-50%",
-        } : {}}
-        transition={!isMobile ? {
+        }}
+        transition={{
           duration: props.duration || 10,
           repeat: Infinity,
           ease: "linear",
           repeatType: "loop",
-        } : undefined}
+        }}
         className="flex flex-col gap-6 pb-6 bg-transparent"
       >
         {loopArray.map((_, index) => (

@@ -770,23 +770,6 @@ html.lenis body {
   .noise-bg {
     display: none !important;
   }
-
-  /* Remove will-change on all animated hero elements — each one     */
-  /* creates a separate GPU texture layer, exhausting iOS VRAM       */
-  .tg-dot,
-  .tg-eyebrow,
-  .tg-sub,
-  .tg-ctas,
-  .tg-stats,
-  .tg-h1-l {
-    will-change: auto;
-  }
-
-  /* Limit to exactly 3 floating particles on mobile for maximum smoothness */
-  /* and GPU memory efficiency. 3 GPU layers is completely safe. */
-  .tg-dot:nth-child(n+4) {
-    display: none !important;
-  }
 }
 
 /* ================================================================ */
