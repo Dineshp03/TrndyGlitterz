@@ -16,74 +16,115 @@ export default function ReturnAndRefundPolicy() {
       <div className="max-w-3xl mx-auto px-6 md:px-8 py-16 space-y-12">
         {/* Intro */}
         <div className="space-y-4 text-sm font-sans leading-relaxed text-obsidian/80">
+          <p className="text-base font-serif text-obsidian">
+            As jewellery is a personal-use product, we follow a limited return and exchange policy.
+          </p>
           <p>
-            Thank you for shopping at TRENDY GLITTERZ. We hope you love your purchase, but if you are not entirely satisfied, we are here to help.
+            Thank you for shopping at TRENDY GLITTERZ. We inspect every piece carefully before dispatch to ensure the highest standards of quality.
           </p>
         </div>
 
-        {/* Section 1 */}
+        {/* Section 1: Eligible for Return/Exchange */}
         <div className="space-y-6">
-          <h2 className="text-xl font-serif tracking-tight border-b border-obsidian/10 pb-3">1. Return Window</h2>
-          <div className="space-y-3 text-sm font-sans leading-relaxed text-obsidian/80">
-            <p>
-              You have <span className="font-semibold text-obsidian">7 calendar days</span> to return an item from the date you received it. To be eligible for a return, your item must be unused and in the same condition that you received it.
+          <h2 className="text-xl font-serif tracking-tight border-b border-obsidian/10 pb-3 flex items-center gap-2">
+            <span>🔄</span> Eligible for Return / Exchange
+          </h2>
+          <div className="space-y-4 text-sm font-sans leading-relaxed text-obsidian/80">
+            <p>A return or exchange may be considered if:</p>
+            <ul className="space-y-2 pl-4 list-disc list-inside">
+              <li>You receive a wrong product.</li>
+              <li>The product is damaged during transit.</li>
+              <li>The product received has a manufacturing defect.</li>
+            </ul>
+            <p className="bg-obsidian/5 border-l-4 border-burgundy px-4 py-3 rounded-r-md">
+              <span className="font-semibold text-obsidian">Important:</span> Customers must contact Trendy Glitterz within <span className="font-semibold text-burgundy">24 hours of delivery</span> to report an issue.
             </p>
           </div>
         </div>
 
-        {/* Section 2 */}
+        {/* Section 2: Non-Returnable Items */}
         <div className="space-y-6">
-          <h2 className="text-xl font-serif tracking-tight border-b border-obsidian/10 pb-3">2. Return Conditions</h2>
+          <h2 className="text-xl font-serif tracking-tight border-b border-obsidian/10 pb-3 flex items-center gap-2">
+            <span>❌</span> Non-Returnable Items
+          </h2>
           <div className="space-y-3 text-sm font-sans leading-relaxed text-obsidian/80">
-            <p>To ensure a successful return, please verify the following conditions are met:</p>
+            <p>Returns and exchanges are generally not accepted for:</p>
             <ul className="space-y-2 pl-4 list-disc list-inside">
-              <li>The item must be in its original packaging (box, pouch, certificate).</li>
-              <li>The product must not show any signs of wear, usage, or damage.</li>
-              <li>You need to have the receipt or proof of purchase.</li>
-              <li>Gift cards and sale/promotional items are non-returnable.</li>
+              <li>Change of mind</li>
+              <li>Wrong size selected by the customer</li>
+              <li>Minor variations in colour due to lighting or screen settings</li>
+              <li>Products showing signs of use, damage or alteration by the customer</li>
+              <li>Items without their original packaging</li>
+              <li>Sale, clearance or specially marked non-returnable products</li>
             </ul>
           </div>
         </div>
 
-        {/* Section 3 */}
-        <div className="space-y-6">
-          <h2 className="text-xl font-serif tracking-tight border-b border-obsidian/10 pb-3">3. Refund Process</h2>
+        {/* Section 3: Unboxing Video Requirement */}
+        <div className="p-6 bg-burgundy/5 border border-burgundy/20 rounded-2xl space-y-4">
+          <h2 className="text-lg font-serif tracking-tight text-obsidian flex items-center gap-2">
+            <span>📹</span> Unboxing Video Requirement
+          </h2>
           <div className="space-y-3 text-sm font-sans leading-relaxed text-obsidian/80">
             <p>
-              Once we receive your item, we will inspect it and notify you that we have received your returned item. We will immediately notify you on the status of your refund after inspecting the item.
+              For damaged, missing or incorrect items, customers are strongly requested to record a continuous unboxing video from the time the parcel is unopened until the product is fully revealed.
             </p>
             <p>
-              If your return is approved, we will initiate a refund to your original method of payment (via Razorpay). You will receive the credit within 5-7 business days, depending on your card issuer&apos;s policies or bank processing times.
+              The video may be required to verify the issue and process a return or exchange.
             </p>
-          </div>
-        </div>
-
-        {/* Section 4 */}
-        <div className="space-y-6">
-          <h2 className="text-xl font-serif tracking-tight border-b border-obsidian/10 pb-3">4. Shipping Fees for Returns</h2>
-          <div className="space-y-3 text-sm font-sans leading-relaxed text-obsidian/80">
-            <p>
-              You will be responsible for paying for your own shipping costs for returning your item. Shipping costs are non-refundable. If you receive a refund, the cost of return shipping will be deducted from your refund (if we arrange the pickup).
+            <p className="text-xs font-sans bg-white/70 border border-burgundy/20 p-3 rounded-lg text-burgundy font-medium">
+              ⚠️ Claims without sufficient proof may not be accepted.
             </p>
           </div>
         </div>
 
-        {/* Section 5 */}
+        {/* Section 4: Exchange Process */}
         <div className="space-y-6">
-          <h2 className="text-xl font-serif tracking-tight border-b border-obsidian/10 pb-3">5. Exchange Policy</h2>
+          <h2 className="text-xl font-serif tracking-tight border-b border-obsidian/10 pb-3 flex items-center gap-2">
+            <span>🔁</span> Exchange Process
+          </h2>
           <div className="space-y-3 text-sm font-sans leading-relaxed text-obsidian/80">
-            <p>
-              We only replace items if they are defective or damaged. If you need to exchange it for the same item, send us an email at <a href="mailto:trendyglitterzz@gmail.com" className="text-dustyrose hover:underline">trendyglitterzz@gmail.com</a> or message us on WhatsApp with photos of the damage.
+            <p>If your order is eligible for an exchange:</p>
+            <ol className="space-y-2 pl-4 list-decimal list-inside">
+              <li>Contact Trendy Glitterz within 24 hours of delivery.</li>
+              <li>Share your order number, photographs/videos and details of the issue.</li>
+              <li>Our team will review the request.</li>
+              <li>If approved, instructions for returning the product will be provided.</li>
+              <li>The replacement product will be dispatched after the returned item is received and verified.</li>
+            </ol>
+            <p className="bg-obsidian/5 border-l-4 border-dustyrose px-4 py-3 rounded-r-md mt-3">
+              <span className="font-semibold text-obsidian">Note:</span> Exchange approval is subject to product availability.
             </p>
           </div>
         </div>
 
-        {/* Section 6 */}
+        {/* Section 5: Refund Policy */}
         <div className="space-y-6">
-          <h2 className="text-xl font-serif tracking-tight border-b border-obsidian/10 pb-3">6. Contact Us</h2>
+          <h2 className="text-xl font-serif tracking-tight border-b border-obsidian/10 pb-3 flex items-center gap-2">
+            <span>💳</span> Refund Policy
+          </h2>
           <div className="space-y-3 text-sm font-sans leading-relaxed text-obsidian/80">
             <p>
-              If you have any questions on how to return your item to us, contact us at:
+              If a refund is approved, the refund will be processed after the returned product is received and inspected.
+            </p>
+            <p>
+              Refunds, where applicable, will generally be made to the original payment method.
+            </p>
+            <p>
+              Shipping charges may be non-refundable, except where the issue is due to an incorrect, defective or damaged product supplied by Trendy Glitterz.
+            </p>
+            <p className="bg-obsidian/5 border-l-4 border-dustyrose px-4 py-3 rounded-r-md">
+              <span className="font-semibold text-obsidian">Processing Time:</span> The time taken for the refund to reflect in your account may depend on your bank or payment provider.
+            </p>
+          </div>
+        </div>
+
+        {/* Section 6: Contact Us */}
+        <div className="space-y-6">
+          <h2 className="text-xl font-serif tracking-tight border-b border-obsidian/10 pb-3">Contact Us</h2>
+          <div className="space-y-3 text-sm font-sans leading-relaxed text-obsidian/80">
+            <p>
+              To report an issue with your order within 24 hours or initiate an exchange/refund request, reach out to us:
             </p>
             <ul className="space-y-2 pl-4">
               <li>
@@ -93,9 +134,9 @@ export default function ReturnAndRefundPolicy() {
               <li>
                 <span className="font-semibold text-obsidian">WhatsApp: </span>
                 <a 
-                  href="https://wa.me/919884110778?text=Hi%20Trendy%20Glitterz!%20I'm%20reaching%20out%20regarding%20a%20return%2Frefund." 
+                  href="https://wa.me/919884110778?text=Hi%20Trendy%20Glitterz!%20I'm%20reaching%20out%20regarding%20a%20return%2Fexchange." 
                   target="_blank" 
-                  rel="noopener noreferrer"
+                  rel="noopener noreferrer" 
                   className="text-dustyrose hover:underline"
                 >
                   +91 9884110778
