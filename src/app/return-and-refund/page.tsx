@@ -119,12 +119,54 @@ export default function ReturnAndRefundPolicy() {
           </div>
         </div>
 
-        {/* Section 6: Contact Us */}
+        {/* Section 6: Cancellation Policy */}
         <div className="space-y-6">
-          <h2 className="text-xl font-serif tracking-tight border-b border-obsidian/10 pb-3">Contact Us</h2>
+          <h2 className="text-xl font-serif tracking-tight border-b border-obsidian/10 pb-3 flex items-center gap-2">
+            <span>❌</span> Cancellation Policy
+          </h2>
           <div className="space-y-3 text-sm font-sans leading-relaxed text-obsidian/80">
             <p>
-              To report an issue with your order within 24 hours or initiate an exchange/refund request, reach out to us:
+              Orders can be cancelled only before they are dispatched.
+            </p>
+            <p>
+              Once an order has been shipped, cancellation may no longer be possible.
+            </p>
+            <p>
+              To request a cancellation, please contact Trendy Glitterz as soon as possible with your order number.
+            </p>
+            <p className="bg-obsidian/5 border-l-4 border-dustyrose px-4 py-3 rounded-r-md">
+              <span className="font-semibold text-obsidian">Note:</span> If an order has already been dispatched, the customer may need to receive the parcel and follow the applicable return/exchange policy.
+            </p>
+          </div>
+        </div>
+
+        {/* Section 7: Damaged or Missing Items */}
+        <div className="p-6 bg-obsidian/5 border border-obsidian/10 rounded-2xl space-y-4">
+          <h2 className="text-lg font-serif tracking-tight text-obsidian flex items-center gap-2">
+            <span>📦</span> Damaged or Missing Items
+          </h2>
+          <div className="space-y-3 text-sm font-sans leading-relaxed text-obsidian/80">
+            <p>If your parcel arrives damaged or an item appears to be missing:</p>
+            <ul className="space-y-2 pl-4 list-disc list-inside">
+              <li>Do not discard the packaging.</li>
+              <li>Take clear photographs of the parcel and packaging.</li>
+              <li>Record an unboxing video whenever possible.</li>
+              <li>Contact Trendy Glitterz within 24 hours of delivery with your order details and supporting evidence.</li>
+            </ul>
+            <p className="text-xs font-sans bg-white/70 border border-obsidian/10 p-3 rounded-lg text-obsidian/90 mt-2">
+              Our team will review the issue and assist you accordingly.
+            </p>
+          </div>
+        </div>
+
+        {/* Section 8: Customer Support */}
+        <div className="space-y-6">
+          <h2 className="text-xl font-serif tracking-tight border-b border-obsidian/10 pb-3 flex items-center gap-2">
+            <span>📞</span> Customer Support
+          </h2>
+          <div className="space-y-3 text-sm font-sans leading-relaxed text-obsidian/80">
+            <p>
+              For questions regarding shipping, returns, exchanges or cancellations, please contact Trendy Glitterz through our official customer-support channels:
             </p>
             <ul className="space-y-2 pl-4">
               <li>
@@ -134,7 +176,7 @@ export default function ReturnAndRefundPolicy() {
               <li>
                 <span className="font-semibold text-obsidian">WhatsApp: </span>
                 <a 
-                  href="https://wa.me/919884110778?text=Hi%20Trendy%20Glitterz!%20I'm%20reaching%20out%20regarding%20a%20return%2Fexchange." 
+                  href="https://wa.me/919884110778?text=Hi%20Trendy%20Glitterz!%20I'm%20reaching%20out%20for%20customer%20support." 
                   target="_blank" 
                   rel="noopener noreferrer" 
                   className="text-dustyrose hover:underline"
@@ -143,6 +185,9 @@ export default function ReturnAndRefundPolicy() {
                 </a>
               </li>
             </ul>
+            <p className="bg-obsidian/5 border-l-4 border-dustyrose px-4 py-3 rounded-r-md mt-4">
+              <span className="font-semibold text-obsidian">Tip:</span> Please keep your order number ready when contacting us so we can assist you quickly.
+            </p>
           </div>
         </div>
 

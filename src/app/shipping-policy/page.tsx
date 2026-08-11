@@ -113,13 +113,51 @@ export default function ShippingPolicy() {
 
         {/* Section 6 */}
         <div className="space-y-6">
-          <h2 className="text-xl font-serif tracking-tight border-b border-obsidian/10 pb-3">6. Damages and Lost Packages</h2>
+          <h2 className="text-xl font-serif tracking-tight border-b border-obsidian/10 pb-3 flex items-center gap-2">
+            <span>📦</span> 6. Damaged or Missing Items
+          </h2>
+          <div className="space-y-3 text-sm font-sans leading-relaxed text-obsidian/80">
+            <p>If your parcel arrives damaged or an item appears to be missing:</p>
+            <ul className="space-y-2 pl-4 list-disc list-inside">
+              <li>Do not discard the packaging.</li>
+              <li>Take clear photographs of the parcel and packaging.</li>
+              <li>Record an unboxing video whenever possible.</li>
+              <li>Contact Trendy Glitterz within 24 hours of delivery with your order details and supporting evidence.</li>
+            </ul>
+            <p className="bg-obsidian/5 border-l-4 border-dustyrose px-4 py-3 rounded-r-md mt-3">
+              Our team will review the issue and assist you accordingly.
+            </p>
+          </div>
+        </div>
+
+        {/* Section 7 */}
+        <div className="space-y-6">
+          <h2 className="text-xl font-serif tracking-tight border-b border-obsidian/10 pb-3 flex items-center gap-2">
+            <span>📞</span> 7. Customer Support
+          </h2>
           <div className="space-y-3 text-sm font-sans leading-relaxed text-obsidian/80">
             <p>
-              TRENDY GLITTERZ is not liable for any products damaged or lost during shipping. If you received your order damaged, please contact the shipment carrier or our support team directly to file a claim.
+              For questions regarding shipping, tracking, returns, or cancellations, please reach out to us:
             </p>
-            <p>
-              Please save all packaging material and damaged goods before filing a claim.
+            <ul className="space-y-2 pl-4">
+              <li>
+                <span className="font-semibold text-obsidian">Email: </span>
+                <a href="mailto:trendyglitterzz@gmail.com" className="text-dustyrose hover:underline">trendyglitterzz@gmail.com</a>
+              </li>
+              <li>
+                <span className="font-semibold text-obsidian">WhatsApp: </span>
+                <a 
+                  href="https://wa.me/919884110778?text=Hi%20Trendy%20Glitterz!%20I'm%20reaching%20out%20for%20shipping%20support." 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  className="text-dustyrose hover:underline"
+                >
+                  +91 9884110778
+                </a>
+              </li>
+            </ul>
+            <p className="bg-obsidian/5 border-l-4 border-dustyrose px-4 py-3 rounded-r-md mt-4">
+              <span className="font-semibold text-obsidian">Tip:</span> Please keep your order number ready when contacting us so we can assist you quickly.
             </p>
           </div>
         </div>
