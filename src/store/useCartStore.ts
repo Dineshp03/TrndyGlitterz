@@ -12,6 +12,7 @@ export interface CartItem {
   price: number;
   quantity: number;
   image: string;
+  isSoldOut?: boolean;
 }
 
 // Zustand Store
@@ -44,8 +45,11 @@ export const useCartStore = create<CartState>((set, get) => ({
   items: [],
   isCartOpen: false,
   isLoading: false,
-
+  
   addItem: async (product, token) => {
+    const isSoldOut = Boolean(product.isSoldOut || (product as any).is_sold_out || product.soldOut);
+    if (isSoldOut) return;
+
     const { items } = get();
     const existingSyncItem = items.find((item) => item.productId === product.id);
     const newQuantity = existingSyncItem ? existingSyncItem.quantity + 1 : 1;
@@ -69,6 +73,7 @@ export const useCartStore = create<CartState>((set, get) => ({
             price: product.price,
             quantity: 1,
             image: product.image,
+            isSoldOut: false,
           },
         ],
         isCartOpen: true,
@@ -186,6 +191,7 @@ export const useCartStore = create<CartState>((set, get) => ({
         price: row.product.price,
         quantity: row.quantity,
         image: row.product.image,
+        isSoldOut: Boolean(row.product.isSoldOut || (row.product as any).is_sold_out || row.product.soldOut),
       }));
       set({ items: mappedItems, isLoading: false });
     } catch (error) {

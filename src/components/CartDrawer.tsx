@@ -62,70 +62,80 @@ export default function CartDrawer() {
               </button>
             </div>
           ) : (
-            items.map((item) => (
-              <div key={item.id} className="flex gap-6 group">
-                <Link 
-                  href={`/product/${item.id}`} 
-                  onClick={closeCart}
-                  className="relative w-28 h-36 bg-sand/30 overflow-hidden flex-shrink-0"
-                >
-                  <Image 
-                    src={item.image} 
-                    alt={item.name} 
-                    fill 
-                    className="object-cover group-hover:scale-105 transition-transform duration-1000"
-                  />
-                </Link>
-                
-                <div className="flex flex-col flex-1 justify-between py-2">
-                  <div>
-                    <div className="flex justify-between items-start mb-1">
-                      <Link 
-                        href={`/product/${item.id}`}
-                        onClick={closeCart}
-                        className="hover:text-burgundy transition-colors"
-                      >
-                        <h3 className="font-serif text-lg text-obsidian leading-tight pr-4">{item.name}</h3>
-                      </Link>
-                      <button 
-                        onClick={() => removeItem(item.id)}
-                        className="text-obsidian/40 hover:text-burgundy transition-colors"
-                        aria-label="Remove item"
-                      >
-                        <Trash2 className="w-4 h-4" strokeWidth={1} />
-                      </button>
-                    </div>
-                    <div className="text-[10px] uppercase font-sans tracking-[0.2em] text-dustyrose">
-                      Quantity: {item.quantity}
-                    </div>
-                  </div>
+            (() => {
+              const hasSoldOutItems = items.some(item => item.isSoldOut);
+              return items.map((item) => (
+                <div key={item.id} className="flex gap-6 group">
+                  <Link 
+                    href={`/product/${item.productId}`} 
+                    onClick={closeCart}
+                    className="relative w-28 h-36 bg-sand/30 overflow-hidden flex-shrink-0"
+                  >
+                    <Image 
+                      src={item.image} 
+                      alt={item.name} 
+                      fill 
+                      className="object-cover group-hover:scale-105 transition-transform duration-1000"
+                    />
+                  </Link>
                   
-                  <div className="flex items-end justify-between mt-4">
-                    <div className="flex items-center gap-4 border-b border-obsidian/20 pb-1">
-                      <button 
-                        onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                        className="text-obsidian/50 hover:text-obsidian disabled:opacity-30 transition-colors"
-                        disabled={item.quantity <= 1}
-                      >
-                        <Minus className="w-3 h-3" strokeWidth={1.5} />
-                      </button>
-                      <span className="text-[11px] font-sans w-4 text-center text-obsidian tabular-nums">
-                        {item.quantity}
-                      </span>
-                      <button 
-                        onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                        className="text-obsidian/50 hover:text-obsidian transition-colors"
-                      >
-                        <Plus className="w-3 h-3" strokeWidth={1.5} />
-                      </button>
+                  <div className="flex flex-col flex-1 justify-between py-2">
+                    <div>
+                      <div className="flex justify-between items-start mb-1">
+                        <Link 
+                          href={`/product/${item.productId}`}
+                          onClick={closeCart}
+                          className="hover:text-burgundy transition-colors"
+                        >
+                          <h3 className="font-serif text-lg text-obsidian leading-tight pr-4 flex flex-wrap gap-2 items-center">
+                            {item.name}
+                            {item.isSoldOut && (
+                              <span className="bg-[#ff4d4f]/10 text-[#ff4d4f] text-[9px] font-sans font-bold uppercase tracking-wider px-2 py-0.5 rounded border border-[#ff4d4f]/20">
+                                Sold Out
+                              </span>
+                            )}
+                          </h3>
+                        </Link>
+                        <button 
+                          onClick={() => removeItem(item.id)}
+                          className="text-obsidian/40 hover:text-burgundy transition-colors"
+                          aria-label="Remove item"
+                        >
+                          <Trash2 className="w-4 h-4" strokeWidth={1} />
+                        </button>
+                      </div>
+                      <div className="text-[10px] uppercase font-sans tracking-[0.2em] text-dustyrose">
+                        Quantity: {item.quantity}
+                      </div>
                     </div>
-                    <p className="text-sm font-sans font-medium text-obsidian tabular-nums tracking-wide">
-                      ₹{(item.price * item.quantity).toFixed(2)}
-                    </p>
+                    
+                    <div className="flex items-end justify-between mt-4">
+                      <div className="flex items-center gap-4 border-b border-obsidian/20 pb-1">
+                        <button 
+                          onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                          className="text-obsidian/50 hover:text-obsidian disabled:opacity-30 transition-colors"
+                          disabled={item.quantity <= 1}
+                        >
+                          <Minus className="w-3 h-3" strokeWidth={1.5} />
+                        </button>
+                        <span className="text-[11px] font-sans w-4 text-center text-obsidian tabular-nums">
+                          {item.quantity}
+                        </span>
+                        <button 
+                          onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                          className="text-obsidian/50 hover:text-obsidian transition-colors"
+                        >
+                          <Plus className="w-3 h-3" strokeWidth={1.5} />
+                        </button>
+                      </div>
+                      <p className="text-sm font-sans font-medium text-obsidian tabular-nums tracking-wide">
+                        ₹{(item.price * item.quantity).toFixed(2)}
+                      </p>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))
+              ));
+            })()
           )}
         </div>
 
@@ -136,12 +146,31 @@ export default function CartDrawer() {
               <span className="text-[11px] font-sans uppercase tracking-[0.2em] text-obsidian/60">Estimated Total</span>
               <span className="text-3xl font-serif font-medium text-obsidian tracking-tighter tabular-nums">₹{getCartTotal().toFixed(2)}</span>
             </div>
+            
+            {items.some(item => item.isSoldOut) && (
+              <p className="text-[10px] text-[#ff4d4f] text-center font-sans tracking-wide font-medium bg-[#ff4d4f]/5 py-2 px-3 rounded-lg border border-[#ff4d4f]/10">
+                Please remove sold-out items to proceed to checkout.
+              </p>
+            )}
+
             <button 
-              onClick={() => setShowCheckout(true)}
-              className="w-full relative overflow-hidden group bg-dustyrose text-alabaster py-5 text-[11px] font-sans uppercase tracking-[0.2em] transition-colors"
+              onClick={() => {
+                const hasSoldOut = items.some(item => item.isSoldOut);
+                if (!hasSoldOut) setShowCheckout(true);
+              }}
+              disabled={items.some(item => item.isSoldOut)}
+              className={`w-full relative overflow-hidden group py-5 text-[11px] font-sans uppercase tracking-[0.2em] transition-colors ${
+                items.some(item => item.isSoldOut)
+                  ? "bg-obsidian/10 text-obsidian/30 cursor-not-allowed border border-obsidian/5"
+                  : "bg-dustyrose text-alabaster"
+              }`}
             >
-              <span className="relative z-10 transition-colors duration-500 group-hover:text-obsidian">Secure Payment</span>
-              <div className="absolute inset-0 bg-sand transform scale-x-0 origin-left transition-transform duration-500 ease-[cubic-bezier(0.77,0,0.175,1)] group-hover:scale-x-100 z-0"></div>
+              <span className={`relative z-10 transition-colors duration-500 ${!items.some(item => item.isSoldOut) && "group-hover:text-obsidian"}`}>
+                Secure Payment
+              </span>
+              {!items.some(item => item.isSoldOut) && (
+                <div className="absolute inset-0 bg-sand transform scale-x-0 origin-left transition-transform duration-500 ease-[cubic-bezier(0.77,0,0.175,1)] group-hover:scale-x-100 z-0"></div>
+              )}
             </button>
           </div>
         )}

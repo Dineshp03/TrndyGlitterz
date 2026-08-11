@@ -204,21 +204,17 @@ function HomeContent() {
             </p>
           </div>
 
-          {selectedCategory ? (
-            <div className="grid grid-cols-2 sm:grid-cols-[repeat(auto-fill,minmax(175px,1fr))] gap-x-4 md:gap-x-4 gap-y-8 md:gap-y-7 px-0 transition-opacity duration-500 ease-in-out">
-              {displayProducts.map((product, index) => (
-                <div
-                  key={product.id}
-                  className="animate-reveal"
-                  style={{ animationDelay: `${index * 40}ms` }}
-                >
-                  <ProductCard product={product} />
-                </div>
-              ))}
-            </div>
-          ) : (
-            <ProductSlider products={displayProducts} mobileSwipe={true} autoPlay={true} />
-          )}
+          <div className="grid grid-cols-2 sm:grid-cols-[repeat(auto-fill,minmax(175px,1fr))] gap-x-4 md:gap-x-4 gap-y-8 md:gap-y-7 px-0 transition-opacity duration-500 ease-in-out">
+            {displayProducts.map((product, index) => (
+              <div
+                key={product.id}
+                className="animate-reveal"
+                style={{ animationDelay: `${Math.min(index, 12) * 40}ms` }}
+              >
+                <ProductCard product={product} />
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 

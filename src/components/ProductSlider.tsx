@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Navigation, Pagination, Mousewheel, FreeMode, Autoplay } from 'swiper/modules';
 import 'swiper/css';
@@ -18,15 +18,6 @@ interface ProductSliderProps {
 }
 
 export default function ProductSlider({ products, mobileSwipe = false, autoPlay = false }: ProductSliderProps) {
-  const [enableAutoPlay, setEnableAutoPlay] = useState(false);
-
-  useEffect(() => {
-    // Autoplay is now safe on all devices — the original iOS OOM crash was caused by
-    // autoplay firing simultaneously with 9 GPU particle layers + 12 will-change-transform
-    // card containers. Those have been removed, so autoplay can run everywhere.
-    setEnableAutoPlay(autoPlay);
-  }, [autoPlay]);
-
   return (
     <div className="relative group w-full px-0">
       {/* Mobile View: 2-Column Grid matching Image 3 (unless mobileSwipe is true) */}
@@ -49,7 +40,8 @@ export default function ProductSlider({ products, mobileSwipe = false, autoPlay 
           centeredSlides={false}
           grabCursor={true}
           freeMode={false}
-          speed={600}
+          speed={800}
+          loop={products.length > 2}
           mousewheel={{
             forceToAxis: true,
           }}
@@ -61,11 +53,11 @@ export default function ProductSlider({ products, mobileSwipe = false, autoPlay 
             prevEl: '.swiper-button-prev-custom',
             nextEl: '.swiper-button-next-custom',
           }}
-          autoplay={enableAutoPlay ? {
-            delay: 2500,
+          autoplay={autoPlay ? {
+            delay: 3000,
             disableOnInteraction: false,
             pauseOnMouseEnter: false,
-          } : false}
+          } : undefined}
           breakpoints={{
             640: {
               slidesPerView: 2.2,
