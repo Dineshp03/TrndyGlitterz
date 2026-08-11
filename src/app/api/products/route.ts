@@ -146,6 +146,7 @@ export async function POST(request: NextRequest) {
         stock: body.stock !== undefined ? Number(body.stock) : 0,
         featured: body.featured ?? false,
         is_imported: body.isImported ?? false,
+        is_sold_out: Boolean(body.isSoldOut ?? body.is_sold_out ?? false),
       })
       .select()
       .single();
@@ -191,6 +192,7 @@ export async function PUT(request: NextRequest) {
         stock: Number(body.stock),
         featured: body.featured,
         is_imported: body.isImported,
+        is_sold_out: Boolean(body.isSoldOut ?? body.is_sold_out ?? false),
       })
       .eq("id", body.id)
       .select()

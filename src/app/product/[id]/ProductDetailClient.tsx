@@ -625,7 +625,7 @@ export default function ProductDetailClient({ initialProduct }: { initialProduct
     ? [product.image, ...product.images].filter(Boolean) as string[]
     : [product?.image || ""];
 
-  const isSoldOut = product?.stock !== undefined && product?.stock !== null && product.stock <= 0;
+  const isSoldOut = Boolean(product?.isSoldOut || (product as any)?.is_sold_out || product?.soldOut);
 
   /* Swipe navigation helpers */
   const goNext = useCallback(() => {

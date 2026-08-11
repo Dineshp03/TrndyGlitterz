@@ -13,7 +13,7 @@ import { useUser } from "@clerk/nextjs";
 export default function ProductCard({ product }: { product: Product }) {
   const router = useRouter();
   const isOnSale = !!product.oldPrice;
-  const isSoldOut = product.stock !== undefined && product.stock !== null && product.stock <= 0;
+  const isSoldOut = Boolean(product.isSoldOut || (product as any).is_sold_out || product.soldOut);
   const { addItem } = useCart();
   const { toggleWishlist, isInWishlist } = useWishlistStore();
   const activeWishlist = isInWishlist(product.id);

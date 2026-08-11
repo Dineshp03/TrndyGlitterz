@@ -8,6 +8,9 @@ export interface Product {
   stock?: number;
   featured?: boolean;
   isImported?: boolean;
+  isSoldOut?: boolean;
+  soldOut?: boolean;
+  is_sold_out?: boolean;
   images?: string[]; // Additional images (8+ supported)
   oldPrice?: number;
   createdAt?: string;

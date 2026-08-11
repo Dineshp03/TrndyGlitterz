@@ -46,6 +46,9 @@ export const useProductStore = create<ProductState>((set, get) => ({
         stock?: number;
         featured?: boolean;
         is_imported?: boolean;
+        is_sold_out?: boolean;
+        isSoldOut?: boolean;
+        soldOut?: boolean;
         old_price?: number;
         created_at: string;
       }) => ({
@@ -59,6 +62,9 @@ export const useProductStore = create<ProductState>((set, get) => ({
         stock: p.stock,
         featured: p.featured,
         isImported: p.is_imported,
+        isSoldOut: Boolean(p.is_sold_out || p.isSoldOut || p.soldOut),
+        is_sold_out: Boolean(p.is_sold_out),
+        soldOut: Boolean(p.is_sold_out || p.isSoldOut || p.soldOut),
         oldPrice: p.old_price,
         createdAt: p.created_at,
       }));

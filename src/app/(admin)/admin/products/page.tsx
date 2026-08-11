@@ -63,6 +63,7 @@ export default function ProductsPage() {
   const [formStock, setFormStock] = useState<string>("");
   const [formFeatured, setFormFeatured] = useState(false);
   const [formIsImported, setFormIsImported] = useState(false);
+  const [formIsSoldOut, setFormIsSoldOut] = useState(false);
   // All images as ordered slots; slot[0] is the cover
   const [slots, setSlots] = useState<ImageSlot[]>([]);
   const [productId, setProductId] = useState("");
@@ -79,6 +80,7 @@ export default function ProductsPage() {
     setFormStock("0");
     setFormFeatured(false);
     setFormIsImported(false);
+    setFormIsSoldOut(false);
     setSlots([]);
     setPreviewIdx(0);
   };
@@ -107,6 +109,7 @@ export default function ProductsPage() {
     setFormStock(String(product.stock || 0));
     setFormFeatured(product.featured || false);
     setFormIsImported(product.isImported || false);
+    setFormIsSoldOut(Boolean(product.isSoldOut || (product as any).is_sold_out || product.soldOut));
 
     // Merge cover + gallery into ordered slots
     const all: string[] = [];
@@ -260,6 +263,9 @@ export default function ProductsPage() {
       stock: parseInt(formStock) || 0,
       featured: formFeatured,
       isImported: formIsImported,
+      isSoldOut: formIsSoldOut,
+      is_sold_out: formIsSoldOut,
+      soldOut: formIsSoldOut,
     };
 
     const token = await getToken();
@@ -379,11 +385,11 @@ export default function ProductsPage() {
                     <p className="text-[9px] text-[#bbb] mt-0.5">Stock: {product.stock || 0}</p>
                   </div>
                   <span className={`text-[9px] px-1.5 py-0.5 rounded-full font-medium border ${
-                    (product.stock ?? 0) > 0
-                      ? "text-emerald-600 bg-emerald-50 border-emerald-100"
-                      : "text-red-600 bg-red-50 border-red-100"
+                    Boolean(product.isSoldOut || (product as any).is_sold_out || product.soldOut)
+                      ? "text-red-600 bg-red-50 border-red-200 font-bold"
+                      : "text-emerald-600 bg-emerald-50 border-emerald-100"
                   }`}>
-                    {(product.stock ?? 0) > 0 ? "Active" : "Out"}
+                    {Boolean(product.isSoldOut || (product as any).is_sold_out || product.soldOut) ? "Sold Out" : "Active"}
                   </span>
                 </div>
 
@@ -522,17 +528,37 @@ export default function ProductsPage() {
                     />
                   </div>
 
-                  <div className="flex items-center gap-2 pt-1">
-                    <input
-                      type="checkbox"
-                      id="featured"
-                      checked={formFeatured}
-                      onChange={(e) => setFormFeatured(e.target.checked)}
-                      className="w-4 h-4 rounded border-[#F0EDE8] text-[#E8809A] focus:ring-[#F5B8C8]"
-                    />
-                    <label htmlFor="featured" className="text-xs font-semibold uppercase tracking-wider text-[#555] cursor-pointer">
-                      Featured Product
-                    </label>
+                  <div className="flex flex-wrap items-center gap-6 pt-1">
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        id="featured"
+                        checked={formFeatured}
+                        onChange={(e) => setFormFeatured(e.target.checked)}
+                        className="w-4 h-4 rounded border-[#F0EDE8] text-[#E8809A] focus:ring-[#F5B8C8] cursor-pointer"
+                      />
+                      <label htmlFor="featured" className="text-xs font-semibold uppercase tracking-wider text-[#555] cursor-pointer">
+                        Featured Product
+                      </label>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        id="isSoldOut"
+                        checked={formIsSoldOut}
+                        onChange={(e) => setFormIsSoldOut(e.target.checked)}
+                        className="w-4 h-4 rounded border-[#F0EDE8] text-red-500 focus:ring-red-300 cursor-pointer"
+                      />
+                      <label htmlFor="isSoldOut" className="text-xs font-semibold uppercase tracking-wider text-[#555] cursor-pointer flex items-center gap-1.5">
+                        Mark as Sold Out
+                        {formIsSoldOut && (
+                          <span className="text-[9px] bg-red-100 text-red-700 border border-red-200 px-1.5 py-0.5 rounded font-mono font-bold">
+                            SOLD OUT
+                          </span>
+                        )}
+                      </label>
+                    </div>
                   </div>
                 </div>
 
