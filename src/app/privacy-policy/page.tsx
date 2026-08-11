@@ -25,6 +25,23 @@ export default function PrivacyPolicy() {
           </p>
         </div>
 
+        {/* Order Processing & Delivery Notice */}
+        <div className="p-6 bg-obsidian/5 border border-obsidian/10 rounded-2xl space-y-4">
+          <h2 className="text-lg font-serif tracking-tight text-obsidian flex items-center gap-2">
+            <span>📦</span> Order Processing &amp; Delivery
+          </h2>
+          <ul className="space-y-2 text-sm font-sans leading-relaxed text-obsidian/80 list-disc list-inside pl-2">
+            <li>Orders are generally processed within 1–3 business days after successful payment.</li>
+            <li>Delivery usually takes 3–7 business days after dispatch, depending on the destination and courier service.</li>
+            <li>Remote locations may require additional delivery time.</li>
+            <li>Tracking details will be shared once your order has been dispatched.</li>
+            <li>Delays caused by courier services, weather conditions, strikes, natural events or circumstances beyond our control may occasionally occur.</li>
+          </ul>
+          <p className="text-xs font-sans bg-white/60 border border-obsidian/10 p-3 rounded-lg text-obsidian/90">
+            <span className="font-semibold text-obsidian">Note:</span> Please ensure that your name, phone number and complete delivery address are correct while placing your order.
+          </p>
+        </div>
+
         {/* Section 1 */}
         <div className="space-y-6">
           <h2 className="text-xl font-serif tracking-tight border-b border-obsidian/10 pb-3">1. Interpretation and Definitions</h2>

@@ -23,13 +23,17 @@ export default function ShippingPolicy() {
 
         {/* Section 1 */}
         <div className="space-y-6">
-          <h2 className="text-xl font-serif tracking-tight border-b border-obsidian/10 pb-3">1. Order Processing Time</h2>
+          <h2 className="text-xl font-serif tracking-tight border-b border-obsidian/10 pb-3">1. Order Processing & Delivery</h2>
           <div className="space-y-3 text-sm font-sans leading-relaxed text-obsidian/80">
-            <p>
-              All orders are processed within 1 to 3 business days (excluding weekends and holidays) after receiving your order confirmation email. You will receive another notification when your order has shipped.
-            </p>
-            <p className="bg-obsidian/5 border-l-4 border-dustyrose px-4 py-3 rounded-r-md">
-              <span className="font-semibold text-obsidian">Note:</span> High-volume periods or custom hand-made orders may take an additional 2-4 days for dispatch. We will contact you directly if there are significant delays.
+            <ul className="space-y-2 pl-4 list-disc list-inside">
+              <li>Orders are generally processed within 1–3 business days after successful payment.</li>
+              <li>Delivery usually takes 3–7 business days after dispatch, depending on the destination and courier service.</li>
+              <li>Remote locations may require additional delivery time.</li>
+              <li>Tracking details will be shared once your order has been dispatched.</li>
+              <li>Delays caused by courier services, weather conditions, strikes, natural events or circumstances beyond our control may occasionally occur.</li>
+            </ul>
+            <p className="bg-obsidian/5 border-l-4 border-dustyrose px-4 py-3 rounded-r-md mt-4">
+              <span className="font-semibold text-obsidian">Note:</span> Please ensure that your name, phone number and complete delivery address are correct while placing your order.
             </p>
           </div>
         </div>
