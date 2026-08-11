@@ -39,12 +39,41 @@ export default function ShippingPolicy() {
           <h2 className="text-xl font-serif tracking-tight border-b border-obsidian/10 pb-3">2. Domestic Shipping Rates and Estimates</h2>
           <div className="space-y-3 text-sm font-sans leading-relaxed text-obsidian/80">
             <p>
-              We offer standard and express shipping option across India. Shipping charges for your order will be calculated and displayed at checkout.
+              We currently offer delivery across selected locations in India through trusted courier partners. Shipping charges will be calculated and displayed at checkout.
             </p>
-            <ul className="space-y-2 pl-4 list-disc list-inside">
-              <li><span className="font-semibold text-obsidian">Standard Shipping:</span> Free on orders above ₹999. Delivered within 4-7 business days.</li>
-              <li><span className="font-semibold text-obsidian">Express Shipping:</span> Calculated at checkout. Delivered within 2-3 business days.</li>
-            </ul>
+            
+            <div className="overflow-hidden rounded-lg border border-obsidian/10 mt-4">
+              <table className="w-full text-left text-sm font-sans">
+                <thead className="bg-obsidian/5 border-b border-obsidian/10">
+                  <tr>
+                    <th className="px-4 py-3 font-semibold text-obsidian">Delivery Location</th>
+                    <th className="px-4 py-3 font-semibold text-obsidian">Shipping Charge</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-obsidian/10">
+                  <tr>
+                    <td className="px-4 py-3">Chennai</td>
+                    <td className="px-4 py-3 font-medium">₹50</td>
+                  </tr>
+                  <tr>
+                    <td className="px-4 py-3">Tamil Nadu – Outside Chennai</td>
+                    <td className="px-4 py-3 font-medium">₹80</td>
+                  </tr>
+                  <tr>
+                    <td className="px-4 py-3">Kerala</td>
+                    <td className="px-4 py-3 font-medium">₹100</td>
+                  </tr>
+                  <tr>
+                    <td className="px-4 py-3">Bangalore</td>
+                    <td className="px-4 py-3 font-medium">₹100</td>
+                  </tr>
+                  <tr>
+                    <td className="px-4 py-3">North India</td>
+                    <td className="px-4 py-3 font-medium">₹150</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
 

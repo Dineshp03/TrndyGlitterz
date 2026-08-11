@@ -231,6 +231,21 @@ function PaymentModal({
     return () => { document.body.style.overflow = ""; };
   }, []);
 
+  const getShippingCharge = (): number => {
+    if (product.price >= 999) return 0;
+    const cityLower = (details.city || "").trim().toLowerCase();
+    const stateLower = (details.state || "").trim().toLowerCase();
+    if (!cityLower && !stateLower) return 0;
+    if (cityLower === "chennai" || cityLower.includes("chennai")) return 50;
+    if (cityLower === "bangalore" || cityLower === "bengaluru" || cityLower.includes("bangalore") || cityLower.includes("bengaluru")) return 100;
+    if (stateLower === "tamil nadu" || stateLower === "tamilnadu" || stateLower === "tn") return 80;
+    if (stateLower === "kerala") return 100;
+    return 150;
+  };
+
+  const shippingCharge = getShippingCharge();
+  const finalTotal = product.price + shippingCharge;
+
   const validateDetails = () => {
     const e: Partial<UserDetails> = {};
     if (!details.fullName.trim()) e.fullName = "Name required";
@@ -257,7 +272,7 @@ function PaymentModal({
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
         body: JSON.stringify({
-          amount: product.price,
+          amount: finalTotal,
           receipt: `bn_${Date.now()}`,
         }),
       });
@@ -323,7 +338,7 @@ function PaymentModal({
               city: details.city,
               state: details.state,
               pincode: details.pincode,
-              total: product.price,
+              total: finalTotal,
               payment_method: "razorpay",
               razorpay_payment_id: response.razorpay_payment_id,
               razorpay_order_id: response.razorpay_order_id,
@@ -404,6 +419,18 @@ function PaymentModal({
                 {field("state", "State")}
                 {field("pincode", "Pincode")}
               </div>
+              {(details.city || details.state) && (
+                <div className="mt-2 p-3 bg-burgundy/5 border border-burgundy/20 rounded-xl flex items-center justify-between text-xs font-sans animate-fade-in">
+                  <span className="text-obsidian/70">Estimated Shipping Charge:</span>
+                  <span className="font-semibold text-burgundy">
+                    {product.price >= 999 ? (
+                      <span className="text-green-600 font-bold uppercase tracking-wider">Free (Above ₹999)</span>
+                    ) : (
+                      `₹${shippingCharge}`
+                    )}
+                  </span>
+                </div>
+              )}
               <button onClick={() => validateDetails() && setStep("payment")} className="mt-4 w-full bg-gradient-to-r from-[#BF953F] via-[#FCF6BA] to-[#B38728] text-[#111] font-bold py-4 font-sans uppercase text-[11px] tracking-widest rounded-xl transition-all active:scale-95">Continue</button>
             </div>
           )}
@@ -421,6 +448,22 @@ function PaymentModal({
                   <p className="text-[11px] font-sans text-obsidian/60 mt-1.5 leading-relaxed max-w-[80%]">
                     Pay securely via UPI, Cards, or Netbanking. Powered by Razorpay.
                   </p>
+                </div>
+              </div>
+              <div className="mt-2 border-t border-obsidian/10 pt-4 flex flex-col gap-2 text-xs font-sans text-obsidian/70">
+                <div className="flex justify-between">
+                  <span>Subtotal</span>
+                  <span className="font-medium text-obsidian">₹{product.price.toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Shipping</span>
+                  <span className={shippingCharge === 0 ? "text-green-600 font-semibold" : "font-medium text-obsidian"}>
+                    {shippingCharge === 0 ? "Free" : `₹${shippingCharge.toFixed(2)}`}
+                  </span>
+                </div>
+                <div className="flex justify-between font-medium text-obsidian text-sm mt-2 pt-2 border-t border-obsidian/10">
+                  <span>Total</span>
+                  <span>₹{finalTotal.toFixed(2)}</span>
                 </div>
               </div>
               <button onClick={handlePayNow} disabled={processing} className="w-full bg-gradient-to-r from-[#BF953F] via-[#FCF6BA] to-[#B38728] text-[#111] font-bold py-4 rounded-xl transition-all active:scale-95 disabled:opacity-50">{processing ? "Processing..." : "Place Order"}</button>
