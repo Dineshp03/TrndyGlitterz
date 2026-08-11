@@ -14,11 +14,11 @@ import { useRouter, useSearchParams } from "next/navigation";
 const CATEGORY_FILTERS = [
   { label: "Xuping Exclusive",     categories: ["Xuping Earrings", "Xuping Neckpiece", "Xuping Bracelets", "Xuping Finger Rings"] },
   { label: "Korean Earrings",      categories: ["Korean Earrings"] },
-  { label: "Earrings",             categories: ["Earrings", "Traditional Earrings", "Korean Earrings", "Xuping Earrings"] },
+  { label: "Earrings",             categories: ["Earrings"] },
   { label: "Traditional Earrings", categories: ["Traditional Earrings"] },
-  { label: "Neckpiece",            categories: ["Neckpiece", "Xuping Neckpiece", "Chains"] },
-  { label: "Bracelets",            categories: ["Bracelets", "Xuping Bracelets", "Bands"] },
-  { label: "Finger Rings",         categories: ["Finger Rings", "Xuping Finger Rings", "Rings"] },
+  { label: "Neckpiece",            categories: ["Neckpiece", "Chains"] },
+  { label: "Bracelets",            categories: ["Bracelets", "Bands"] },
+  { label: "Finger Rings",         categories: ["Finger Rings", "Rings"] },
   { label: "Hair Accessories",     categories: ["Hair Accessories"] },
 ];
 
@@ -84,7 +84,7 @@ function HomeContent() {
           const lowerFilterCategories = filter.categories.map(c => c.toLowerCase());
           return sortedProducts.filter(p => {
             const cat = (p.category ?? "").toLowerCase();
-            return lowerFilterCategories.includes(cat) || (filter.label.toLowerCase() === "earrings" && cat.includes("earring"));
+            return lowerFilterCategories.includes(cat);
           });
         }
         return sortedProducts.filter(p => (p.category ?? "").toLowerCase() === selectedCategory.toLowerCase());

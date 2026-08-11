@@ -121,11 +121,7 @@ function CatalogContent() {
   const filteredProducts = useMemo(() => {
     let items = products;
     if (selectedCategory) {
-      if (selectedCategory.toLowerCase() === "earrings") {
-        items = items.filter(p => (p.category ?? "").toLowerCase().includes("earring"));
-      } else {
-        items = items.filter(p => p.category === selectedCategory);
-      }
+      items = items.filter(p => p.category === selectedCategory);
     }
     if (showOfferOnly)     items = items.filter(p => p.featured);
     if (selectedPrice) {
