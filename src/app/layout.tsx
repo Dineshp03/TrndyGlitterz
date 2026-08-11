@@ -88,6 +88,11 @@ export default function RootLayout({
   return (
     <html lang="en" className="scroll-smooth" suppressHydrationWarning>
       <head>
+        {/* Preconnect to image domains for faster loading on mobile data */}
+        <link rel="preconnect" href="https://images.unsplash.com" />
+        <link rel="dns-prefetch" href="https://images.unsplash.com" />
+        <link rel="preconnect" href="https://qkfsfxgbhswtihthyctk.supabase.co" />
+        <link rel="dns-prefetch" href="https://qkfsfxgbhswtihthyctk.supabase.co" />
         <Script
           src="https://checkout.razorpay.com/v1/checkout.js"
           strategy="afterInteractive"

@@ -62,9 +62,12 @@ export default function ProductCard({ product }: { product: Product }) {
             alt={product.name} 
             fill
             priority={product.id === "ear-1"}
-            quality={80}
+            loading={product.id === "ear-1" ? "eager" : "lazy"}
+            quality={75}
             className={`object-cover object-center transition-transform duration-[1s] ease-out group-hover:scale-105 ${isSoldOut ? 'opacity-50 grayscale-[30%]' : ''}`}
-            sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
+            sizes="(max-width: 480px) 45vw, (max-width: 768px) 48vw, (max-width: 1024px) 33vw, 25vw"
+            placeholder="blur"
+            blurDataURL="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAQAAAAECAIAAAAmkwkpAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAP0lEQVQI12NgYGBg+P//PwMDAwMDw////xkYGBj+//9nYGBg+P//P8P///8ZGBgY/v//z8DAwMDw////DAAJuQohDc6EMQAAAABJRU5ErkJggg=="
           />
           <div className="absolute inset-0 ring-1 ring-inset ring-black/5 rounded-2xl pointer-events-none" />
         </Link>
@@ -85,7 +88,7 @@ export default function ProductCard({ product }: { product: Product }) {
         ) : null}
 
         {/* Floating Icons */}
-        <div className="absolute top-2 right-2 flex flex-col gap-2 z-10 sm:opacity-0 sm:group-hover:opacity-100 sm:translate-x-4 sm:group-hover:translate-x-0 transition-all duration-300">
+        <div className="absolute top-2 right-2 flex flex-col gap-2 z-10 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 sm:translate-x-4 sm:group-hover:translate-x-0 transition-all duration-300">
           <button 
             onClick={handleWishlist}
             className={`w-8 h-8 rounded-full flex items-center justify-center shadow-md transition-all duration-300 ${activeWishlist ? 'bg-[#ff4d4f] text-white' : 'bg-white text-black hover:bg-[#111111] hover:text-white'}`} 
