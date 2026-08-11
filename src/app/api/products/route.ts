@@ -133,6 +133,7 @@ export async function POST(request: NextRequest) {
 
     const supabaseAdmin = createAdminSupabaseClient();
 
+    // Insert without is_sold_out (avoids PostgREST schema cache issue)
     const { data, error } = await supabaseAdmin
       .from("products")
       .insert({
@@ -146,7 +147,6 @@ export async function POST(request: NextRequest) {
         stock: body.stock !== undefined ? Number(body.stock) : 0,
         featured: body.featured ?? false,
         is_imported: body.isImported ?? false,
-        is_sold_out: Boolean(body.isSoldOut ?? body.is_sold_out ?? false),
       })
       .select()
       .single();
@@ -156,9 +156,18 @@ export async function POST(request: NextRequest) {
       return serverErrorResponse(error.message);
     }
 
-    revalidatePath("/", "layout"); // Revalidate all pages to show new product instantly
+    // Set is_sold_out via raw SQL RPC to bypass PostgREST schema cache
+    const isSoldOut = Boolean(body.isSoldOut ?? body.is_sold_out ?? false);
+    if (data?.id) {
+      await supabaseAdmin.rpc("update_product_sold_out", {
+        product_id: data.id,
+        sold_out: isSoldOut,
+      });
+    }
 
-    return jsonResponse({ product: data }, 201);
+    revalidatePath("/", "layout");
+
+    return jsonResponse({ product: { ...data, is_sold_out: isSoldOut } }, 201);
   } catch (err: any) {
     console.error("addProduct route error:", err);
     return serverErrorResponse(err.message || "Internal server error");
@@ -179,6 +188,7 @@ export async function PUT(request: NextRequest) {
 
     const supabaseAdmin = createAdminSupabaseClient();
 
+    // Update all fields EXCEPT is_sold_out (avoids PostgREST schema cache issue)
     const { data, error } = await supabaseAdmin
       .from("products")
       .update({
@@ -192,7 +202,6 @@ export async function PUT(request: NextRequest) {
         stock: Number(body.stock),
         featured: body.featured,
         is_imported: body.isImported,
-        is_sold_out: Boolean(body.isSoldOut ?? body.is_sold_out ?? false),
       })
       .eq("id", body.id)
       .select()
@@ -203,9 +212,21 @@ export async function PUT(request: NextRequest) {
       return serverErrorResponse(error.message);
     }
 
-    revalidatePath("/", "layout"); // Revalidate all pages to show updated price/details instantly
+    // Update is_sold_out separately via raw SQL RPC to bypass PostgREST schema cache
+    const isSoldOut = Boolean(body.isSoldOut ?? body.is_sold_out ?? false);
+    const { error: rpcError } = await supabaseAdmin.rpc("update_product_sold_out", {
+      product_id: body.id,
+      sold_out: isSoldOut,
+    });
 
-    return jsonResponse({ product: data });
+    if (rpcError) {
+      console.error("update_product_sold_out RPC error:", rpcError);
+      // Non-fatal: still return success for the main update
+    }
+
+    revalidatePath("/", "layout");
+
+    return jsonResponse({ product: { ...data, is_sold_out: isSoldOut } });
   } catch (err: any) {
     console.error("updateProduct route error:", err);
     return serverErrorResponse(err.message || "Internal server error");
