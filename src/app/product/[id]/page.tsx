@@ -26,6 +26,9 @@ async function getProduct(id: string): Promise<Product | null> {
         featured: data.featured,
         isImported: data.is_imported,
         oldPrice: data.old_price,
+        isSoldOut: Boolean(data.is_sold_out),
+        is_sold_out: Boolean(data.is_sold_out),
+        soldOut: Boolean(data.is_sold_out),
       };
     }
   } catch (error) {

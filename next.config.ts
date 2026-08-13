@@ -18,6 +18,14 @@ const nextConfig: NextConfig = {
       {
         protocol: 'https',
         hostname: '*.supabase.co',
+      },
+      {
+        protocol: 'https',
+        hostname: 'api.dicebear.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'img.clerk.com',
       }
     ],
   },
