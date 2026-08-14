@@ -1,13 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 
-// Use service role key so uploads bypass RLS policies
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
-
 export async function POST(request: NextRequest) {
+  // Use service role key so uploads bypass RLS policies
+  const supabaseAdmin = createClient(
+    (process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_URL !== "undefined" ? process.env.NEXT_PUBLIC_SUPABASE_URL : "https://placeholder.supabase.co").trim(),
+    (process.env.SUPABASE_SERVICE_ROLE_KEY || "placeholder").trim()
+  );
   try {
     const formData = await request.formData();
     const file = formData.get("file") as File | null;

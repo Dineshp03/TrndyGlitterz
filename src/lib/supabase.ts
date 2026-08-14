@@ -5,8 +5,8 @@ import { createBrowserClient } from '@supabase/ssr'
  * and Zustand stores.
  */
 export function createClient() {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
-  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
+  const url = (process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_URL !== 'undefined' ? process.env.NEXT_PUBLIC_SUPABASE_URL : 'https://placeholder.supabase.co').trim();
+  const key = (process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder').trim();
   
   if (!url || !key) {
     if (process.env.NODE_ENV === 'development') {

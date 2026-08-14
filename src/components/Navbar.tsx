@@ -111,7 +111,6 @@ export default function Navbar() {
   const navLinks = [
     { name: "Collections", href: "/#all-products" },
     { name: "Editorial", href: "/#about" },
-    { name: "Journal", href: "#" },
   ];
 
   return (

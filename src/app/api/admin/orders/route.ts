@@ -1,4 +1,6 @@
 import { NextRequest } from 'next/server'
+import { clerkClient } from '@clerk/nextjs/server'
+import { checkIsAdmin } from '@/lib/admin'
 import { createAdminSupabaseClient } from '@/lib/supabase-server'
 import {
   getAuthUserId,
@@ -16,8 +18,9 @@ export async function GET(request: NextRequest) {
   const userId = await getAuthUserId(request)
   if (!userId) return unauthorizedResponse()
 
-  // In a real app, you'd check if this userId is an admin in Supabase or Clerk metadata.
-  // For now, we allow any authenticated clerk user to access this if they reach the route.
+  const client = await clerkClient()
+  const user = await client.users.getUser(userId)
+  if (!checkIsAdmin(user)) return unauthorizedResponse('Admin access required')
 
   try {
     const supabase = createAdminSupabaseClient()
@@ -50,6 +53,10 @@ export async function GET(request: NextRequest) {
 export async function DELETE(request: NextRequest) {
   const userId = await getAuthUserId(request)
   if (!userId) return unauthorizedResponse()
+
+  const client = await clerkClient()
+  const user = await client.users.getUser(userId)
+  if (!checkIsAdmin(user)) return unauthorizedResponse('Admin access required')
 
   try {
     const { searchParams } = new URL(request.url)

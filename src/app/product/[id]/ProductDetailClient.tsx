@@ -9,6 +9,7 @@ import { useCart } from "@/hooks/useCart";
 import { useOrderStore } from "@/store/useOrderStore";
 import { useSettingsStore } from "@/store/useSettingsStore";
 import { CheckCircle, X, ChevronRight, ChevronLeft, Loader2, ShoppingBag, CreditCard, ShieldCheck, RotateCcw, Sparkles, Smile, Shield, MessageSquare } from "lucide-react";
+import { toast } from "sonner";
 
 /* ------------------------------------------------------------------ */
 /*  useSwipe — reusable touch-swipe hook                               */
@@ -309,26 +310,7 @@ function PaymentModal({
             // Get a fresh token — the original may have expired during payment
             const freshToken = await getToken();
 
-            // Step 3: Verify payment signature
-            const verifyRes = await fetch("/api/verify-payment", {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-                ...(freshToken ? { Authorization: `Bearer ${freshToken}` } : {}),
-              },
-              body: JSON.stringify({
-                razorpay_order_id: response.razorpay_order_id,
-                razorpay_payment_id: response.razorpay_payment_id,
-                razorpay_signature: response.razorpay_signature,
-              }),
-            });
-
-            if (!verifyRes.ok) {
-              const err = await verifyRes.json();
-              throw new Error(err.error || "Payment verification failed");
-            }
-
-            // Step 4: Place order in database after verification
+            // Step 3: Place order in database (Verification happens internally in the orders API now)
             const result = await placeOrder({
               clerk_user_id: user?.id,
               customer_name: details.fullName,
@@ -342,6 +324,7 @@ function PaymentModal({
               payment_method: "razorpay",
               razorpay_payment_id: response.razorpay_payment_id,
               razorpay_order_id: response.razorpay_order_id,
+              razorpay_signature: response.razorpay_signature,
               items: [{
                 product_id: product.id,
                 product_name: product.name,
@@ -354,12 +337,12 @@ function PaymentModal({
             if (result.success) {
               setStep("success");
             } else {
-              alert(result.error || "Failed to place order.");
+              toast.error(result.error || "Failed to place order.");
             }
           } catch (verifyError) {
             const err = verifyError as Error;
             console.warn("Verification error:", err);
-            alert(err.message || "Payment verification failed. Please contact support.");
+            toast.error(err.message || "Payment verification failed. Please contact support.");
           } finally {
             setProcessing(false);
           }
@@ -376,15 +359,15 @@ function PaymentModal({
       rzp.on("payment.failed", (response) => {
         const err = response?.error || {};
         console.warn("Payment failed:", err);
-        alert(`Payment failed: ${err.description || err.reason || "Please try again."}`);
+        toast.error(`Payment failed: ${err.description || err.reason || "Please try again."}`);
         setProcessing(false);
       });
 
       rzp.open();
     } catch (err) {
       const error = err as Error;
-      console.error(error);
-      alert(error.message || "Something went wrong.");
+      console.warn("Checkout error:", error);
+      toast.error(error.message || "Something went wrong.");
       setProcessing(false);
     }
   };
@@ -649,16 +632,17 @@ export default function ProductDetailClient({ initialProduct }: { initialProduct
 
       if (!response.ok) {
         const err = await response.json();
-        alert(err.error || "Failed to submit review");
+        toast.error(err.error || "Failed to submit review");
         return;
       }
 
       setComment("");
       setRating(5);
       fetchReviews();
+      toast.success("Review submitted successfully!");
     } catch (err) {
-      console.error("Error submitting review:", err);
-      alert("Something went wrong. Please try again.");
+      console.warn("Error submitting review:", err);
+      toast.error("Something went wrong. Please try again.");
     } finally {
       setSubmittingReview(false);
     }

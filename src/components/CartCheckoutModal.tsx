@@ -9,6 +9,7 @@ import { useOrderStore } from "@/store/useOrderStore";
 import { useSettingsStore } from "@/store/useSettingsStore";
 import { useNotificationStore } from "@/store/useNotificationStore";
 import { useUser, useAuth } from "@clerk/nextjs";
+import { toast } from "sonner";
 
 type Step = "details" | "payment" | "success";
 
@@ -264,26 +265,7 @@ export default function CartCheckoutModal({ onClose }: { onClose: () => void }) 
             // Get a fresh Clerk token since the previous one may have expired during the payment process
             const freshToken = await getToken();
 
-            // Step 3: Verify payment signature
-            const verifyRes = await fetch("/api/verify-payment", {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-                ...(freshToken ? { Authorization: `Bearer ${freshToken}` } : {}),
-              },
-              body: JSON.stringify({
-                razorpay_order_id: response.razorpay_order_id,
-                razorpay_payment_id: response.razorpay_payment_id,
-                razorpay_signature: response.razorpay_signature,
-              }),
-            });
-
-            if (!verifyRes.ok) {
-              const err = await verifyRes.json();
-              throw new Error(err.error || "Payment verification failed");
-            }
-
-            // Step 4: Place order in database after verification
+            // Step 3: Place order in database after verification (Verification happens internally in the orders API now)
             const payload = {
               clerk_user_id: user?.id,
               customer_name: details.fullName,
@@ -297,6 +279,7 @@ export default function CartCheckoutModal({ onClose }: { onClose: () => void }) 
               payment_method: "razorpay",
               razorpay_payment_id: response.razorpay_payment_id,
               razorpay_order_id: response.razorpay_order_id,
+              razorpay_signature: response.razorpay_signature,
               items: items.map(item => ({
                 product_id: item.productId || item.id,
                 product_name: item.name,
@@ -320,12 +303,12 @@ export default function CartCheckoutModal({ onClose }: { onClose: () => void }) 
               setStep("success");
               clearCart();
             } else {
-              alert(result.error || "Failed to place order. Please try again.");
+              toast.error(result.error || "Failed to place order. Please try again.");
             }
           } catch (verifyError) {
             const err = verifyError as Error;
-            console.error("Verification error:", err);
-            alert(err.message || "Payment verification failed. Please contact support.");
+            console.warn("Verification error:", err);
+            toast.error(err.message || "Payment verification failed. Please contact support.");
           } finally {
             setProcessing(false);
           }
@@ -340,16 +323,16 @@ export default function CartCheckoutModal({ onClose }: { onClose: () => void }) 
       const rzp = new (window as Window & { Razorpay?: RazorpayConstructor }).Razorpay!(options);
 
       rzp.on("payment.failed", (response) => {
-        console.error("Payment failed:", response.error);
-        alert(`Payment failed: ${response.error.description || "Please try again."}`);
+        console.warn("Payment failed:", response.error);
+        toast.error(`Payment failed: ${response.error?.description || "Please try again."}`);
         setProcessing(false);
       });
 
       rzp.open();
     } catch (error) {
       const err = error as Error;
-      console.error("Checkout error:", err);
-      alert(err.message || "Something went wrong. Please try again.");
+      console.warn("Checkout error:", err);
+      toast.error(err.message || "Something went wrong. Please try again.");
       setProcessing(false);
     }
   };
@@ -381,9 +364,9 @@ export default function CartCheckoutModal({ onClose }: { onClose: () => void }) 
               : "border-obsidian/20 focus:border-obsidian"
           }`}
         >
-          <option value="" disabled className="text-black bg-alabaster">Select State</option>
+          <option value="" disabled className="text-obsidian bg-sand">Select State</option>
           {INDIAN_STATES.map((st) => (
-            <option key={st} value={st} className="text-black bg-alabaster">
+            <option key={st} value={st} className="text-obsidian bg-sand">
               {st}
             </option>
           ))}

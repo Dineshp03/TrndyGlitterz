@@ -54,6 +54,7 @@ export interface PlaceOrderPayload {
   payment_method?: string;
   razorpay_payment_id?: string;
   razorpay_order_id?: string;
+  razorpay_signature?: string;
   items: Omit<OrderItem, "id">[];
 }
 

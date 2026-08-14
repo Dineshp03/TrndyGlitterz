@@ -15,7 +15,17 @@ import {
   CheckCircle,
   XCircle,
   Package,
+  ChevronDown,
+  ChevronUp,
+  Copy,
+  Download,
+  ShieldCheck,
+  Clock,
+  FileText,
 } from "lucide-react";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
+import { toast } from "sonner";
 import Link from "next/link";
 import { LogoutModal } from "@/components/ui/LogoutModal";
 
@@ -65,6 +75,134 @@ export default function ProfilePage() {
     pincode: "",
   });
   const [saveMsg, setSaveMsg] = useState<{ ok: boolean; text: string } | null>(null);
+
+  // Expandable orders state
+  const [expandedOrders, setExpandedOrders] = useState<Record<string, boolean>>({});
+  
+  const toggleOrderExpand = (orderId: string) => {
+    setExpandedOrders((prev) => ({
+      ...prev,
+      [orderId]: !prev[orderId],
+    }));
+  };
+
+  const downloadInvoice = (order: GlobalOrder) => {
+    try {
+      const doc = new jsPDF();
+      
+      // Draw border
+      doc.setDrawColor(179, 135, 40); // Gold border
+      doc.setLineWidth(1);
+      doc.rect(10, 10, 190, 277);
+      
+      // Header
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(24);
+      doc.setTextColor(179, 135, 40); // Gold
+      doc.text("TRENDY GLITTERZ", 20, 30);
+      
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(10);
+      doc.setTextColor(100, 100, 100);
+      doc.text("Premium Jewelry & Accessories", 20, 37);
+      doc.text("Email: support@trendyglitterz.com", 20, 42);
+      
+      // Invoice Info (Right side)
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(14);
+      doc.setTextColor(44, 44, 44);
+      doc.text("INVOICE", 140, 30);
+      
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(9);
+      doc.setTextColor(80, 80, 80);
+      doc.text(`Invoice No: INV-${order.id.split("-")[0].toUpperCase()}`, 140, 37);
+      doc.text(`Date: ${new Date(order.created_at).toLocaleDateString("en-IN")}`, 140, 42);
+      doc.text(`Status: ${order.status.toUpperCase()}`, 140, 47);
+      
+      doc.setDrawColor(220, 220, 220);
+      doc.line(20, 55, 190, 55);
+      
+      // Customer details & Shipping Address
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(10);
+      doc.setTextColor(44, 44, 44);
+      doc.text("Billed To:", 20, 65);
+      doc.text("Shipping Address:", 110, 65);
+      
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(9);
+      doc.setTextColor(80, 80, 80);
+      doc.text(order.customer_name || order.customer || "N/A", 20, 72);
+      doc.text(order.customer_email || "N/A", 20, 77);
+      doc.text(order.customer_phone || "N/A", 20, 82);
+      
+      // Address lines (wrap address nicely)
+      const addressString = `${order.address || ""}, ${order.city || ""}, ${order.state || ""} - ${order.pincode || ""}`;
+      const splitAddress = doc.splitTextToSize(addressString, 80);
+      doc.text(splitAddress, 110, 72);
+      
+      doc.line(20, 95, 190, 95);
+      
+      // Table
+      const tableData = (order.items || []).map((item, idx) => [
+        idx + 1,
+        item.product_name,
+        `Rs. ${Number(item.price).toLocaleString("en-IN")}`,
+        item.quantity,
+        `Rs. ${(Number(item.price) * item.quantity).toLocaleString("en-IN")}`
+      ]);
+      
+      autoTable(doc, {
+        startY: 102,
+        margin: { left: 20, right: 20 },
+        head: [['S.No', 'Item Description', 'Unit Price', 'Qty', 'Total']],
+        body: tableData,
+        theme: 'grid',
+        headStyles: { fillColor: [179, 135, 40], textColor: [255, 255, 255], fontStyle: 'bold' },
+        styles: { fontSize: 9, cellPadding: 5 },
+        columnStyles: {
+          0: { cellWidth: 15, halign: 'center' },
+          2: { cellWidth: 30, halign: 'right' },
+          3: { cellWidth: 15, halign: 'center' },
+          4: { cellWidth: 35, halign: 'right' }
+        }
+      });
+      
+      // Totals section
+      const finalY = (doc as any).lastAutoTable.finalY + 15;
+      
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(10);
+      doc.setTextColor(80, 80, 80);
+      
+      // Payment details
+      doc.text(`Payment Method: ${order.payment_method === "razorpay" ? "Online (Razorpay)" : "Cash on Delivery (COD)"}`, 20, finalY);
+      if (order.razorpay_payment_id) {
+        doc.text(`Payment ID: ${order.razorpay_payment_id}`, 20, finalY + 6);
+      }
+      
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(12);
+      doc.setTextColor(44, 44, 44);
+      doc.text(`Total Amount Paid: Rs. ${Number(order.total).toLocaleString("en-IN")}`, 110, finalY);
+      
+      // Thank you message
+      doc.setDrawColor(220, 220, 220);
+      doc.line(20, finalY + 25, 190, finalY + 25);
+      doc.setFont("helvetica", "italic");
+      doc.setFontSize(10);
+      doc.setTextColor(120, 120, 120);
+      doc.text("Thank you for shopping with Trendy Glitterz! We hope you love your premium jewelry.", 20, finalY + 35);
+      
+      // Save doc
+      doc.save(`Invoice-${order.id.split("-")[0].toUpperCase()}.pdf`);
+      toast.success("Invoice PDF downloaded successfully!");
+    } catch (err) {
+      console.error("PDF generation failed:", err);
+      toast.error("Failed to generate PDF invoice.");
+    }
+  };
 
   useEffect(() => {
     if (isLoaded && !isSignedIn) {
@@ -335,24 +473,76 @@ export default function ProfilePage() {
                 ) : (
                   <div className="space-y-6">
                     {orders.map((order) => (
-                      <div key={order.id} className="bg-white/[0.03] border border-white/8 rounded-2xl p-6 md:p-8">
-                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 pb-6 border-b border-white/5">
-                          <div>
-                            <p className="text-[10px] font-sans uppercase tracking-[0.2em] text-white/30 mb-1">Order ID</p>
-                            <p className="font-sans text-sm text-white font-medium">{order.id.split("-")[0]}</p>
+                      <div key={order.id} className="bg-white/[0.03] border border-white/8 rounded-2xl p-6 md:p-8 flex flex-col gap-6">
+                        {/* Header Details */}
+                        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-6 border-b border-white/5">
+                          <div className="grid grid-cols-2 sm:flex sm:items-center gap-x-8 gap-y-4">
+                            <div>
+                              <p className="text-[10px] font-sans uppercase tracking-[0.2em] text-white/30 mb-1">Order ID</p>
+                              <div className="flex items-center gap-1">
+                                <p className="font-sans text-sm text-white font-medium">{order.id.split("-")[0].toUpperCase()}</p>
+                                <button
+                                  onClick={() => {
+                                    navigator.clipboard.writeText(order.id);
+                                    toast.success("Order ID copied to clipboard!");
+                                  }}
+                                  className="p-1 rounded hover:bg-white/10 text-white/40 hover:text-white transition-colors"
+                                  title="Copy Full Order ID"
+                                >
+                                  <Copy className="w-3 h-3" />
+                                </button>
+                              </div>
+                            </div>
+                            <div>
+                              <p className="text-[10px] font-sans uppercase tracking-[0.2em] text-white/30 mb-1">Date & Time</p>
+                              <p className="font-sans text-sm text-white">{formatDate(order.created_at)}</p>
+                            </div>
+                            <div>
+                              <p className="text-[10px] font-sans uppercase tracking-[0.2em] text-white/30 mb-1">Total</p>
+                              <p className="font-sans text-sm font-medium" style={{ color: "#B38728" }}>₹{Number(order.total).toLocaleString("en-IN")}</p>
+                            </div>
                           </div>
-                          <div>
-                            <p className="text-[10px] font-sans uppercase tracking-[0.2em] text-white/30 mb-1">Date & Time</p>
-                            <p className="font-sans text-sm text-white">{formatDate(order.created_at)}</p>
+
+                          <div className="flex flex-wrap items-center gap-3">
+                            {/* Payment status badge */}
+                            {order.payment_method === "razorpay" ? (
+                              <span className="flex items-center gap-1.5 text-[10px] font-sans font-medium uppercase tracking-[0.1em] px-3 py-1.5 rounded-full text-emerald-400 bg-emerald-400/10 border border-emerald-400/20">
+                                <ShieldCheck className="w-3.5 h-3.5" />
+                                Payment Verified
+                              </span>
+                            ) : (
+                              <span className="flex items-center gap-1.5 text-[10px] font-sans font-medium uppercase tracking-[0.1em] px-3 py-1.5 rounded-full text-amber-400 bg-amber-400/10 border border-amber-400/20">
+                                <Clock className="w-3.5 h-3.5" />
+                                Payment On Delivery (COD)
+                              </span>
+                            )}
+
+                            {/* Delivery status badge */}
+                            <span className={`text-[10px] font-sans uppercase tracking-[0.15em] px-3 py-1.5 rounded-full w-fit capitalize ${statusColor(order.status)}`}>
+                              {order.status}
+                            </span>
+
+                            {/* Toggle button */}
+                            <button
+                              onClick={() => toggleOrderExpand(order.id)}
+                              className="flex items-center gap-1.5 text-[10px] font-sans uppercase tracking-[0.15em] text-[#B38728] hover:text-white transition-colors ml-2 font-medium"
+                            >
+                              {expandedOrders[order.id] ? (
+                                <>
+                                  Hide Details
+                                  <ChevronUp className="w-3.5 h-3.5" />
+                                </>
+                              ) : (
+                                <>
+                                  View Details
+                                  <ChevronDown className="w-3.5 h-3.5" />
+                                </>
+                              )}
+                            </button>
                           </div>
-                          <div>
-                            <p className="text-[10px] font-sans uppercase tracking-[0.2em] text-white/30 mb-1">Total</p>
-                            <p className="font-sans text-sm font-medium" style={{ color: "#B38728" }}>₹{order.total}</p>
-                          </div>
-                          <span className={`text-[10px] font-sans uppercase tracking-[0.15em] px-3 py-1.5 rounded-full w-fit capitalize ${statusColor(order.status)}`}>
-                            {order.status}
-                          </span>
                         </div>
+
+                        {/* Order Items */}
                         <div className="space-y-4">
                           {order.items?.map((item) => (
                             <div key={item.id} className="flex items-center gap-4">
@@ -367,16 +557,125 @@ export default function ProfilePage() {
                                 <p className="font-serif text-white text-sm truncate">{item.product_name}</p>
                               </div>
                               <div className="text-right flex-shrink-0">
-                                <p className="text-sm font-sans text-white">₹{item.price}</p>
+                                <p className="text-sm font-sans text-white">₹{Number(item.price).toLocaleString("en-IN")}</p>
                                 <p className="text-[10px] font-sans text-white/30">Qty: {item.quantity}</p>
                               </div>
                             </div>
                           ))}
                         </div>
-                        {order.address && (
-                          <p className="text-[10px] font-sans text-white/30 mt-6 pt-4 border-t border-white/5">
-                            Delivered to: {order.address}, {order.city}, {order.state} - {order.pincode}
-                          </p>
+
+                        {/* Collapsible Details */}
+                        {expandedOrders[order.id] && (
+                          <div className="pt-6 border-t border-white/5 space-y-6 transition-all duration-300">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                              {/* Shipping Info */}
+                              <div className="space-y-4">
+                                <h4 className="text-xs font-sans uppercase tracking-widest text-[#B38728] font-semibold">Delivery Information</h4>
+                                <div className="bg-white/[0.01] border border-white/5 rounded-xl p-4 space-y-3">
+                                  <div>
+                                    <span className="text-[10px] font-sans uppercase tracking-wider text-white/30 block">Customer Name</span>
+                                    <span className="text-sm font-sans text-white">{order.customer_name || order.customer || "N/A"}</span>
+                                  </div>
+                                  <div>
+                                    <span className="text-[10px] font-sans uppercase tracking-wider text-white/30 block">Email Address</span>
+                                    <span className="text-sm font-sans text-white">{order.customer_email || "N/A"}</span>
+                                  </div>
+                                  <div>
+                                    <span className="text-[10px] font-sans uppercase tracking-wider text-white/30 block">Phone Number</span>
+                                    <span className="text-sm font-sans text-white">{order.customer_phone || "N/A"}</span>
+                                  </div>
+                                  <div>
+                                    <span className="text-[10px] font-sans uppercase tracking-wider text-white/30 block">Shipping Address</span>
+                                    <span className="text-sm font-sans text-white leading-relaxed">
+                                      {order.address || "N/A"}
+                                      {order.city && `, ${order.city}`}
+                                      {order.state && `, ${order.state}`}
+                                      {order.pincode && ` - ${order.pincode}`}
+                                    </span>
+                                  </div>
+                                </div>
+                              </div>
+
+                              {/* Payment & Transaction Info */}
+                              <div className="space-y-4">
+                                <h4 className="text-xs font-sans uppercase tracking-widest text-[#B38728] font-semibold">Payment & Transaction</h4>
+                                <div className="bg-white/[0.01] border border-white/5 rounded-xl p-4 space-y-3">
+                                  <div>
+                                    <span className="text-[10px] font-sans uppercase tracking-wider text-white/30 block">Payment Method</span>
+                                    <span className="text-sm font-sans text-white capitalize">{order.payment_method === "razorpay" ? "Online Payment (Razorpay)" : "Cash on Delivery (COD)"}</span>
+                                  </div>
+                                  {order.payment_method === "razorpay" && (
+                                    <>
+                                      <div>
+                                        <span className="text-[10px] font-sans uppercase tracking-wider text-white/30 block flex items-center justify-between">
+                                          Razorpay Order ID
+                                          <button
+                                            onClick={() => {
+                                              if (order.razorpay_order_id) {
+                                                navigator.clipboard.writeText(order.razorpay_order_id);
+                                                toast.success("Razorpay Order ID copied!");
+                                              }
+                                            }}
+                                            className="text-[9px] text-[#B38728] hover:text-white transition-colors"
+                                          >
+                                            Copy
+                                          </button>
+                                        </span>
+                                        <span className="text-xs font-mono text-white/80">{order.razorpay_order_id || "N/A"}</span>
+                                      </div>
+                                      <div>
+                                        <span className="text-[10px] font-sans uppercase tracking-wider text-white/30 block flex items-center justify-between">
+                                          Razorpay Payment ID
+                                          <button
+                                            onClick={() => {
+                                              if (order.razorpay_payment_id) {
+                                                navigator.clipboard.writeText(order.razorpay_payment_id);
+                                                toast.success("Razorpay Payment ID copied!");
+                                              }
+                                            }}
+                                            className="text-[9px] text-[#B38728] hover:text-white transition-colors"
+                                          >
+                                            Copy
+                                          </button>
+                                        </span>
+                                        <span className="text-xs font-mono text-white/80">{order.razorpay_payment_id || "N/A"}</span>
+                                      </div>
+                                    </>
+                                  )}
+                                  <div>
+                                    <span className="text-[10px] font-sans uppercase tracking-wider text-white/30 block">Order Notes</span>
+                                    <p className="text-sm font-sans text-white/70 italic">{order.notes || "No special instructions/notes"}</p>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Actions / Full ID Footer */}
+                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-6 border-t border-white/5">
+                              <div className="flex items-center gap-2">
+                                <span className="text-[10px] font-sans uppercase tracking-wider text-white/30">System Order ID:</span>
+                                <span className="text-xs font-mono text-white/50 truncate max-w-[150px] sm:max-w-xs">{order.id}</span>
+                                <button
+                                  onClick={() => {
+                                    navigator.clipboard.writeText(order.id);
+                                    toast.success("System Order ID copied!");
+                                  }}
+                                  className="text-white/40 hover:text-white transition-colors p-1"
+                                  title="Copy System Order ID"
+                                >
+                                  <Copy className="w-3.5 h-3.5" />
+                                </button>
+                              </div>
+
+                              <button
+                                onClick={() => downloadInvoice(order)}
+                                className="flex items-center justify-center gap-2 text-[10px] font-sans uppercase tracking-[0.2em] px-4 py-2.5 rounded-lg border border-white/10 hover:border-[#B38728] text-white hover:text-[#B38728] transition-all bg-white/5 font-semibold text-center cursor-pointer"
+                              >
+                                <Download className="w-3.5 h-3.5" />
+                                Download Invoice
+                              </button>
+                            </div>
+                          </div>
                         )}
                       </div>
                     ))}

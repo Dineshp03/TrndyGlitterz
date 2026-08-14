@@ -77,7 +77,6 @@ export default function Footer() {
             <ul className="space-y-3 md:space-y-4 text-sm font-sans font-light">
               <li><a href="https://www.instagram.com/trendyglitterz?igsh=MmRpanBnZ3NpOHhw" target="_blank" rel="noopener noreferrer" className="hover:text-burgundy transition-colors block">Instagram</a></li>
               <li><a href="https://wa.me/919884110778" target="_blank" rel="noopener noreferrer" className="hover:text-burgundy transition-colors block">WhatsApp</a></li>
-              <li><a href="#" className="hover:text-burgundy transition-colors block">Pinterest</a></li>
             </ul>
           </div>
 

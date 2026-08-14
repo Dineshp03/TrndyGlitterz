@@ -1,4 +1,6 @@
 import { NextRequest } from 'next/server'
+import { clerkClient } from '@clerk/nextjs/server'
+import { checkIsAdmin } from '@/lib/admin'
 import { createAdminSupabaseClient } from '@/lib/supabase-server'
 import {
   getAuthUserId,
@@ -18,6 +20,10 @@ export async function PATCH(
 ) {
   const userId = await getAuthUserId(request)
   if (!userId) return unauthorizedResponse()
+
+  const client = await clerkClient()
+  const user = await client.users.getUser(userId)
+  if (!checkIsAdmin(user)) return unauthorizedResponse('Admin access required')
 
   try {
     const { id } = await params
@@ -57,6 +63,10 @@ export async function DELETE(
 ) {
   const userId = await getAuthUserId(request)
   if (!userId) return unauthorizedResponse()
+
+  const client = await clerkClient()
+  const user = await client.users.getUser(userId)
+  if (!checkIsAdmin(user)) return unauthorizedResponse('Admin access required')
 
   try {
     const { id } = await params

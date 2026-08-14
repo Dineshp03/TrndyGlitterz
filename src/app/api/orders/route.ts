@@ -1,4 +1,5 @@
 import { NextRequest } from "next/server";
+import crypto from "crypto";
 import { createAdminSupabaseClient } from "@/lib/supabase-server";
 import {
   getAuthUserId,
@@ -36,6 +37,10 @@ export async function GET(req: NextRequest) {
       status: order.status,
       total: order.total,
       customer: order.customer_name,
+      customer_name: order.customer_name,
+      customer_email: order.customer_email,
+      customer_phone: order.customer_phone,
+      notes: order.notes,
       address: order.address,
       city: order.city,
       state: order.state,
@@ -82,12 +87,38 @@ export async function POST(req: NextRequest) {
       payment_method,
       razorpay_payment_id,
       razorpay_order_id,
+      razorpay_signature,
       items,
     } = body;
 
     // Basic validation
     if (!customer_name || !customer_email || !address || !items || items.length === 0) {
       return badRequestResponse("Missing required order fields");
+    }
+
+    // Razorpay signature verification
+    if (payment_method === "razorpay") {
+      if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
+        return badRequestResponse("Missing Razorpay verification fields");
+      }
+
+      const generatedSignature = crypto
+        .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET!)
+        .update(`${razorpay_order_id}|${razorpay_payment_id}`)
+        .digest("hex");
+
+      if (generatedSignature.length !== razorpay_signature.length) {
+        return badRequestResponse("Payment verification failed — invalid signature length");
+      }
+
+      const isValid = crypto.timingSafeEqual(
+        Buffer.from(generatedSignature),
+        Buffer.from(razorpay_signature)
+      );
+
+      if (!isValid) {
+        return badRequestResponse("Payment verification failed — signature mismatch");
+      }
     }
 
     const supabase = createAdminSupabaseClient();

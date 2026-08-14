@@ -8,8 +8,8 @@ import { cookies } from 'next/headers'
  */
 export async function createServerSupabaseClient() {
   const cookieStore = await cookies()
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
-  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
+  const url = (process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_URL !== 'undefined' ? process.env.NEXT_PUBLIC_SUPABASE_URL : 'https://placeholder.supabase.co').trim();
+  const key = (process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder').trim();
 
   return createServerClient(
     url,
@@ -40,8 +40,8 @@ export async function createServerSupabaseClient() {
  * NEVER expose this to the browser.
  */
 export function createAdminSupabaseClient() {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
+  const url = (process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_URL !== 'undefined' ? process.env.NEXT_PUBLIC_SUPABASE_URL : 'https://placeholder.supabase.co').trim();
+  const key = (process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'placeholder').trim();
 
   return createClient(
     url,

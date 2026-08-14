@@ -20,7 +20,6 @@ const cormorant = Cormorant_Garamond({
 
 const outfit = Outfit({ 
   subsets: ["latin"],
-  weight: ["300", "400", "500"],
   variable: "--font-outfit",
   display: "swap",
 });

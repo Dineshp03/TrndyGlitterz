@@ -135,24 +135,38 @@ export async function POST(request: NextRequest) {
 
     const isSoldOut = Boolean(body.isSoldOut ?? body.is_sold_out ?? false);
 
-    // Insert with is_sold_out directly
-    const { data, error } = await supabaseAdmin
+    const productPayload: Record<string, unknown> = {
+      name: body.name,
+      price: Number(body.price),
+      old_price: body.oldPrice ? Number(body.oldPrice) : null,
+      category: body.category ?? "Uncategorized",
+      image: body.image ?? "",
+      images: body.images ?? [],
+      description: body.description ?? "",
+      stock: body.stock !== undefined ? Number(body.stock) : 0,
+      featured: body.featured ?? false,
+      is_imported: body.isImported ?? false,
+      is_sold_out: isSoldOut,
+    };
+
+    let { data, error } = await supabaseAdmin
       .from("products")
-      .insert({
-        name: body.name,
-        price: Number(body.price),
-        old_price: body.oldPrice ? Number(body.oldPrice) : null,
-        category: body.category ?? "Uncategorized",
-        image: body.image ?? "",
-        images: body.images ?? [],
-        description: body.description ?? "",
-        stock: body.stock !== undefined ? Number(body.stock) : 0,
-        featured: body.featured ?? false,
-        is_imported: body.isImported ?? false,
-        is_sold_out: isSoldOut,
-      })
+      .insert(productPayload)
       .select()
       .single();
+
+    // Graceful fallback: if is_sold_out column doesn't exist yet, retry without it
+    if (error && (error.message?.includes("is_sold_out") || error.code === "PGRST204")) {
+      console.warn("is_sold_out column missing, retrying without it:", error.message);
+      const { is_sold_out: _removed, ...payloadWithoutSoldOut } = productPayload;
+      const fallback = await supabaseAdmin
+        .from("products")
+        .insert(payloadWithoutSoldOut)
+        .select()
+        .single();
+      data = fallback.data;
+      error = fallback.error;
+    }
 
     if (error) {
       console.error("addProduct API error:", error);
@@ -184,25 +198,40 @@ export async function PUT(request: NextRequest) {
 
     const isSoldOut = Boolean(body.isSoldOut ?? body.is_sold_out ?? false);
 
-    // Update all fields including is_sold_out directly
-    const { data, error } = await supabaseAdmin
+    const updatePayload: Record<string, unknown> = {
+      name: body.name,
+      price: Number(body.price),
+      old_price: body.oldPrice ? Number(body.oldPrice) : null,
+      category: body.category,
+      image: body.image,
+      images: body.images,
+      description: body.description,
+      stock: Number(body.stock),
+      featured: body.featured,
+      is_imported: body.isImported,
+      is_sold_out: isSoldOut,
+    };
+
+    let { data, error } = await supabaseAdmin
       .from("products")
-      .update({
-        name: body.name,
-        price: Number(body.price),
-        old_price: body.oldPrice ? Number(body.oldPrice) : null,
-        category: body.category,
-        image: body.image,
-        images: body.images,
-        description: body.description,
-        stock: Number(body.stock),
-        featured: body.featured,
-        is_imported: body.isImported,
-        is_sold_out: isSoldOut,
-      })
+      .update(updatePayload)
       .eq("id", body.id)
       .select()
       .single();
+
+    // Graceful fallback: if is_sold_out column doesn't exist yet, retry without it
+    if (error && (error.message?.includes("is_sold_out") || error.code === "PGRST204")) {
+      console.warn("is_sold_out column missing, retrying without it:", error.message);
+      const { is_sold_out: _removed, ...payloadWithoutSoldOut } = updatePayload;
+      const fallback = await supabaseAdmin
+        .from("products")
+        .update(payloadWithoutSoldOut)
+        .eq("id", body.id)
+        .select()
+        .single();
+      data = fallback.data;
+      error = fallback.error;
+    }
 
     if (error) {
       console.error("updateProduct API error:", error);
