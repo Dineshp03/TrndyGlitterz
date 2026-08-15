@@ -135,8 +135,13 @@ export default function OrdersPage() {
           </thead>
           <tbody>
             {filteredOrders.length > 0 ? filteredOrders.map((order) => {
-              const s = statusConfig[order.status];
-              const StatusIcon = s?.icon || Package;
+              const s = statusConfig[order.status] || {
+                label: order.status || "Pending",
+                icon: Package,
+                color: "text-amber-600",
+                bg: "bg-amber-50 border-amber-100"
+              };
+              const StatusIcon = s.icon;
               const shortId = order.id?.split("-")[0]?.toUpperCase() || order.id;
               return (
                 <tr key={order.id} onClick={() => handleRowClick(order)} className="border-b border-[#F0EDE8]/60 hover:bg-[#FAFAF8] transition-colors cursor-pointer">
@@ -190,8 +195,13 @@ export default function OrdersPage() {
       {/* Orders Cards - Mobile */}
       <div className="lg:hidden space-y-3">
         {filteredOrders.length > 0 ? filteredOrders.map((order) => {
-          const s = statusConfig[order.status];
-          const StatusIcon = s?.icon || Package;
+          const s = statusConfig[order.status] || {
+            label: order.status || "Pending",
+            icon: Package,
+            color: "text-amber-600",
+            bg: "bg-amber-50 border-amber-100"
+          };
+          const StatusIcon = s.icon;
           return (
             <div key={order.id} onClick={() => handleRowClick(order)} className="bg-white rounded-2xl border border-[#F0EDE8] p-4 cursor-pointer">
               <div className="flex items-start justify-between mb-2">

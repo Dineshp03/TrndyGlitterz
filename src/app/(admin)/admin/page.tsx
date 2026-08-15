@@ -31,6 +31,7 @@ const statusConfig: Record<string, { label: string; icon: React.ComponentType<{ 
   delivered: { label: "Delivered", icon: CheckCircle2, color: "text-emerald-700", bg: "bg-emerald-50 border-emerald-100" },
   processing: { label: "Processing", icon: Clock, color: "text-blue-600", bg: "bg-blue-50 border-blue-100" },
   pending: { label: "Pending", icon: Package, color: "text-amber-600", bg: "bg-amber-50 border-amber-100" },
+  shipped: { label: "Shipped", icon: Package, color: "text-amber-600", bg: "bg-amber-50 border-amber-100" },
   cancelled: { label: "Cancelled", icon: AlertCircle, color: "text-red-500", bg: "bg-red-50 border-red-100" },
 };
 
@@ -350,7 +351,12 @@ export default function AdminDashboard() {
                   </thead>
                   <tbody>
                     {currentOrders.map((order) => {
-                      const s = statusConfig[order.status];
+                      const s = statusConfig[order.status] || {
+                        label: order.status || "Pending",
+                        icon: Package,
+                        color: "text-amber-600",
+                        bg: "bg-amber-50 border-amber-100"
+                      };
                       const StatusIcon = s.icon;
                       return (
                         <tr key={order.id} className="border-b border-[#F0EDE8]/60 hover:bg-[#FAFAF8] transition-colors group">
@@ -380,7 +386,12 @@ export default function AdminDashboard() {
               {/* Mobile Cards */}
               <div className="lg:hidden divide-y divide-[#F0EDE8]">
                 {currentOrders.map((order) => {
-                  const s = statusConfig[order.status];
+                  const s = statusConfig[order.status] || {
+                    label: order.status || "Pending",
+                    icon: Package,
+                    color: "text-amber-600",
+                    bg: "bg-amber-50 border-amber-100"
+                  };
                   const StatusIcon = s.icon;
                   return (
                     <div key={order.id} className="flex items-center gap-3 px-4 py-3.5">
