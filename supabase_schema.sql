@@ -223,7 +223,8 @@ CREATE POLICY "Users can manage their wishlist"
 -- ─────────────────────────────────────────────
 
 -- Orders with item count (for admin dashboard)
-CREATE OR REPLACE VIEW public.orders_summary AS
+CREATE OR REPLACE VIEW public.orders_summary
+WITH (security_invoker = on) AS
   SELECT
     o.*,
     COUNT(oi.id) AS item_count

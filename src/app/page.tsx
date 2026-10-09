@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState, useEffect, Suspense, useTransition, useCallback, useMemo } from "react";
+import { useState, useEffect, Suspense, useCallback, useMemo } from "react";
 import { useProductStore } from "@/store/useProductStore";
 import ProductSlider from "@/components/ProductSlider";
 import ProductCard from "@/components/ProductCard";
@@ -28,8 +28,6 @@ function HomeContent() {
   const settings = useSettingsStore();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [isPending, startTransition] = useTransition();
-
   // Local state for instant switching — no router roundtrip on each tap.
   // Initialised from URL so direct links / back navigation still work.
   const [selectedCategory, setSelectedCategoryLocal] = useState<string | null>(
@@ -42,21 +40,19 @@ function HomeContent() {
     const t = setTimeout(() => {
       const current = searchParams.get("collection") || null;
       if (selectedCategory !== current) {
-        if (selectedCategory) {
-          router.replace(`/?collection=${encodeURIComponent(selectedCategory)}`, { scroll: false });
-        } else {
-          router.replace("/", { scroll: false });
-        }
+        const url = selectedCategory
+          ? `/?collection=${encodeURIComponent(selectedCategory)}`
+          : "/";
+        window.history.replaceState(null, "", url);
       }
     }, 150);
     return () => clearTimeout(t);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedCategory]);
+  }, [selectedCategory, searchParams]);
 
   // Instant — no async, no router, immediate UI response
   const setSelectedCategory = useCallback((category: string | null) => {
-    startTransition(() => setSelectedCategoryLocal(category));
-  }, [startTransition]);
+    setSelectedCategoryLocal(category);
+  }, []);
 
   const scrollToProducts = () => {
     const el = document.getElementById('all-products');

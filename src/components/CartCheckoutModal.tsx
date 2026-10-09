@@ -478,6 +478,7 @@ export default function CartCheckoutModal({ onClose }: { onClose: () => void }) 
                           alt={item.name}
                           fill
                           className="object-cover"
+                          sizes="40px"
                         />
                       </Link>
                       <div className="flex-1">

@@ -2,6 +2,7 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   images: {
+    unoptimized: true,
     formats: ['image/avif', 'image/webp'],
     deviceSizes: [390, 430, 768, 1024, 1280, 1440, 1920],
     imageSizes: [64, 128, 160, 200, 256, 320],
@@ -18,6 +19,10 @@ const nextConfig: NextConfig = {
       {
         protocol: 'https',
         hostname: '*.supabase.co',
+      },
+      {
+        protocol: 'https',
+        hostname: 'zlouhiealaldfvqqjhop.supabase.co',
       },
       {
         protocol: 'https',

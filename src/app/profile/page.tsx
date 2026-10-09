@@ -338,7 +338,7 @@ export default function ProfilePage() {
             <div className="flex flex-col items-center gap-4">
               <div className="relative w-24 h-24 rounded-full overflow-hidden border-2"
                    style={{ borderColor: "#B38728" }}>
-                <Image src={user.imageUrl} alt="Avatar" fill className="object-cover" />
+                <Image src={user.imageUrl} alt="Avatar" fill className="object-cover" sizes="96px" />
               </div>
               <div className="text-center">
                 <p className="text-sm text-white font-sans font-medium">{user.fullName}</p>
@@ -548,7 +548,7 @@ export default function ProfilePage() {
                             <div key={item.id} className="flex items-center gap-4">
                               <div className="relative w-14 h-18 flex-shrink-0 rounded-lg overflow-hidden bg-white/5">
                                 {item.product_image ? (
-                                  <Image src={item.product_image} alt={item.product_name} fill className="object-cover" />
+                                  <Image src={item.product_image} alt={item.product_name} fill className="object-cover" sizes="56px" />
                                 ) : (
                                   <div className="w-full h-full flex items-center justify-center text-white/20 text-xs text-center">No Img</div>
                                 )}

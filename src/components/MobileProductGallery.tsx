@@ -62,9 +62,9 @@ export default function MobileProductGallery({ product }: { product: Product }) 
                     alt={`${product.name} - Image ${index + 1}`}
                     fill
                     priority={index === 0}
-                    quality={95}
+                    quality={75}
                     className="object-cover object-center"
-                    sizes="(max-width: 768px) 100vw, 50vw"
+                    sizes="(max-width: 768px) 70vw, 320px"
                  />
 
                  {/* Inner border for depth */}

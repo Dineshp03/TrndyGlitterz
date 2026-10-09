@@ -76,6 +76,7 @@ export default function CartDrawer() {
                       alt={item.name} 
                       fill 
                       className="object-cover group-hover:scale-105 transition-transform duration-1000"
+                      sizes="112px"
                     />
                   </Link>
                   

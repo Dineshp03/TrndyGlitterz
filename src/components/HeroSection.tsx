@@ -58,7 +58,7 @@ export default function HeroSection({ onStartShopping, hasNewArrivals }: HeroSec
           alt="Trendy Glitterz Background"
           fill
           priority
-          quality={95}
+          quality={80}
           className="object-cover object-center pointer-events-none transition-opacity duration-1000"
           sizes="100vw"
         />

@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import { useParams, notFound, useRouter } from "next/navigation";
 import { useUser, useAuth } from "@clerk/nextjs";
 import { useState, useEffect, useRef, useCallback, TouchEvent } from "react";
@@ -740,13 +739,18 @@ export default function ProductDetailClient({ initialProduct }: { initialProduct
             </>
           )}
 
-          <div className="relative w-full h-full flex items-center justify-center pointer-events-none">
-            <Image
+          {/* Inner safe container with pointer-events-auto to capture swipe/gestures and prevent click close */}
+          <div 
+            className="relative w-[90vw] h-[85vh] flex items-center justify-center pointer-events-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
               src={images[currentImageIndex]}
               alt={product.name}
-              fill
-              className="object-contain"
-              priority
+              className="max-w-full max-h-full object-contain select-none"
+              loading="eager"
+              decoding="sync"
             />
           </div>
 
@@ -789,12 +793,17 @@ export default function ProductDetailClient({ initialProduct }: { initialProduct
                   : undefined,
               }}
             >
-              <Image
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
                 src={images[currentImageIndex]}
                 alt={product.name}
-                fill
-                className={`object-cover md:group-hover:scale-105 md:transition-transform md:duration-700 ease-out rounded-3xl ${isSoldOut ? 'opacity-70 grayscale-[30%]' : ''}`}
-                priority
+                className={`absolute inset-0 w-full h-full object-cover md:group-hover:scale-105 md:transition-transform md:duration-700 ease-out rounded-3xl ${isSoldOut ? 'opacity-70 grayscale-[30%]' : ''}`}
+                loading="eager"
+                decoding="async"
+                onError={(e) => {
+                  const el = e.currentTarget;
+                  el.style.display = 'none';
+                }}
               />
             </div>
 
@@ -859,7 +868,8 @@ export default function ProductDetailClient({ initialProduct }: { initialProduct
                       : "opacity-50 hover:opacity-90 hover:scale-105"
                   }`}
                 >
-                  <Image src={img} alt={`${product.name} ${idx + 1}`} fill className="object-cover" />
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={img} alt={`${product.name} ${idx + 1}`} className="absolute inset-0 w-full h-full object-cover" loading="lazy" onError={(e)=>{e.currentTarget.style.opacity='0.1'}} />
                 </button>
               ))}
             </div>
@@ -878,7 +888,8 @@ export default function ProductDetailClient({ initialProduct }: { initialProduct
                       : "opacity-50 active:opacity-90"
                   }`}
                 >
-                  <Image src={img} alt={`${product.name} ${idx + 1}`} fill className="object-cover" />
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={img} alt={`${product.name} ${idx + 1}`} className="absolute inset-0 w-full h-full object-cover" loading="lazy" onError={(e)=>{e.currentTarget.style.opacity='0.1'}} />
                 </button>
               ))}
             </div>
@@ -963,7 +974,6 @@ export default function ProductDetailClient({ initialProduct }: { initialProduct
                   </div>
                   <div>
                     <p className="text-[10px] font-sans uppercase tracking-[0.1em] font-bold text-obsidian">Skin Friendly</p>
-                    <p className="text-[11px] text-obsidian/60 font-light">Lead & Nickel free, safe for sensitive skin.</p>
                   </div>
                 </div>
 
@@ -973,7 +983,6 @@ export default function ProductDetailClient({ initialProduct }: { initialProduct
                   </div>
                   <div>
                     <p className="text-[10px] font-sans uppercase tracking-[0.1em] font-bold text-obsidian">Premium Quality</p>
-                    <p className="text-[11px] text-obsidian/60 font-light">High-durability, tarnish-resistant craftsmanship.</p>
                   </div>
                 </div>
               </div>
