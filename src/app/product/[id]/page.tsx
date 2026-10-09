@@ -4,6 +4,9 @@ import { siteConfig } from "@/lib/metadata-config";
 import { createAdminSupabaseClient } from "@/lib/supabase-server";
 import { Product, products as staticProducts } from "@/data/products";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 async function getProduct(id: string): Promise<Product | null> {
   try {
     const supabase = createAdminSupabaseClient();
