@@ -1,5 +1,6 @@
 import { ClerkProvider, SignInButton, SignUpButton, Show, UserButton } from "@clerk/nextjs";
 import type { Metadata } from "next";
+import { SupabaseDownBanner } from "@/components/SupabaseDownBanner";
 
 
 import { Cormorant_Garamond, Outfit, Bebas_Neue } from "next/font/google";
@@ -132,6 +133,7 @@ export default function RootLayout({
           <div className="noise-bg pointer-events-none fixed inset-0 z-[-1] opacity-[0.03]"></div>
           
           <SmoothScroll />
+          <SupabaseDownBanner />
           <Navbar />
           <CartInitializer />
           <CartDrawer />

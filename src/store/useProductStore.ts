@@ -2,11 +2,42 @@ import { create } from "zustand";
 import { Product, products as initialProducts } from "@/data/products";
 import { getSupabaseClient } from "@/lib/supabase";
 
+// ─── Local cache helpers ────────────────────────────────────────────────────
+const CACHE_KEY = "tg_products_cache";
+const CACHE_TTL_MS = 10 * 60 * 1000; // 10 minutes
+
+function readCache(): Product[] | null {
+  try {
+    if (typeof window === "undefined") return null;
+    const raw = sessionStorage.getItem(CACHE_KEY);
+    if (!raw) return null;
+    const { ts, data } = JSON.parse(raw) as { ts: number; data: Product[] };
+    if (Date.now() - ts > CACHE_TTL_MS) {
+      sessionStorage.removeItem(CACHE_KEY);
+      return null;
+    }
+    return data;
+  } catch {
+    return null;
+  }
+}
+
+function writeCache(products: Product[]) {
+  try {
+    if (typeof window === "undefined") return;
+    sessionStorage.setItem(CACHE_KEY, JSON.stringify({ ts: Date.now(), data: products }));
+  } catch {
+    // sessionStorage full – ignore
+  }
+}
+// ────────────────────────────────────────────────────────────────────────────
+
 interface ProductState {
   products: Product[];
   categories: string[];
   isLoading: boolean;
-  
+  supabaseDown: boolean;
+
   fetchProducts: (params?: { category?: string; featured?: boolean; search?: string }) => Promise<void>;
   addProduct: (product: Partial<Product>, token: string) => Promise<void>;
   updateProduct: (product: Product, token: string) => Promise<void>;
@@ -16,12 +47,27 @@ interface ProductState {
   syncWithInitial: () => Promise<void>;
 }
 
+function buildCategories(products: Product[]) {
+  return Array.from(new Set(products.map((p) => p.category).filter(Boolean)));
+}
+
 export const useProductStore = create<ProductState>((set, get) => ({
   products: initialProducts,
-  categories: [],
+  categories: buildCategories(initialProducts),
   isLoading: false,
+  supabaseDown: false,
 
   fetchProducts: async (params = {}) => {
+    // Only hit the network if no filters are applied AND fresh cache exists
+    const isUnfiltered = !params.category && !params.featured && !params.search;
+    if (isUnfiltered) {
+      const cached = readCache();
+      if (cached) {
+        set({ products: cached, categories: buildCategories(cached), isLoading: false });
+        return;
+      }
+    }
+
     set({ isLoading: true });
     try {
       const supabase = getSupabaseClient();
@@ -32,7 +78,7 @@ export const useProductStore = create<ProductState>((set, get) => ({
       if (params.search) query = query.ilike("name", `%${params.search}%`);
 
       const { data, error } = await query;
-      
+
       if (error) throw error;
 
       const mappedProducts: Product[] = (data || []).map((p: {
@@ -69,14 +115,36 @@ export const useProductStore = create<ProductState>((set, get) => ({
         createdAt: p.created_at,
       }));
 
-      set({ 
+      // Persist to session cache (unfiltered results only)
+      if (isUnfiltered) writeCache(mappedProducts);
+
+      set({
         products: mappedProducts,
-        categories: Array.from(new Set(mappedProducts.map(p => p.category).filter(Boolean))),
+        categories: buildCategories(mappedProducts),
         isLoading: false,
+        supabaseDown: false,
       });
     } catch (e) {
       console.error("fetchProducts error:", e);
-      set({ isLoading: false });
+      // ── Graceful fallback ──────────────────────────────────────────────
+      // Use stale session-cache if available, otherwise fall back to the
+      // hardcoded initialProducts so the UI still renders something.
+      const stale = (() => {
+        try {
+          if (typeof window === "undefined") return null;
+          const raw = sessionStorage.getItem(CACHE_KEY);
+          if (!raw) return null;
+          return (JSON.parse(raw) as { ts: number; data: Product[] }).data;
+        } catch { return null; }
+      })();
+
+      const fallback = stale ?? get().products ?? initialProducts;
+      set({
+        products: fallback,
+        categories: buildCategories(fallback),
+        isLoading: false,
+        supabaseDown: true,
+      });
     }
   },
 
@@ -139,9 +207,9 @@ export const useProductStore = create<ProductState>((set, get) => ({
     console.warn("deleteAllProducts not implemented for safety.");
   },
 
-  setProducts: (products) => set({ 
-    products, 
-    categories: Array.from(new Set(products.map(p => p.category).filter(Boolean)))
+  setProducts: (products) => set({
+    products,
+    categories: buildCategories(products),
   }),
 
   syncWithInitial: async () => {

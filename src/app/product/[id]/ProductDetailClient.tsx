@@ -3,6 +3,7 @@
 import { useParams, notFound, useRouter } from "next/navigation";
 import { useUser, useAuth } from "@clerk/nextjs";
 import { useState, useEffect, useRef, useCallback, TouchEvent } from "react";
+import Image from 'next/image';
 import { useProductStore } from "@/store/useProductStore";
 import { useCart } from "@/hooks/useCart";
 import { useOrderStore } from "@/store/useOrderStore";
@@ -793,16 +794,15 @@ export default function ProductDetailClient({ initialProduct }: { initialProduct
                   : undefined,
               }}
             >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
+              <Image
                 src={images[currentImageIndex]}
                 alt={product.name}
-                className={`absolute inset-0 w-full h-full object-cover md:group-hover:scale-105 md:transition-transform md:duration-700 ease-out rounded-3xl ${isSoldOut ? 'opacity-70 grayscale-[30%]' : ''}`}
-                loading="eager"
-                decoding="async"
+                fill
+                sizes="(max-width: 768px) 100vw, 50vw"
+                className={`object-cover md:group-hover:scale-105 md:transition-transform md:duration-700 ease-out rounded-3xl ${isSoldOut ? 'opacity-70 grayscale-[30%]' : ''}`}
+                priority={true}
                 onError={(e) => {
-                  const el = e.currentTarget;
-                  el.style.display = 'none';
+                  (e.currentTarget as HTMLImageElement).style.display = 'none';
                 }}
               />
             </div>
@@ -869,7 +869,7 @@ export default function ProductDetailClient({ initialProduct }: { initialProduct
                   }`}
                 >
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={img} alt={`${product.name} ${idx + 1}`} className="absolute inset-0 w-full h-full object-cover" loading="lazy" onError={(e)=>{e.currentTarget.style.opacity='0.1'}} />
+                  <Image src={img} alt={`${product.name} ${idx + 1}`} fill sizes="56px" className="object-cover" loading="lazy" onError={(e) => { (e.currentTarget as HTMLImageElement).style.opacity = '0.1'; }} />
                 </button>
               ))}
             </div>
@@ -889,7 +889,7 @@ export default function ProductDetailClient({ initialProduct }: { initialProduct
                   }`}
                 >
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={img} alt={`${product.name} ${idx + 1}`} className="absolute inset-0 w-full h-full object-cover" loading="lazy" onError={(e)=>{e.currentTarget.style.opacity='0.1'}} />
+                  <Image src={img} alt={`${product.name} ${idx + 1}`} fill sizes="56px" className="object-cover" loading="lazy" onError={(e) => { (e.currentTarget as HTMLImageElement).style.opacity = '0.1'; }} />
                 </button>
               ))}
             </div>

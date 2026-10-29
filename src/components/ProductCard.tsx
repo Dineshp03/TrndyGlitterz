@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { Product } from "@/data/products";
 import { Heart, Eye, ShoppingCart } from "lucide-react";
 import { useCart } from "@/hooks/useCart";
@@ -56,14 +57,14 @@ export default function ProductCard({ product }: { product: Product }) {
       {/* Image Container — clean and crisp */}
       <div className="relative aspect-[1/1] w-full bg-[#1A1A1A] mb-4 cursor-pointer overflow-hidden rounded-2xl border border-transparent group-hover:border-white/10 transition-all">
         <Link href={`/product/${product.id}`} className="block w-full h-full relative">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img 
-            src={product.image} 
-            alt={product.name} 
-            className={`absolute inset-0 w-full h-full object-cover object-center transition-transform duration-[1s] ease-out group-hover:scale-105 ${isSoldOut ? 'opacity-50 grayscale-[30%]' : ''}`}
-            loading={product.id === "ear-1" ? "eager" : "lazy"}
-            decoding="async"
-            onError={(e) => { e.currentTarget.style.opacity = '0.1'; }}
+          <Image
+            src={product.image}
+            alt={product.name}
+            fill
+            sizes="(max-width: 768px) 50vw, (max-width: 1280px) 33vw, 25vw"
+            className={`object-cover object-center transition-transform duration-[1s] ease-out group-hover:scale-105 ${isSoldOut ? 'opacity-50 grayscale-[30%]' : ''}`}
+            loading={product.featured ? "eager" : "lazy"}
+            onError={(e) => { (e.currentTarget as HTMLImageElement).style.opacity = '0.1'; }}
           />
           <div className="absolute inset-0 ring-1 ring-inset ring-black/5 rounded-2xl pointer-events-none" />
         </Link>

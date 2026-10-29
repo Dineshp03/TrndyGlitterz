@@ -2,11 +2,12 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   images: {
-    unoptimized: true,
+    // ⚠️ DO NOT set unoptimized:true — that bypasses Next.js image compression
+    // and causes massive egress from Supabase Storage.
     formats: ['image/avif', 'image/webp'],
-    deviceSizes: [390, 430, 768, 1024, 1280, 1440, 1920],
-    imageSizes: [64, 128, 160, 200, 256, 320],
-    minimumCacheTTL: 604800, // Cache images for 7 days
+    deviceSizes: [390, 430, 768, 1024, 1280],
+    imageSizes: [64, 128, 256, 320],
+    minimumCacheTTL: 604800, // Cache optimized images for 7 days in browser
     remotePatterns: [
       {
         protocol: 'https',
@@ -35,7 +36,6 @@ const nextConfig: NextConfig = {
     ],
   },
   devIndicators: false,
-  // Enable compression for all responses
   compress: true,
 };
 
